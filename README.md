@@ -71,6 +71,8 @@ Gameversion: 1.12.1
 
 # Demonstration 演示
 
+![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/0.png?x-oss-process=image/resize,w_600,h_600)
+
 ![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/1.png?x-oss-process=image/resize,w_600,h_600)
 
 ![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/2.png?x-oss-process=image/resize,w_600,h_600)
