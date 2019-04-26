@@ -1,16 +1,20 @@
 # wpcore
-World of Warcraft server
+	World of Warcraft server
+
+	魔兽世界服务器
 =====
 
 # Introduction
 	This is a World of Warcraft server written in php language. 
-	My original intention is to verify whether PHP can write a MMORPG game server. According to the current progress, 
-	PHP is fully capable. Now it has been debugged through the login server. Process, 
+	My original intention is to verify whether PHP can write a MMORPG game server. 
+	According to the current progress,PHP is fully capable. 
+	Now it has been debugged through the login server. Process, 
 	because World of Warcraft login verification uses the SRP6 protocol, 
 	my current temporary solution is to call Python module to handle SRP6 authentication in PHP, 
 	while PHP handles the overall login process. The current World of Warcraft client is 1.12.1. 
 	The server list and account password data are all local analog data. 
-	The account needs to be consistent with the password to pass the verification. The world server will start writing after the login server is improved.
+	The account needs to be consistent with the password to pass the verification. 
+	The world server will start writing after the login server is improved.
 
 # 介绍
 	这是一款用php语言写的魔兽世界服务器
