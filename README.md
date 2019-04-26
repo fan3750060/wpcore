@@ -68,17 +68,17 @@ Gameversion: 1.12.1
 
 # Demonstration 演示
 
-![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/1.png?x-oss-process=image/resize,limit_0,m_fill,w_600,h_600/quality,q_100)
+![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/1.png?x-oss-process=image/resize,w_600,h_600)
 
-![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/2.png?x-oss-process=image/resize,limit_0,m_fill,w_600,h_600/quality,q_100)
+![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/2.png?x-oss-process=image/resize,w_600,h_600)
 
-![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/3.png?x-oss-process=image/resize,limit_0,m_fill,w_600,h_600/quality,q_100)
+![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/3.png?x-oss-process=image/resize,w_600,h_600)
 
-![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/4.png?x-oss-process=image/resize,limit_0,m_fill,w_600,h_600/quality,q_100)
+![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/4.png?x-oss-process=image/resize,w_600,h_600)
 
-![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/5.png?x-oss-process=image/resize,limit_0,m_fill,w_600,h_600/quality,q_100)
+![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/5.png?x-oss-process=image/resize,w_600,h_600)
 
-![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/6.png?x-oss-process=image/resize,limit_0,m_fill,w_600,h_600/quality,q_100)
+![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/wow/6.png?x-oss-process=image/resize,w_600,h_600)
 
 
 
