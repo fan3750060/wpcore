@@ -1,0 +1,35 @@
+{
+    "name": "fan3750060/hello-script",
+    "type": "project",
+    "description": "Php-based scripting framework",
+    "keywords": [
+        "framework",
+        "hello Script",
+        "Script"
+    ],
+    "version": "0.2.1",
+    "homepage": "https://github.com/fan3750060/hello-script",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.5",
+        "riimu/kit-securerandom": "^1.3",
+        "phpseclib/phpseclib": "^2.0",
+        "friendsofphp/php-cs-fixer": "^2.14",
+        "pear/math_biginteger": "^1.0",
+        "paragonie/random_compat": "^2.0",
+        "simon_massey/thinbus-php-srp":"^1.8.3",
+        "artisansdk/srp":"dev-master"
+    },
+    "authors": [
+        {
+            "name": "fan",
+            "email": "fan3750060@163.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "app\\": "app",
+            "core\\": "core"
+        }
+    }
+}

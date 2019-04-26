@@ -1,0 +1,8 @@
+language: php
+install:
+  - composer install --dev
+php:
+  - 5.5
+script:
+  - php demo/demo.php
+  - php demo/benchmark.php

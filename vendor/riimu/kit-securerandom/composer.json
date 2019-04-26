@@ -1,0 +1,39 @@
+{
+  "name": "riimu/kit-securerandom",
+  "type": "library",
+  "description": "Library for leveraging available secure random generators",
+  "homepage": "http://kit.riimu.net",
+  "keywords": [
+    "secure",
+    "random",
+    "generator"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Riikka Kalliomäki",
+      "email": "riikka.kalliomaki@gmail.com",
+      "homepage": "http://riimu.net"
+    }
+  ],
+  "require": {
+    "php": ">=5.6.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6.3 || ^5.7"
+  },
+  "suggest": {
+    "ext-openssl": "To use the OpenSSL secure random byte generator",
+    "ext-mcrypt": "To use the Mcrypt secure random byte generator"
+  },
+  "autoload": {
+    "psr-4": {
+      "Riimu\\Kit\\SecureRandom\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Riimu\\Kit\\SecureRandom\\": "tests/tests/"
+    }
+  }
+}
