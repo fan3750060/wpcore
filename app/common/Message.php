@@ -390,21 +390,6 @@ class Message
     }
 
     /**
-     * 进行身份验证 根据消息类型进行不同的处理
-     *
-     * @param swoole_server $serv
-     * @param int $fd
-     * @param string $data
-     * @param int $connectionType
-     */
-    private function sendMessage($serv, $fd, $data, $connectionType)
-    {
-        $msgArr = json_decode($data, true);
-
-        $serv->send($fd, $this->getResultJson("N00000", "身份校验成功", "123"));
-    }
-
-    /**
      * websocket握手
      *
      * @param swoole_server $serv
@@ -422,43 +407,5 @@ class Message
             return true;
         }
         return false;
-    }
-
-    /**
-     * 生成发送的json数据
-     *
-     * @param string $code
-     *            状态码
-     * @param string $message
-     *            消息结果提示
-     * @param array $data
-     *            发送的数据
-     * @param int $infoType
-     *            消息类型
-     * @param int $connectionType
-     *            连接类型
-     * @return string
-     */
-    private function getResultJson($code, $message, $data, $infoType = 0, $connectionType = Clientstate::CONNECTION_TYPE_SOCKET)
-    {
-        if (empty($message)) {
-            return $message;
-        }
-
-        $apiResult = array(
-            "code"     => $code,
-            "message"  => $message,
-            "infoType" => $infoType,
-            "data"     => $data,
-        );
-
-        $result = json_encode($apiResult, JSON_UNESCAPED_UNICODE) . Clientstate::MESSAGE_END_FLAG;
-
-        if ($connectionType == Clientstate::CONNECTION_TYPE_WEBSOCKET) {
-            $ws     = new WebSocket();
-            $result = $ws->wrap($result);
-        }
-
-        return $result;
     }
 }
