@@ -6,6 +6,7 @@ use app\common\Connection;
 use app\common\Srp6;
 use app\common\WebSocket;
 use Thinbus\ThinbusSrp;
+use app\common\int_h;
 class Message
 {
     /**
@@ -239,13 +240,70 @@ class Message
         $addr_port = '127.0.0.1:13250'; //服务器端口
         $population = 'zhCN'; //服务器本地化
 
-        $output = @shell_exec('python core.py 2'.' '.$name.' '.$addr_port.' '.$population);
-        echolog($output);
-        $data   = trim($output);
-        $data   = substr($data, 1, -1);
-        $data   = str_replace(' ', '', $data);
-        $data   = explode(',', $data);
-        return $data;
+        $type_b = [0,0,0,0];
+        $flags = int_helper::HexToDecimal('0x00');
+        $num_chars = int_helper::HexToDecimal('0x00');
+        $time_zone = int_helper::HexToDecimal('0x00');
+        $unknown = int_helper::HexToDecimal('0x00');
+        $cmd = int_helper::HexToDecimal('0x10');
+        $name = array_merge($this->getBytes($name),[0]) ;
+        $addr_port = array_merge($this->getBytes($addr_port),[0]) ;
+        $population = $this->getBytes($population);
+
+        // 拼装服内容信息
+        $RealmInfo_Server = [];
+        foreach ($type_b as $k => $v) 
+        {
+            $RealmInfo_Server[] = $v;
+        }
+
+        $RealmInfo_Server[] = $flags;
+
+        foreach ($name as $k => $v) 
+        {
+            $RealmInfo_Server[] = $v;
+        }
+
+        foreach ($addr_port as $k => $v) 
+        {
+            $RealmInfo_Server[] = $v;
+        }
+
+        foreach ($population as $k => $v) 
+        {
+            $RealmInfo_Server[] = $v;
+        }
+
+        $RealmInfo_Server[] = $num_chars;
+        $RealmInfo_Server[] = $time_zone;
+        $RealmInfo_Server[] = $unknown;
+
+        //拼装服脚信息
+        $RealmFooter_Server = [0,0];
+
+        //拼装服头信息
+        $length = 7+count($RealmInfo_Server);
+        $length_b = [$length,0];
+        $unk = [0,0,0,0];
+        $num_realms = int_helper::HexToDecimal('0x01');
+        $RealmHeader_Server = [];
+        $RealmHeader_Server[] = $cmd;
+
+        foreach ($length_b as $k => $v) 
+        {
+            $RealmHeader_Server[] = $v;
+        }
+
+        foreach ($unk as $k => $v) 
+        {
+            $RealmHeader_Server[] = $v;
+        }
+
+        $RealmHeader_Server[] = $num_realms;
+
+        $RealmInfo = array_merge($RealmHeader_Server,$RealmInfo_Server,$RealmFooter_Server);
+
+        return $RealmInfo;
     }
 
     /**
@@ -266,6 +324,8 @@ class Message
                 // 第一步srp6运算
                 // file_put_contents('auth_'.time() . '_ClientLogonChallenge.log', $data . PHP_EOL, FILE_APPEND);
                 $data = $this->getinfo_ClientLogonChallenge($data); //解析数据包
+
+                echolog('Verify the account for SRP operations');
 
                 //ToDo
                 /*
@@ -311,20 +371,20 @@ class Message
             case Clientstate::Authenticated:
                 // 第三步获取服务器列表
                 // file_put_contents('auth_'.time() . '_Authenticated.log', $data . PHP_EOL, FILE_APPEND);
-                echolog($data);
-                echolog(5);
+
+                echolog('Get server domain list');
                 $data = $this->getRealmInfo();
 
                 // //分批发包
-                $RealmHeader_Server = array_slice($data, 0,8);
-                $RealmInfo_Server = array_slice($data, 8,19);
-                $RealmFooter_Server = array_slice($data, 19,2);
-                $serv->send($fd,$this->toStr($data));
-                $serv->send($fd,$this->toStr($RealmInfo_Server));
-                $serv->send($fd,$this->toStr($RealmFooter_Server));
+                // $RealmHeader_Server = array_slice($data, 0,8);
+                // $RealmInfo_Server = array_slice($data, 8,19);
+                // $RealmFooter_Server = array_slice($data, 19,2);
+                // $serv->send($fd,$this->toStr($data));
+                // $serv->send($fd,$this->toStr($RealmInfo_Server));
+                // $serv->send($fd,$this->toStr($RealmFooter_Server));
 
                 // 一次性发包
-                // $serv->send($fd,$this->toStr($data));
+                $serv->send($fd,$this->toStr($data));
                 break;
         }
     }

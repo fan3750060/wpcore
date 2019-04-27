@@ -81,4 +81,10 @@ class int_helper
 
         return is_array($i) ? $i[1] : $i;
     }
+
+    //16进制转10进制
+    public static function HexToDecimal($Hex)
+    {
+        return (int)base_convert($Hex, 16, 10);
+    }
 }
