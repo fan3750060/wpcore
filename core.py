@@ -2,9 +2,9 @@ import os
 import sys
 import base64
 
-from app.common.checkuser import checkuser
-from app.common.authkuser import authkuser
-from app.common.realminfo import realminfo
+from app.Python.checkuser import checkuser
+from app.Python.authkuser import authkuser
+from app.Python.realminfo import realminfo
 
 if __name__ == '__main__':
     # os.system('cls')

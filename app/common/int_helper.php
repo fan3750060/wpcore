@@ -1,5 +1,5 @@
 <?php
-namespace app\common;
+namespace app\Common;
 
 class int_helper
 {

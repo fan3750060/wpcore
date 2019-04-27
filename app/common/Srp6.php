@@ -1,5 +1,5 @@
 <?php
-namespace app\common;
+namespace app\Common;
 use phpseclib\Math\BigInteger;
 use Riimu\Kit\SecureRandom\SecureRandom;
 

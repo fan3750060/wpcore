@@ -1,2 +1,2 @@
 #/usr/bin/
-php script Authserver/start
+php script Server/start
