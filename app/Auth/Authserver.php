@@ -1,15 +1,16 @@
 <?php
-namespace  app\Auth;
+namespace app\Auth;
+
 use app\Auth\Connection;
 use app\Auth\Message;
 use app\Auth\MessageCache;
 
 /**
- * auth server 
+ * auth server
  */
 class Authserver
 {
-	public $active;
+    public $active;
     public $ServerConfig;
 
     /**
@@ -24,31 +25,31 @@ class Authserver
     public function start()
     {
         $str = '
- PPPP    PPPP     PPP                    PPPPPPP                                 
-  PPP    PPPPP    PPP                   PPPPPPPPP                                
-  PPPP   PPPPP   PPPP                  PPPP   PPPP                               
-  PPPP   PPPPP   PPPP                 PPPP     PPPP                              
-   PPP  PPPPPPP  PPP  PPPPPPPP        PPP       PPP   PPPPPP   PPPPPP   PPPPPP   
-   PPP  PPP PPP  PPP  PPPPPPPPP      PPPP           PPPPPPPPP  PPPPPP PPPPPPPPP  
-   PPPP PPP PPP PPPP  PPPP  PPPP     PPPP           PPPP  PPPP PPPP   PPP   PPPP 
-   PPPP PPP PPP PPP   PPP   PPPP     PPPP          PPPP   PPPP PPP   PPPP    PPP 
-    PPPPPP  PPPPPPP   PPP    PPP     PPPP          PPP     PPP PPP   PPPPPPPPPPP 
-    PPPPPP   PPPPPP   PPP    PPP     PPPP          PPP     PPP PPP   PPPPPPPPPPP 
-    PPPPPP   PPPPPP   PPP    PPP      PPP       PPPPPP     PPP PPP   PPP         
-     PPPPP   PPPPP    PPP   PPPP      PPPP     PPPPPPPP   PPPP PPP   PPPP        
-     PPPP    PPPPP    PPPP  PPPP       PPPP   PPPP  PPPP  PPPP PPP    PPPP  PPPP 
-     PPPP     PPPP    PPPPPPPPP         PPPPPPPPPP  PPPPPPPPP  PPP    PPPPPPPPP  
-     PPPP     PPPP    PPPPPPPP           PPPPPPP      PPPPPP   PPP      PPPPPP   
-                      PPP                                                        
-                      PPP                                                        
-                      PPP                                                        
-                      PPP                                                        
-                      PPP 
+ PPPP    PPPP     PPP                    PPPPPPP
+  PPP    PPPPP    PPP                   PPPPPPPPP
+  PPPP   PPPPP   PPPP                  PPPP   PPPP
+  PPPP   PPPPP   PPPP                 PPPP     PPPP
+   PPP  PPPPPPP  PPP  PPPPPPPP        PPP       PPP   PPPPPP   PPPPPP   PPPPPP
+   PPP  PPP PPP  PPP  PPPPPPPPP      PPPP           PPPPPPPPP  PPPPPP PPPPPPPPP
+   PPPP PPP PPP PPPP  PPPP  PPPP     PPPP           PPPP  PPPP PPPP   PPP   PPPP
+   PPPP PPP PPP PPP   PPP   PPPP     PPPP          PPPP   PPPP PPP   PPPP    PPP
+    PPPPPP  PPPPPPP   PPP    PPP     PPPP          PPP     PPP PPP   PPPPPPPPPPP
+    PPPPPP   PPPPPP   PPP    PPP     PPPP          PPP     PPP PPP   PPPPPPPPPPP
+    PPPPPP   PPPPPP   PPP    PPP      PPP       PPPPPP     PPP PPP   PPP
+     PPPPP   PPPPP    PPP   PPPP      PPPP     PPPPPPPP   PPPP PPP   PPPP
+     PPPP    PPPPP    PPPP  PPPP       PPPP   PPPP  PPPP  PPPP PPP    PPPP  PPPP
+     PPPP     PPPP    PPPPPPPPP         PPPPPPPPPP  PPPPPPPPP  PPP    PPPPPPPPP
+     PPPP     PPPP    PPPPPPPP           PPPPPPP      PPPPPP   PPP      PPPPPP
+                      PPP
+                      PPP
+                      PPP
+                      PPP
+                      PPP
         ';
-        echo $str.PHP_EOL;
-        echo 'Authserver version 1.0.1'.PHP_EOL;
-        echo 'author by.fan <fan3750060@163.com>'.PHP_EOL;
-        echo 'Gameversion: ' . config('Gameversion').PHP_EOL;
+        echo $str . PHP_EOL;
+        echo 'Authserver version 1.0.1' . PHP_EOL;
+        echo 'author by.fan <fan3750060@163.com>' . PHP_EOL;
+        echo 'Gameversion: ' . config('Gameversion') . PHP_EOL;
 
         // 初始状态
         $this->active = true;
@@ -67,10 +68,9 @@ class Authserver
      */
     public function runAuthServer()
     {
-        if($this->active)
-        {
-            $this -> listen('LogonServer'); //开启监听
-        }else{
+        if ($this->active) {
+            $this->listen('LogonServer'); //开启监听
+        } else {
             echolog('Error: Did not start the service according to the process...');
         }
     }
@@ -84,42 +84,42 @@ class Authserver
      * ------------------------------------------------------------------------------
      * @return  [type]          [description]
      */
-    public function listen($config=null)
+    public function listen($config = null)
     {
         $this->ServerConfig = config($config);
 
         $this->serv = new \swoole_server("0.0.0.0", $this->ServerConfig['Port']);
 
         $this->serv->set(array(
-            'worker_num'      => 4,
+            'worker_num'               => 4,
 //                 'daemonize' => true, // 是否作为守护进程
-            'max_request'     => 10000,
-            'dispatch_mode'   => 2,
-            'debug_mode'      => 1,
-            'task_worker_num' => 2,
-            'open_cpu_affinity'=> 1,
-            'heartbeat_check_interval'=> 60*1,//每隔多少秒检测一次，单位秒，Swoole会轮询所有TCP连接，将超过心跳时间的连接关闭掉
-            'log_file'        => RUNTIME_PATH.'swoole.log',
+            'max_request'              => 10000,
+            'dispatch_mode'            => 2,
+            'debug_mode'               => 1,
+            'task_worker_num'          => 2,
+            'open_cpu_affinity'        => 1,
+            'heartbeat_check_interval' => 60 * 1, //每隔多少秒检测一次，单位秒，Swoole会轮询所有TCP连接，将超过心跳时间的连接关闭掉
+            'log_file'                 => RUNTIME_PATH . 'swoole.log',
             // 'open_eof_check' => true, //打开EOF检测
-            'package_eof' => "###", //设置EOF
+            'package_eof'              => "###", //设置EOF
             // 'open_eof_split'=>true, //是否分包
-            'package_max_length' => 1024,
+            'package_max_length'       => 1024,
         ));
 
         $this->serv->on('Start', array(
-            $this,'onStart',
+            $this, 'onStart',
         ));
         $this->serv->on('Connect', array(
-            $this,'onConnect',
+            $this, 'onConnect',
         ));
         $this->serv->on('Receive', array(
-            $this,'onReceive',
+            $this, 'onReceive',
         ));
         $this->serv->on('Close', array(
-            $this,'onClose',
+            $this, 'onClose',
         ));
         $this->serv->on('WorkerStart', array(
-            $this,'onWorkerStart',
+            $this, 'onWorkerStart',
         ));
         // $this->serv->on('Timer', array(
         //     $this,'onTimer',
@@ -128,7 +128,7 @@ class Authserver
             $this, 'onTask',
         ));
         $this->serv->on('Finish', array(
-            $this,'onFinish',
+            $this, 'onFinish',
         ));
 
         // 创建消息缓存table
@@ -137,10 +137,10 @@ class Authserver
         $connectionCls = new Connection();
         $connectionCls->createConnectorTable();
         $connectionCls->createCheckTable();
-        
+
         $this->serv->start();
     }
-    
+
     /**
      * Server启动在主进程的主线程回调此函数
      *
@@ -170,7 +170,7 @@ class Authserver
         $connectionCls->saveCheckConnector($fd);
     }
 
-     /**
+    /**
      * 接收到数据时回调此函数，发生在worker进程中
      *
      * @param swoole_server $serv
@@ -190,7 +190,7 @@ class Authserver
             'data' => base64_encode($data),
         );
 
-        $serv->task(json_encode($param,JSON_UNESCAPED_UNICODE));
+        $serv->task(json_encode($param, JSON_UNESCAPED_UNICODE));
         echolog("Continue Handle Worker");
     }
 
@@ -259,7 +259,7 @@ class Authserver
         // 只有当worker_id为0时才添加定时器,避免重复添加
         if ($worker_id == 0) {
             $connectionCls = new Connection();
-            
+
             // 清除数据
             $connectionCls->clearData();
             echolog("clear data finished");

@@ -59,7 +59,7 @@ class MessageCache
 
         $endFlag = Clientstate::MESSAGE_END_FLAG;
         $result  = null;
-        
+
         // 如果不包含结束符，则尚未接收到完整的包，先缓存起来
         if (!strstr($data, $endFlag)) {
             self::$dataCacheTable->set("$fd", array(

@@ -85,6 +85,27 @@ class int_helper
     //16进制转10进制
     public static function HexToDecimal($Hex)
     {
-        return (int)base_convert($Hex, 16, 10);
+        return (int) base_convert($Hex, 16, 10);
+    }
+
+    // 转成byte数组
+    public static function getBytes($string)
+    {
+        $bytes = array();
+        for ($i = 0; $i < strlen($string); $i++) {
+            //遍历每一个字符 用ord函数把它们拼接成一个php数组
+            $bytes[] = ord($string[$i]);
+        }
+        return $bytes;
+    }
+
+    // 转成数据包字符串
+    public static function toStr($bytes)
+    {
+        $str = '';
+        foreach ($bytes as $ch) {
+            $str .= chr($ch); //这里用chr函数
+        }
+        return $str;
     }
 }
