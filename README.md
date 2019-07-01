@@ -5,32 +5,29 @@
 =====
 
 # Introduction
-	This is a World of Warcraft server written in php language. My original intention is to verify whether PHP can 
-	
-	write a MMORPG game server. According to the current progress,PHP is fully capable. Now it has been debugged 
-	
-	through the login server. Process, because World of Warcraft login verification uses the SRP6 protocol, my 
-	
-	current temporary solution is to call Python module to handle SRP6 authentication in PHP, while PHP handles 
-	
-	the overall login process. The current World of Warcraft client is 1.12.1. The server list and account password
-	
-	data are all local analog data. The account needs to be consistent with the password to pass the verification. 
-	
-	The world server will start writing after the login server is improved.
+	This is a World of Warcraft server written in php. 
+	Now it has debugged the process of logging in to the server. 
+	The current World of Warcraft client is 3.3.5. 
+	The server list and account password data need to query the auth library.
+	The logged in data is not stored in the database and does not 
+	completely limit the account. After the login server is improved,
+	the world server will start writing..
+
+	The database file is in the root directory: sql/auth.sql
 
 # 介绍
-	这是一款用php语言写的魔兽世界服务器,我的初衷是验证PHP是否能写一款MMORPG游戏服务器,依照现在的进度来看,PHP是完全可以
-	
-	胜任的,现在已经调试通了登录服务器的流程,由于魔兽世界登录验证采用了SRP6协议,我目前暂时采用的方案是php中调用python
-	
-	模块处理SRP6的验证,而PHP则处理整体的登录流程,目前测试的魔兽世界客户端为1.12.1,服务器列表及账户密码数据都为本地模拟
-	
-	数据,账户需要与密码一致才能通过验证,世界服务器将在登录服务器完善之后开始编写.
+	这是用php编写的魔兽世界服务器。
+	现在它已经调试了登录服务器的过程。
+	目前的魔兽世界客户端是3.3.5。
+	服务器列表和帐户密码数据需要查询auth库。
+	登录的数据不会存储在数据库中,也没有完全限制帐户。
+	世界服务器将在登录服务器改进后编写。.
+
+	数据库文件在根目录: sql/auth.sql
 
 	精力有限,欢迎提交版本,QQ群:186510932 欢迎一起研究~
 
-	wow客户端 链接: https://pan.baidu.com/s/1huTTOe-OYf3Ig2kYcWwlgg 提取码: ejag
+	wow客户端 链接: https://pan.baidu.com/s/1A4EeOdngdtIrcgSzfkj6-A 提取码: 2vkt
 
 ~~~
                                                                                  
@@ -57,7 +54,7 @@
         
 Authserver version 1.0.1
 author by.fan <fan3750060@163.com>
-Gameversion: 1.12.1
+Gameversion: 3.3.5
 
 ~~~
 
