@@ -1,17 +1,4 @@
-/*
-Navicat MySQL Data Transfer
 
-Source Server         : 我的腾讯
-Source Server Version : 50633
-Source Host           : 140.143.143.63:3306
-Source Database       : auth
-
-Target Server Type    : MYSQL
-Target Server Version : 50633
-File Encoding         : 65001
-
-Date: 2019-07-01 15:36:59
-*/
 
 SET FOREIGN_KEY_CHECKS=0;
 
