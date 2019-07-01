@@ -7,7 +7,6 @@ use app\Auth\Connection;
 use app\Auth\Realmlist;
 use app\Common\Account;
 use app\Common\int_helper;
-use app\Common\WebSocket;
 
 class Message
 {
@@ -23,21 +22,6 @@ class Message
         if (!empty($data)) {
             $connectionCls = new Connection();
 
-            // websocket握手，如果是握手则直接返回
-            if ($this->wsHandShake($serv, $fd, $data)) {
-                echolog("websocket handsake.");
-                $connectionCls->saveConnector($fd, Clientstate::CONNECTION_TYPE_WEBSOCKET);
-                return;
-            }
-
-            // 判断客户端类型，对websocket的消息进行解包
-            $connectionType = $connectionCls->getConnectionType($fd);
-            if ($connectionType == Clientstate::CONNECTION_TYPE_WEBSOCKET) {
-                echolog("I am websocket.");
-                $ws   = new WebSocket();
-                $data = $ws->unwrap($data);
-            }
-
             // 验证逻辑
             $state = $connectionCls->getConnectorUserId($fd);
 
@@ -48,8 +32,6 @@ class Message
             $this->handlePacket($serv, $fd, $data, $state);
         }
     }
-
-   
 
     /**
      * [handlePacket 根据当前ClientState处理传入的数据包]
@@ -160,25 +142,5 @@ class Message
     {
         echolog("发送:" . json_encode($data), 'info');
         $serv->send($fd, int_helper::toStr($data));
-    }
-
-    /**
-     * websocket握手
-     *
-     * @param swoole_server $serv
-     * @param int $fd
-     * @param string $data
-     * @return boolean 如果为websocket连接则进行握手，握手成功返回true，否则返回false
-     */
-    private function wsHandShake($serv, $fd, $data)
-    {
-        // 判断客户端类型 通过websocket握手时的关键词进行判断
-        if (strpos($data, "Sec-WebSocket-Key") > 0) {
-            $ws            = new WebSocket();
-            $handShakeData = $ws->getHandShakeHeaders($data);
-            $serv->send($fd, $handShakeData);
-            return true;
-        }
-        return false;
     }
 }

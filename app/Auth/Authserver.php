@@ -51,6 +51,7 @@ class AuthServer
         echolog('AuthServer version 1.0.1');
         echolog('author by.fan <fan3750060@163.com>');
         echolog('Gameversion: ' . config('Gameversion'));
+        echolog('bind server port:'.config('LogonServer.Address').' ' .config('LogonServer.Port'));
 
         // 初始状态
         $this->active = true;

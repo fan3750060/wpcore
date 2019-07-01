@@ -4,6 +4,7 @@ namespace app\World;
 use app\World\Connection;
 use app\World\Message;
 use app\World\MessageCache;
+use app\Common\Account;
 
 /**
  * world server
@@ -24,6 +25,10 @@ class WorldServer
      */
     public function start()
     {
+        $Account      = new Account();
+        $realmlist = $Account -> get_realmlist();
+        $this->ServerConfig = $realmlist[0];
+
         $str = "
         
  PPPP    PPPP     PPP                    PPPPPPP
@@ -51,7 +56,7 @@ class WorldServer
         echolog('WorldServer version 1.0.1');
         echolog('author by.fan <fan3750060@163.com>');
         echolog('Gameversion: ' . config('Gameversion'));
-
+        echolog('bind server port:'.$this->ServerConfig['address'].' ' .$this->ServerConfig['port']);
 
         // 初始状态
         $this->active = true;
@@ -88,9 +93,7 @@ class WorldServer
      */
     public function listen($config = null)
     {
-        $this->ServerConfig = config($config);
-
-        $this->serv = new \swoole_server("0.0.0.0", $this->ServerConfig['Port']);
+        $this->serv = new \swoole_server("0.0.0.0", $this->ServerConfig['port']);
 
         $this->serv->set(array(
             'worker_num'               => 4,
