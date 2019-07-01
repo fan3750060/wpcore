@@ -1,7 +1,9 @@
 <?php
 namespace app\Common;
 use phpseclib\Math\BigInteger;
+use phpseclib\Crypt\Random;
 use Riimu\Kit\SecureRandom\SecureRandom;
+use app\Common\int_helper;
 
 class Srp6
 {
@@ -19,7 +21,10 @@ class Srp6
     public $N = 0x894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7;
 
     # s is the salt, a random value.
-    public $s = '';
+    public $s = [0xF4, 0x3C, 0xAA, 0x7B, 0x24, 0x39, 0x81, 0x44,
+         0xBF, 0xA5, 0xB5, 0x0C, 0x0E, 0x07, 0x8C, 0x41,
+         0x03, 0x04, 0x5B, 0x6E, 0x57, 0x5F, 0x37, 0x87,
+         0x31, 0x9F, 0xC4, 0xF8, 0x0D, 0x35, 0x94, 0x29];
 
     # v is the SRP6 Verification value.
     public $v = null;
@@ -55,23 +60,40 @@ class Srp6
     {
         $this->I = $username;
         $this->P = $password;
-        $this->N = base_convert($this->N, 16, 10);
-        $this->b = $this->get_random(152);
-        
+        $this->b = $this->myfmod(bin2hex(Random::string(152)),$this->N);
+    
+        var_dump($thi->b);die;
+
+
         $this->_x();
+        $x_int = strrev($this->x);
+        $this->v = $this->myfmod(pow($this->g,$x_int) , $this->N);
 
-        $gmod = bcmod($this->b,$this->N);
-        $this->v = bcmod($this->x,$this->N);
-        $this->B = bcmod((($this->v * 3) + $gmod), $this->N);
-
+        $gmod = $this->myfmod(pow($this->g,$this->b) , $this->N);
+        $this->B = $this->myfmod(((3 * $this->v) + $gmod) , $this->N);
         echolog($this->B);return;
         
-        // $x_int = int.from_bytes($this->x, byteorder='little');
-        // $this->v = pow($this->g, $x_int, $this->N);
+        // self.I = username
+        // self.P = password
+        // self.b = int.from_bytes(os.urandom(152), "little") % self.N
+        // self._x()
+        // x_int = int.from_bytes(self.x, byteorder='little')
+        // self.v = pow(self.g, x_int, self.N)
 
-        // $gmod = pow($this->g, $this->b, $this->N);
-        // $B = ((3 * $this->v) + $gmod) % $this->N;
-        // $this->B = int.to_bytes($B, 32, byteorder='little');
+        // gmod = pow(self.g, self.b, self.N)
+        // B = ((3 * self.v) + gmod) % self.N
+        // self.B = int.to_bytes(B, 32, byteorder='little')
+
+    }
+
+    function myfmod($x,$y)
+    {
+        return fmod($x , $y);
+    }
+
+    function hash_sha1($str)
+    {
+        return sha1($str);
     }
 
     function get_random($len=3){
@@ -79,9 +101,9 @@ class Srp6
         $numbers = range (0,9);
         
         $random = "";
-        for ($i=0;$i<$len;$i++){ 
+        for ($i=0;$i<$len;$i++){
             $random.= $numbers[rand(0,9)];
-        } 
+        }
         return $random;
     }
 
@@ -93,8 +115,7 @@ class Srp6
     function _x()
     {
         /* Generates x and sets it. */
-        $temp = sha1($this->I.':'.$this->P);
-        $this->x = sha1($this->s.$temp);
+        $this->x = sha1(int_helper::toStr($this->s).$this->P);
     }
 
     public function binary2hex($string)

@@ -125,13 +125,34 @@ if (!function_exists('echolog'))
      * @param   string          $string   [内容]
      * @return  [type]                 [description]
      */
-    function echolog($string = null)
+    function echolog($string = null,$type = 'no')
     {
         if(is_array($string))
         {
             $string = var_export($string,TRUE).PHP_EOL;
         }
-        echo '['.date('Y-m-d H:i:s').']：'.$string.PHP_EOL;
+
+        switch ($type) {
+            case 'success':
+                echo "\033[32m[".date('Y-m-d H:i:s')."]：".$string.PHP_EOL."\033[0m";
+                break;
+            
+            case 'warning':
+                echo "\033[33m[".date('Y-m-d H:i:s')."]：".$string.PHP_EOL."\033[0m";
+                break;
+
+            case 'error':
+                echo "\033[31m[".date('Y-m-d H:i:s')."]：".$string.PHP_EOL."\033[0m";
+                break;
+
+            case 'info':
+                echo "\033[36m[".date('Y-m-d H:i:s')."]：".$string.PHP_EOL."\033[0m";
+                break;
+
+            default:
+                echo "\033[35m[".date('Y-m-d H:i:s')."]：".$string.PHP_EOL."\033[0m";
+                break;
+        }
     }
 }
 

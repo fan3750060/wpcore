@@ -1,0 +1,7 @@
+[2019-06-03 23:01:07 ^8628.4]	NOTICE	zm_deactivate_swoole (ERROR 9003): worker process is terminated by exit()/die().
+[2019-06-04 00:36:48 *8633.3]	WARNING	swSignalfd_onSignal: signal[1] callback is null.
+[2019-06-04 00:36:48 *8632.2]	WARNING	swSignalfd_onSignal: signal[1] callback is null.
+[2019-06-04 00:36:48 *8631.1]	WARNING	swSignalfd_onSignal: signal[1] callback is null.
+[2019-06-04 00:36:48 *8630.0]	WARNING	swSignalfd_onSignal: signal[1] callback is null.
+[2019-06-04 00:36:48 $8625.0]	WARNING	swSignal_callback: signal[1] callback is null.
+[2019-06-04 00:36:48 #8624.1]	WARNING	swSignalfd_onSignal: signal[1] callback is null.

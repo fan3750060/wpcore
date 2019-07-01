@@ -30,6 +30,8 @@
 
 	精力有限,欢迎提交版本,QQ群:186510932 欢迎一起研究~
 
+	wow客户端 链接: https://pan.baidu.com/s/1huTTOe-OYf3Ig2kYcWwlgg 提取码: ejag
+
 ~~~
                                                                                  
  PPPP    PPPP     PPP                    PPPPPPP                                 

@@ -36,7 +36,7 @@ final class YodaStyleFixer extends AbstractFixer implements ConfigurationDefinit
     private $candidatesMap;
 
     /**
-     * @var array<string, null|bool>
+     * @var array<int|string, null|bool>
      */
     private $candidateTypesConfiguration;
 
@@ -527,7 +527,7 @@ return $foo === count($bar);
                 if (
                     $tokens[$index]->isCast()
                     || $tokens[$index]->isGivenKind(T_INSTANCEOF)
-                    || $tokens[$index]->equalsAny(['.', '!'])
+                    || $tokens[$index]->equals('!')
                     || $tokenAnalyzer->isBinaryOperator($index)
                 ) {
                     return false;

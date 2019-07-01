@@ -3,6 +3,7 @@ import pickle
 
 class checkuser:
 	I = None
+	P = None
 	srp = None
 	cmd = 0x00
 	error = 0x00
@@ -12,12 +13,13 @@ class checkuser:
 	unk3 = [0x2A, 0xD5, 0x48, 0xCC, 0x9B, 0x9D, 0xA1, 0x99,0xCC, 0x04, 0x7A, 0x60, 0x91, 0x15, 0x6C, 0x51]
 	unk4 = 0
 
-	def __init__(self,I):
+	def __init__(self,I,P):
 		self.I = I
+		self.P = P
 		self.srp = None
 
 	def _parse(self):
-		self.srp = SRP6(self.I, self.I)
+		self.srp = SRP6(self.I, self.P)
 
 		# 保存类对象
 		output_hal = open('runtime/SRP6CAHE_'+self.I+"_0.pkl", 'wb')

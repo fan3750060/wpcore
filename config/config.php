@@ -7,16 +7,9 @@ return [
         'Port'        => 3724,
         'Backlog'     => 8
     ],
-
-    //Game configuration
-    'WorldServer' => [
-        'Address'     => '127.0.0.1',
-        'Port'        => 13250,
-        'Backlog'     => 8
-    ],
-
+    
     // Gameversion
-    'Gameversion' => '1.12.1',
+    'Gameversion' => '3.3.5',
 
     //缓存配置
     'cache'       => [

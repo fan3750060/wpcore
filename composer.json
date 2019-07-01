@@ -13,7 +13,7 @@
     "require": {
         "php": ">=5.5",
         "riimu/kit-securerandom": "^1.3",
-        "phpseclib/phpseclib": "^2.0",
+        "phpseclib/phpseclib":"dev-master",
         "friendsofphp/php-cs-fixer": "^2.14",
         "pear/math_biginteger": "^1.0",
         "paragonie/random_compat": "^2.0",

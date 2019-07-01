@@ -1,0 +1,32 @@
+root = true
+
+# All files
+[*]
+indent_style = space
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+spaces_around_operators = true
+
+# 4-tabbed files
+[Makefile]
+indent_size = 4
+indent_style = tab
+
+# 4-spaced files
+[**.{js,json,php,xml,md}]
+indent_size = 4
+
+# 2-spaced files
+[**.{css,less,sass,scss,html,htm,xhtml,yml,blade.php,vue}]
+indent_size = 2
+
+[{node_modules,vendor,bower_components}/**]
+indent_style = ignore
+indent_size = ignore
+end_of_line = ignore
+charset = ignore
+trim_trailing_whitespace = ignore
+insert_final_newline = ignore
+spaces_around_operators = ignore

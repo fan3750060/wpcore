@@ -331,7 +331,7 @@ class Process implements \IteratorAggregate
         }
 
         if (!is_dir($this->cwd)) {
-            throw new RuntimeException('The provided cwd does not exist.');
+            throw new RuntimeException(sprintf('The provided cwd "%s" does not exist.', $this->cwd));
         }
 
         $this->process = proc_open($commandline, $descriptors, $this->processPipes->pipes, $this->cwd, $envPairs, $options);
@@ -419,6 +419,7 @@ class Process implements \IteratorAggregate
         } while ($running);
 
         while ($this->isRunning()) {
+            $this->checkTimeout();
             usleep(1000);
         }
 

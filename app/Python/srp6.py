@@ -62,6 +62,7 @@ proof is incorrect, it must abort without showing its own proof of K.
 import math
 import os
 import hashlib
+import binascii
 
 class SRP6:
     # A is the client's public value.
@@ -135,10 +136,13 @@ class SRP6:
         return h.digest()
 
     def _x(self):
+        self.x = self.hash_sha1(self.s+ binascii.unhexlify(self.P))
+
         """ Generates x and sets it. """
-        strinfo = self.I + ':' + self.P
-        temp = self.hash_sha1(strinfo.encode('utf8'))
-        self.x = self.hash_sha1(self.s + temp)
+        # strinfo = self.I + ':' + self.I
+        # temp = self.hash_sha1(strinfo.encode('utf8'))
+        # # print(temp)
+        # self.x = self.hash_sha1(self.s + temp)
 
     def getM(self, M1):
         """ Calculates the server proof.
@@ -224,5 +228,6 @@ class SRP6:
         if M1 != c_proof:
             return False
 
-        self.M = self.hash_sha1(self.A + c_proof + sessionkey + bytes(0))
+        # self.M = self.hash_sha1(self.A + c_proof + sessionkey + bytes(0))
+        self.M = self.hash_sha1(self.A + c_proof + sessionkey)
         return True

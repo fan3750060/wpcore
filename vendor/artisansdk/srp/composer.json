@@ -1,0 +1,60 @@
+{
+    "name": "artisansdk/srp",
+    "description": "A client and server-side implementation in PHP of the Secure Remote Password (SRP-6a) protocol.",
+    "keywords": ["SRP","SRP6a","RFC 5054","RFC 2945","RFC5054","RFC2945","authentication","password","salt","zero-knowledge","proof-of-password"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Daniel LaBarge",
+            "email": "daniel@artisanscollaborative.com"
+        }
+    ],
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "process-timeout": 0,
+        "sort-packages": true
+    },
+    "require": {
+        "php": ">=7.0",
+        "phpseclib/phpseclib": "dev-master"
+    },
+    "require-dev": {
+        "artisansdk/bench": "dev-master"
+    },
+    "suggest": {
+        "ext-gmp": "Install the GMP (GNU Multiple Precision) extension in order to speed up arbitrary precision integer arithmetic operations."
+    },
+    "autoload": {
+        "psr-4": {
+            "ArtisanSdk\\SRP\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ArtisanSdk\\SRP\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "fix": [
+            "@php vendor/bin/bench fix src/ tests/ --cache=.php_cs.cache --ansi"
+        ],
+        "test": [
+            "@php vendor/bin/bench test src/ tests/ --cache=.php_cs.cache --no-coverage --ansi"
+        ],
+        "watch": [
+            "watchman-make -p 'src/**/*.php' 'tests/**/*.php' --run=\"clear && printf '\\e[3J' && vendor/bin/bench test --no-coverage --ansi\""
+        ],
+        "report": [
+            "[ -d reports ] || mkdir reports",
+            "@php vendor/bin/bench test --no-coverage --ansi",
+            "coverage=`cat reports/coverage.txt | grep -m 1 \"Lines:\" | grep -E -o \"([0-9]{1,3})\" | head -1`; min=80; if [ $coverage -lt $min ]; then exit 2; fi",
+            "@php vendor/bin/bench fix src/ tests/ --cache=.php_cs.cache --pretend --ansi",
+            "vendor/bin/phpmd \"src/\" html codesize,cleancode,unusedcode,naming --reportfile reports/messes.html --ignore-violations-on-exit",
+            "vendor/bin/pdepend --summary-xml=reports/stats.xml \"src/\"",
+            "vendor/bin/phploc --log-xml=reports/summary.xml src/",
+            "vendor/bin/phpcpd src/ --log-pmd=reports/duplications.xml --min-lines=3 --min-tokens=35"
+        ]
+    }
+}

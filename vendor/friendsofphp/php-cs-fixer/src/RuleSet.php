@@ -80,6 +80,7 @@ final class RuleSet implements RuleSetInterface
             'magic_method_casing' => true,
             'method_argument_space' => true,
             'native_function_casing' => true,
+            'native_function_type_declaration_casing' => true,
             'new_with_braces' => true,
             'no_blank_lines_after_class_opening' => true,
             'no_blank_lines_after_phpdoc' => true,
@@ -155,6 +156,7 @@ final class RuleSet implements RuleSetInterface
                 'comment_types' => ['hash'],
             ],
             'single_quote' => true,
+            'single_trait_insert_per_statement' => true,
             'space_after_semicolon' => [
                 'remove_in_empty_for_expressions' => true,
             ],
@@ -197,6 +199,7 @@ final class RuleSet implements RuleSetInterface
                 'use_escape_sequences_in_strings' => false,
             ],
             'php_unit_construct' => true,
+            'php_unit_mock_short_will_return' => true,
             'psr4' => true,
             'self_accessor' => true,
             'set_type_to_cast' => true,
@@ -252,6 +255,7 @@ final class RuleSet implements RuleSetInterface
             'phpdoc_types_order' => true,
             'phpdoc_var_annotation_correct_order' => true,
             'return_assignment' => true,
+            'simple_to_complex_string_variable' => true,
             'single_line_comment_style' => true,
         ],
         '@PhpCsFixer:risky' => [
@@ -271,7 +275,7 @@ final class RuleSet implements RuleSetInterface
             'php_unit_set_up_tear_down_visibility' => true,
             'php_unit_strict' => true,
             'php_unit_test_annotation' => true,
-            'php_unit_test_case_static_method_calls' => ['call_type' => 'this'],
+            'php_unit_test_case_static_method_calls' => true,
             'strict_comparison' => true,
             'strict_param' => true,
             'string_line_ending' => true,
@@ -317,6 +321,10 @@ final class RuleSet implements RuleSetInterface
         '@PHP71Migration:risky' => [
             '@PHP70Migration:risky' => true,
             'void_return' => true,
+        ],
+        '@PHP73Migration' => [
+            '@PHP71Migration' => true,
+            'heredoc_indentation' => true,
         ],
         '@PHPUnit30Migration:risky' => [
             'php_unit_dedicate_assert' => ['target' => PhpUnitTargetVersion::VERSION_3_0],
@@ -365,6 +373,10 @@ final class RuleSet implements RuleSetInterface
         '@PHPUnit60Migration:risky' => [
             '@PHPUnit57Migration:risky' => true,
             'php_unit_namespaced' => ['target' => PhpUnitTargetVersion::VERSION_6_0],
+        ],
+        '@PHPUnit75Migration:risky' => [
+            '@PHPUnit60Migration:risky' => true,
+            'php_unit_dedicate_assert_internal_type' => ['target' => PhpUnitTargetVersion::VERSION_7_5],
         ],
     ];
 

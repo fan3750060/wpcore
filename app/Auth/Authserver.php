@@ -8,7 +8,7 @@ use app\Auth\MessageCache;
 /**
  * auth server
  */
-class Authserver
+class AuthServer
 {
     public $active;
     public $ServerConfig;
@@ -24,7 +24,8 @@ class Authserver
      */
     public function start()
     {
-        $str = '
+        $str = "
+        
  PPPP    PPPP     PPP                    PPPPPPP
   PPP    PPPPP    PPP                   PPPPPPPPP
   PPPP   PPPPP   PPPP                  PPPP   PPPP
@@ -45,11 +46,11 @@ class Authserver
                       PPP
                       PPP
                       PPP
-        ';
-        echo $str . PHP_EOL;
-        echo 'Authserver version 1.0.1' . PHP_EOL;
-        echo 'author by.fan <fan3750060@163.com>' . PHP_EOL;
-        echo 'Gameversion: ' . config('Gameversion') . PHP_EOL;
+        ";
+        echolog($str);
+        echolog('AuthServer version 1.0.1');
+        echolog('author by.fan <fan3750060@163.com>');
+        echolog('Gameversion: ' . config('Gameversion'));
 
         // 初始状态
         $this->active = true;
@@ -204,6 +205,7 @@ class Authserver
     public function onClose($serv, $fd, $from_id)
     {
         // 将连接从连接池中移除
+        (new Connection())->saveConnector($fd, 0, 0, ''); //初始化auth状态 1
         (new Connection())->removeConnector($fd);
         echolog("Client {$fd} close connection\n");
     }

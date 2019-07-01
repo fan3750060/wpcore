@@ -7,5 +7,4 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Math_' => array($vendorDir . '/pear/math_biginteger'),
-    'Doctrine\\Common\\Lexer\\' => array($vendorDir . '/doctrine/lexer/lib'),
 );

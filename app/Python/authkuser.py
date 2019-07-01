@@ -25,13 +25,19 @@ class authkuser:
 
 	def get(self, M1):
 		if self.srp.getM(M1):
-			data = [1, 0]
+			data = [0x01, 0x00]
 			for m in self.srp.M:
 				data.append(m)
+			data.append(0x00)
+			data.append(0x00)
+			data.append(0x80)
+			data.append(0x00)
+			data.append(0x00)
+			data.append(0x00)
 			data.append(0x00)
 			data.append(0x00)
 			data.append(0x00)
 			data.append(0x00)
 		else:
-			data = [0, 0, 4]
+			data = [0x00, 0x00, 0x04]
 		return data

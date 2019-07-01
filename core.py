@@ -10,8 +10,9 @@ if __name__ == '__main__':
     # os.system('cls')
     try:
         if sys.argv[1] == "0":
-            data = sys.argv[2]
-            print(checkuser(data)._parse())
+            I = sys.argv[2]
+            P = sys.argv[3]
+            print(checkuser(I,P)._parse())
 
         elif sys.argv[1] == "1":
             I = sys.argv[2]

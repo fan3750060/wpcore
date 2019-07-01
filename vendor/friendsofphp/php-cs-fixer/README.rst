@@ -46,7 +46,7 @@ or with specified version:
 
 .. code-block:: bash
 
-    $ wget https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.14.2/php-cs-fixer.phar -O php-cs-fixer
+    $ wget https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.15.1/php-cs-fixer.phar -O php-cs-fixer
 
 or with curl:
 
@@ -159,7 +159,7 @@ to merge paths from the config file and from the argument:
 
     $ php php-cs-fixer.phar fix --path-mode=intersection /path/to/dir
 
-The ``--format`` option for the output format. Supported formats are ``txt`` (default one), ``json``, ``xml``, ``checkstyle`` and ``junit``.
+The ``--format`` option for the output format. Supported formats are ``txt`` (default one), ``json``, ``xml``, ``checkstyle``, ``junit`` and ``gitlab``.
 
 NOTE: the output for the following formats are generated in accordance with XML schemas
 
@@ -639,6 +639,12 @@ Choose from the list of available rules:
   Converts implicit variables into explicit ones in double-quoted strings
   or heredoc syntax.
 
+* **final_class**
+
+  All classes must be final, except abstract ones and Doctrine entities.
+
+  *Risky rule: risky when subclassing non-abstract classes.*
+
 * **final_internal_class** [@PhpCsFixer:risky]
 
   Internal classes should be ``final``.
@@ -649,10 +655,13 @@ Choose from the list of available rules:
 
   - ``annotation-black-list`` (``array``): class level annotations tags that must be
     omitted to fix the class, even if all of the white list ones are used
-    as well. (case insensitive); defaults to ``['@final', '@Entity', '@ORM']``
+    as well. (case insensitive); defaults to ``['@final', '@Entity',
+    '@ORM\\Entity']``
   - ``annotation-white-list`` (``array``): class level annotations tags that must be
     set in order to fix the class. (case insensitive); defaults to
     ``['@internal']``
+  - ``consider-absent-docblock-as-internal-class`` (``bool``): should classes
+    without any DocBlock be fixed to final?; defaults to ``false``
 
 * **fopen_flag_order** [@Symfony:risky, @PhpCsFixer:risky]
 
@@ -735,7 +744,7 @@ Choose from the list of available rules:
   - ``separate`` (``'both'``, ``'bottom'``, ``'none'``, ``'top'``): whether the header should be
     separated from the file content with a new line; defaults to ``'both'``
 
-* **heredoc_indentation**
+* **heredoc_indentation** [@PHP73Migration]
 
   Heredoc/nowdoc content must be properly indented. Requires PHP >= 7.3.
 
@@ -845,6 +854,8 @@ Choose from the list of available rules:
 
   Configuration options:
 
+  - ``after_heredoc`` (``bool``): whether the whitespace between heredoc end and
+    comma should be removed; defaults to ``false``
   - ``ensure_fully_multiline`` (``bool``): ensure every argument of a multiline
     argument list is on its own line; defaults to ``false``. DEPRECATED: use
     option ``on_multiline`` instead
@@ -928,6 +939,10 @@ Choose from the list of available rules:
     within a namespace or fix all; defaults to ``'all'``
   - ``strict`` (``bool``): whether leading ``\`` of function call not meant to have it
     should be removed; defaults to ``false``
+
+* **native_function_type_declaration_casing** [@Symfony, @PhpCsFixer]
+
+  Native type hints for functions should use the correct case.
 
 * **new_with_braces** [@Symfony, @PhpCsFixer]
 
@@ -1173,6 +1188,11 @@ Choose from the list of available rules:
 
   In array declaration, there MUST NOT be a whitespace before each comma.
 
+  Configuration options:
+
+  - ``after_heredoc`` (``bool``): whether the whitespace between heredoc end and
+    comma should be removed; defaults to ``false``
+
 * **no_whitespace_in_blank_line** [@Symfony, @PhpCsFixer]
 
   Remove trailing whitespace at the end of blank lines.
@@ -1241,6 +1261,19 @@ Choose from the list of available rules:
     should be sorted alphabetically or by length, or not sorted; defaults
     to ``'alpha'``; DEPRECATED alias: ``sortAlgorithm``
 
+* **ordered_interfaces**
+
+  Orders the interfaces in an ``implements`` or ``interface extends`` clause.
+
+  *Risky rule: risky for ``implements`` when specifying both an interface and its parent interface, because PHP doesn't break on ``parent, child`` but does on ``child, parent``.*
+
+  Configuration options:
+
+  - ``direction`` (``'ascend'``, ``'descend'``): which direction the interfaces should
+    be ordered; defaults to ``'ascend'``
+  - ``order`` (``'alpha'``, ``'length'``): how the interfaces should be ordered;
+    defaults to ``'alpha'``
+
 * **php_unit_construct** [@Symfony:risky, @PhpCsFixer:risky]
 
   PHPUnit assertion method calls like ``->assertSame(true, $foo)`` should be
@@ -1255,7 +1288,7 @@ Choose from the list of available rules:
     defaults to ``['assertEquals', 'assertSame', 'assertNotEquals',
     'assertNotSame']``
 
-* **php_unit_dedicate_assert** [@PHPUnit30Migration:risky, @PHPUnit32Migration:risky, @PHPUnit35Migration:risky, @PHPUnit43Migration:risky, @PHPUnit48Migration:risky, @PHPUnit50Migration:risky, @PHPUnit52Migration:risky, @PHPUnit54Migration:risky, @PHPUnit55Migration:risky, @PHPUnit56Migration:risky, @PHPUnit57Migration:risky, @PHPUnit60Migration:risky]
+* **php_unit_dedicate_assert** [@PHPUnit30Migration:risky, @PHPUnit32Migration:risky, @PHPUnit35Migration:risky, @PHPUnit43Migration:risky, @PHPUnit48Migration:risky, @PHPUnit50Migration:risky, @PHPUnit52Migration:risky, @PHPUnit54Migration:risky, @PHPUnit55Migration:risky, @PHPUnit56Migration:risky, @PHPUnit57Migration:risky, @PHPUnit60Migration:risky, @PHPUnit75Migration:risky]
 
   PHPUnit assertions like ``assertInternalType``, ``assertFileExists``, should
   be used over ``assertTrue``.
@@ -1273,7 +1306,19 @@ Choose from the list of available rules:
   - ``target`` (``'3.0'``, ``'3.5'``, ``'5.0'``, ``'5.6'``, ``'newest'``): target version of
     PHPUnit; defaults to ``'5.0'``
 
-* **php_unit_expectation** [@PHPUnit52Migration:risky, @PHPUnit54Migration:risky, @PHPUnit55Migration:risky, @PHPUnit56Migration:risky, @PHPUnit57Migration:risky, @PHPUnit60Migration:risky]
+* **php_unit_dedicate_assert_internal_type** [@PHPUnit75Migration:risky]
+
+  PHPUnit assertions like ``assertIsArray`` should be used over
+  ``assertInternalType``.
+
+  *Risky rule: risky when PHPUnit methods are overridden or when project has PHPUnit incompatibilities.*
+
+  Configuration options:
+
+  - ``target`` (``'7.5'``, ``'newest'``): target version of PHPUnit; defaults to
+    ``'newest'``
+
+* **php_unit_expectation** [@PHPUnit52Migration:risky, @PHPUnit54Migration:risky, @PHPUnit55Migration:risky, @PHPUnit56Migration:risky, @PHPUnit57Migration:risky, @PHPUnit60Migration:risky, @PHPUnit75Migration:risky]
 
   Usages of ``->setExpectedException*`` methods MUST be replaced by
   ``->expectException*`` methods.
@@ -1308,7 +1353,7 @@ Choose from the list of available rules:
   - ``case`` (``'camel_case'``, ``'snake_case'``): apply camel or snake case to test
     methods; defaults to ``'camel_case'``
 
-* **php_unit_mock** [@PHPUnit54Migration:risky, @PHPUnit55Migration:risky, @PHPUnit56Migration:risky, @PHPUnit57Migration:risky, @PHPUnit60Migration:risky]
+* **php_unit_mock** [@PHPUnit54Migration:risky, @PHPUnit55Migration:risky, @PHPUnit56Migration:risky, @PHPUnit57Migration:risky, @PHPUnit60Migration:risky, @PHPUnit75Migration:risky]
 
   Usages of ``->getMock`` and
   ``->getMockWithoutInvokingTheOriginalConstructor`` methods MUST be
@@ -1321,9 +1366,16 @@ Choose from the list of available rules:
   - ``target`` (``'5.4'``, ``'5.5'``, ``'newest'``): target version of PHPUnit; defaults to
     ``'newest'``
 
-* **php_unit_namespaced** [@PHPUnit48Migration:risky, @PHPUnit50Migration:risky, @PHPUnit52Migration:risky, @PHPUnit54Migration:risky, @PHPUnit55Migration:risky, @PHPUnit56Migration:risky, @PHPUnit57Migration:risky, @PHPUnit60Migration:risky]
+* **php_unit_mock_short_will_return** [@Symfony:risky, @PhpCsFixer:risky]
 
-  PHPUnit classes MUST be used in namespaced version, eg
+  Usage of PHPUnit's mock e.g. ``->will($this->returnValue(..))`` must be
+  replaced by its shorter equivalent such as ``->willReturn(...)``.
+
+  *Risky rule: risky when PHPUnit classes are overridden or not accessible, or when project has PHPUnit incompatibilities.*
+
+* **php_unit_namespaced** [@PHPUnit48Migration:risky, @PHPUnit50Migration:risky, @PHPUnit52Migration:risky, @PHPUnit54Migration:risky, @PHPUnit55Migration:risky, @PHPUnit56Migration:risky, @PHPUnit57Migration:risky, @PHPUnit60Migration:risky, @PHPUnit75Migration:risky]
+
+  PHPUnit classes MUST be used in namespaced version, e.g.
   ``\PHPUnit\Framework\TestCase`` instead of ``\PHPUnit_Framework_TestCase``.
 
   *Risky rule: risky when PHPUnit classes are overridden or not accessible, or when project has PHPUnit incompatibilities.*
@@ -1333,7 +1385,7 @@ Choose from the list of available rules:
   - ``target`` (``'4.8'``, ``'5.7'``, ``'6.0'``, ``'newest'``): target version of PHPUnit;
     defaults to ``'newest'``
 
-* **php_unit_no_expectation_annotation** [@PHPUnit32Migration:risky, @PHPUnit35Migration:risky, @PHPUnit43Migration:risky, @PHPUnit48Migration:risky, @PHPUnit50Migration:risky, @PHPUnit52Migration:risky, @PHPUnit54Migration:risky, @PHPUnit55Migration:risky, @PHPUnit56Migration:risky, @PHPUnit57Migration:risky, @PHPUnit60Migration:risky]
+* **php_unit_no_expectation_annotation** [@PHPUnit32Migration:risky, @PHPUnit35Migration:risky, @PHPUnit43Migration:risky, @PHPUnit48Migration:risky, @PHPUnit50Migration:risky, @PHPUnit52Migration:risky, @PHPUnit54Migration:risky, @PHPUnit55Migration:risky, @PHPUnit56Migration:risky, @PHPUnit57Migration:risky, @PHPUnit60Migration:risky, @PHPUnit75Migration:risky]
 
   Usages of ``@expectedException*`` annotations MUST be replaced by
   ``->setExpectedException*`` methods.
@@ -1356,6 +1408,16 @@ Choose from the list of available rules:
   PHPUnit to ``protected``, to match the PHPUnit TestCase.
 
   *Risky rule: this fixer may change functions named ``setUp()`` or ``tearDown()`` outside of PHPUnit tests, when a class is wrongly seen as a PHPUnit test.*
+
+* **php_unit_size_class**
+
+  All PHPUnit test cases should have ``@small``, ``@medium`` or ``@large``
+  annotation to enable run time limits.
+
+  Configuration options:
+
+  - ``group`` (``'large'``, ``'medium'``, ``'small'``): define a specific group to be used
+    in case no group is already in use; defaults to ``'small'``
 
 * **php_unit_strict** [@PhpCsFixer:risky]
 
@@ -1653,6 +1715,11 @@ Choose from the list of available rules:
 
   *Risky rule: silencing of deprecation errors might cause changes to code behaviour.*
 
+* **simple_to_complex_string_variable** [@PhpCsFixer]
+
+  Converts explicit variables in double-quoted strings and heredoc syntax
+  from simple to complex format (``${`` to ``{$``).
+
 * **simplified_null_return**
 
   A return statement wishing to return ``void`` should not return ``null``.
@@ -1703,6 +1770,10 @@ Choose from the list of available rules:
 
   - ``strings_containing_single_quote_chars`` (``bool``): whether to fix
     double-quoted strings that contains single-quotes; defaults to ``false``
+
+* **single_trait_insert_per_statement** [@Symfony, @PhpCsFixer]
+
+  Each trait ``use`` must be done as single statement.
 
 * **space_after_semicolon** [@Symfony, @PhpCsFixer]
 
@@ -1757,13 +1828,18 @@ Choose from the list of available rules:
 
   Standardize spaces around ternary operator.
 
-* **ternary_to_null_coalescing** [@PHP70Migration, @PHP71Migration]
+* **ternary_to_null_coalescing** [@PHP70Migration, @PHP71Migration, @PHP73Migration]
 
   Use ``null`` coalescing operator ``??`` where possible. Requires PHP >= 7.0.
 
 * **trailing_comma_in_multiline_array** [@Symfony, @PhpCsFixer]
 
   PHP multi-line arrays should have a trailing comma.
+
+  Configuration options:
+
+  - ``after_heredoc`` (``bool``): whether a trailing comma should also be placed
+    after heredoc end; defaults to ``false``
 
 * **trim_array_spaces** [@Symfony, @PhpCsFixer]
 
@@ -1774,7 +1850,7 @@ Choose from the list of available rules:
 
   Unary operators should be placed adjacent to their operands.
 
-* **visibility_required** [@PSR2, @Symfony, @PhpCsFixer, @PHP71Migration]
+* **visibility_required** [@PSR2, @Symfony, @PhpCsFixer, @PHP71Migration, @PHP73Migration]
 
   Visibility MUST be declared on all properties and methods; ``abstract``
   and ``final`` MUST be declared before the visibility; ``static`` MUST be
@@ -1827,7 +1903,7 @@ Config file
 
 Instead of using command line options to customize the rule, you can save the
 project configuration in a ``.php_cs.dist`` file in the root directory of your project.
-The file must return an instance of `PhpCsFixer\\ConfigInterface <https://github.com/FriendsOfPHP/PHP-CS-Fixer/blob/v2.14.2/src/ConfigInterface.php>`_
+The file must return an instance of `PhpCsFixer\\ConfigInterface <https://github.com/FriendsOfPHP/PHP-CS-Fixer/blob/v2.15.1/src/ConfigInterface.php>`_
 which lets you configure the rules, the files and directories that
 need to be analyzed. You may also create ``.php_cs`` file, which is
 the local configuration that will be used instead of the project configuration. It
@@ -1944,22 +2020,22 @@ Then, add the following command to your CI:
     $ if ! echo "${CHANGED_FILES}" | grep -qE "^(\\.php_cs(\\.dist)?|composer\\.lock)$"; then EXTRA_ARGS=$(printf -- '--path-mode=intersection\n--\n%s' "${CHANGED_FILES}"); else EXTRA_ARGS=''; fi
     $ vendor/bin/php-cs-fixer fix --config=.php_cs.dist -v --dry-run --stop-on-violation --using-cache=no ${EXTRA_ARGS}
 
-Where ``$COMMIT_RANGE`` is your range of commits, eg ``$TRAVIS_COMMIT_RANGE`` or ``HEAD~..HEAD``.
+Where ``$COMMIT_RANGE`` is your range of commits, e.g. ``$TRAVIS_COMMIT_RANGE`` or ``HEAD~..HEAD``.
 
-Exit codes
-----------
+Exit code
+---------
 
 Exit code is built using following bit flags:
 
-*  0 OK.
-*  1 General error (or PHP minimal requirement not matched).
-*  4 Some files have invalid syntax (only in dry-run mode).
-*  8 Some files need fixing (only in dry-run mode).
-* 16 Configuration error of the application.
-* 32 Configuration error of a Fixer.
-* 64 Exception raised within the application.
+*  0 - OK.
+*  1 - General error (or PHP minimal requirement not matched).
+*  4 - Some files have invalid syntax (only in dry-run mode).
+*  8 - Some files need fixing (only in dry-run mode).
+* 16 - Configuration error of the application.
+* 32 - Configuration error of a Fixer.
+* 64 - Exception raised within the application.
 
-(applies to exit codes of the `fix` command only)
+(Applies to exit code of the `fix` command only)
 
 Helpers
 -------
