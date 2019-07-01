@@ -2,6 +2,8 @@
 	World of Warcraft server
 
 	魔兽世界服务器
+
+	运行登录服务器(Run Authserver): php script Server/start auth
 =====
 
 # Introduction
