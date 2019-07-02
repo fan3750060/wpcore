@@ -19,7 +19,7 @@ class Connection
         self::$_connectorTable = new \swoole_table(131072);
 
         // 表字段
-        self::$_connectorTable->column('state', \swoole_table::TYPE_INT, 2); // 1,2,4,8
+        self::$_connectorTable->column('state', \swoole_table::TYPE_INT, 1); // 1,2,4,8
         self::$_connectorTable->column('connectionType', \swoole_table::TYPE_INT, 2);
         self::$_connectorTable->column('createTime', \swoole_table::TYPE_STRING, 20);
         self::$_connectorTable->column('username', \swoole_table::TYPE_STRING, 30);
@@ -49,7 +49,7 @@ class Connection
      */
     public function getConnector($fd)
     {
-        $result = self::$_connectorTable->get("$fd");
+        $result = self::$_connectorTable->get($fd);
         if (!$result) {
             $result = array();
         }
@@ -137,13 +137,13 @@ class Connection
         }
 
         // 保存连接
-        self::$_connectorTable->set("$fd", $arr);
+        self::$_connectorTable->set($fd, $arr);
     }
 
     //当客户端发送数据后删除待检池
     public function update_checkTable($fd)
     {
-        self::$_checkTable->del("$fd");
+        self::$_checkTable->del($fd);
     }
 
     /**
@@ -153,7 +153,7 @@ class Connection
     public function removeConnector($fd)
     {
         // 移除连接池
-        self::$_connectorTable->del("$fd");
+        self::$_connectorTable->del($fd);
     }
 
     /**
@@ -175,36 +175,36 @@ class Connection
      */
     public function clearInvalidConnection($serv)
     {
-        // if (self::$_checkTable) {
-        //     // echolog("check count0: ".count(self::$_checkTable));
-        //     foreach (self::$_checkTable as $key => $value) {
-        //         $connector = $this->getConnector($key);
-        //         if (empty($connector)) {
-        //             echolog("Remove : " . $key);
+        if (self::$_checkTable) {
+            // echolog("check count0: ".count(self::$_checkTable));
+            foreach (self::$_checkTable as $key => $value) {
+                $connector = $this->getConnector($key);
+                if (empty($connector)) {
+                    echolog("Remove : " . $key);
 
-        //             //连接不在连接池，从待检池移除并关闭连接
-        //             self::$_checkTable->del("$key");
-        //             $serv->close($key);
-        //             continue;
-        //         } else if ($connector['state'] >= Clientstate::Init || !$serv->exist($key)) {
-        //             echolog("Remove : " . $key);
-        //             //已正常连接或者连接已不存在从待检池移除
-        //             self::$_checkTable->del("$key");
-        //             continue;
-        //         }
+                    //连接不在连接池，从待检池移除并关闭连接
+                    self::$_checkTable->del("$key");
+                    $serv->close($key);
+                    continue;
+                } else if ($connector['state'] > Clientstate::Init || !$serv->exist($key)) {
+                    echolog("Remove : " . $key);
+                    //已正常连接或者连接已不存在从待检池移除
+                    self::$_checkTable->del("$key");
+                    continue;
+                }
 
-        //         $createTime = $connector["createTime"];
-        //         if ($createTime < strtotime("-5 seconds")) {
-        //             echolog("Remove and close : " . $key);
-        //             //过期，从待检池移除并关闭连接
-        //             self::$_checkTable->del("$key");
-        //             $serv->close($key);
-        //             continue;
-        //         }
+                $createTime = $connector["createTime"];
+                if ($createTime < strtotime("-5 seconds")) {
+                    echolog("Remove and close : " . $key);
+                    //过期，从待检池移除并关闭连接
+                    self::$_checkTable->del("$key");
+                    $serv->close($key);
+                    continue;
+                }
 
-        //     }
-        //     // echolog("check count1: ".count(self::$_checkTable));
-        // }
+            }
+            // echolog("check count1: ".count(self::$_checkTable));
+        }
     }
 
     /**
@@ -216,7 +216,7 @@ class Connection
         $arr = array(
             "createTime" => time(),
         );
-        self::$_checkTable->set("$fd", $arr);
+        self::$_checkTable->set($fd, $arr);
     }
 
     /**

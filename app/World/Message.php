@@ -18,7 +18,7 @@ class Message
         if (!empty($data)) {
             $connectionCls = new Connection();
 
-            // 验证逻辑
+            // 状态
             $state = $connectionCls->getConnectorUserId($fd);
 
             $data = int_helper::getBytes($data);
@@ -42,14 +42,29 @@ class Message
      */
     public function newConnect($serv, $fd)
     {
-        // $data = [];
-        // $data = array_merge($data,int_helper::uInt8(12));
-        // $data = array_merge($data,int_helper::uInt32(0));
-        // $data = array_merge($data,int_helper::uInt8(0));
-        // $data = array_merge($data,int_helper::uInt32(0));
+        echolog('Require client authentication : ' . $fd, 'warning');
 
-        // echolog($data);
-        // $this->serversend($serv, $fd, $data);
+        //要求客户端鉴权
+        $data = [0x00,0x2a,0xec,0x01,0x01,0x00,0x00,0x00,0x8a,0xd0,0x07,0x33,0x37,0x33,0xe6,0x9c,0x11,0xcd,0x6b,0x73,0x24,0xfe,0x8d,0x6d,0x2a,0x53,0xdf,0x91,0xcb,0x15,0x27,0xeb,0x02,0x7d,0x41,0x26,0x15,0xd6,0xd6,0xc8,0x05,0x3b,0x7b,0xe2];
+
+        $this->serversend($serv, $fd, $data);
+    }
+
+    /**
+     * [checkauth 处理验证]
+     * ------------------------------------------------------------------------------
+     * @author  by.fan <fan3750060@163.com>
+     * ------------------------------------------------------------------------------
+     * @version date:2019-07-01
+     * ------------------------------------------------------------------------------
+     * @return  [type]          [description]
+     */
+    public function checkauth($fd,$data)
+    {
+        echolog('[Auth Session Manager]: sending SMSG_AUTH_RESPONSE : ' . $fd, 'warning');
+
+        $data = [0x0C,0x00,0x00,0x00,0x2];
+        return $data;
     }
 
     /**
@@ -61,9 +76,14 @@ class Message
      * ------------------------------------------------------------------------------
      * @return  [type]          [description]
      */
-    public function handlePacket($serv, $fd, $data)
+    public function handlePacket($serv, $fd, $data, $state)
     {
-        // $this->newConnect($serv, $fd, $data);
+        switch ($state) {
+            case 1:
+                $data = $this->checkauth($fd,$data);
+                $this->serversend($serv, $fd, $data);
+                break;
+        }
     }
 
     /**

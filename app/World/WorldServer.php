@@ -104,7 +104,7 @@ class WorldServer
             'task_worker_num'          => 2,
             'open_cpu_affinity'        => 1,
             'heartbeat_check_interval' => 60 * 1, //每隔多少秒检测一次，单位秒，Swoole会轮询所有TCP连接，将超过心跳时间的连接关闭掉
-            'log_file'                 => RUNTIME_PATH . 'swoole.log',
+            // 'log_file'                 => RUNTIME_PATH . 'swoole.log',
             // 'open_eof_check' => true, //打开EOF检测
             'package_eof'              => "###", //设置EOF
             // 'open_eof_split'=>true, //是否分包
@@ -169,12 +169,12 @@ class WorldServer
     {
         echolog("Client {$fd} connect");
 
-        (new Message())->newConnect($serv, $fd);
-
         // 将当前连接用户添加到连接池和待检池
         $connectionCls = new Connection();
-        $connectionCls->saveConnector($fd);
+        $connectionCls->saveConnector($fd, 0, 1, $fd);//变更为二次连接
         $connectionCls->saveCheckConnector($fd);
+
+        (new Message())->newConnect($serv, $fd);//首次连接需要告知客户端验证
     }
 
     /**

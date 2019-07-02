@@ -50,7 +50,7 @@ class Connection
      */
     public function getConnector($fd)
     {
-        $result = self::$_connectorTable->get("$fd");
+        $result = self::$_connectorTable->get($fd);
         if (!$result) {
             $result = array();
         }
@@ -138,13 +138,13 @@ class Connection
         }
 
         // 保存连接
-        self::$_connectorTable->set("$fd", $arr);
+        self::$_connectorTable->set($fd, $arr);
     }
 
     //当客户端发送数据后删除待检池
     public function update_checkTable($fd)
     {
-        self::$_checkTable->del("$fd");
+        self::$_checkTable->del($fd);
     }
 
     /**
@@ -154,7 +154,7 @@ class Connection
     public function removeConnector($fd)
     {
         // 移除连接池
-        self::$_connectorTable->del("$fd");
+        self::$_connectorTable->del($fd);
     }
 
     /**
@@ -217,7 +217,7 @@ class Connection
         $arr = array(
             "createTime" => time(),
         );
-        self::$_checkTable->set("$fd", $arr);
+        self::$_checkTable->set($fd, $arr);
     }
 
     /**
