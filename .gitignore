@@ -10,3 +10,4 @@ yarn-error.log
 .env
 .phpunit.result.cache
 sftp-config.json
+www
