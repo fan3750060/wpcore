@@ -75,9 +75,9 @@ Gameversion: 3.3.5
 	Python version >= 3.5
 
 # 运行 Run
-	./start 
-	or
-	php script Authserver/start
+	运行登录服务器(Run Authserver): php script Server/start auth
+
+	运行世界服务器(Run Worldserver): php script Server/start world
 
 # Demonstration 演示
 
