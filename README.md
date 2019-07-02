@@ -4,6 +4,13 @@
 	魔兽世界服务器
 
 	运行登录服务器(Run Authserver): php script Server/start auth
+
+	运行世界服务器(Run Worldserver): php script Server/start world
+
+	注: 账户 TEST003 密码 TEST003  (数据库密码哈希值加密为: sha1("TEST003:TEST003") )
+
+		登录服务器和世界服务器并未完善,仅能登录~(正在开发中)
+
 =====
 
 # Introduction
