@@ -8,7 +8,7 @@ class Srp
 {
     /** @var BigInteger Password verifier */
     protected $verifier;
-    /** @var BigInteger Password salt */
+    /** @var BigInteger Password salt */ 
     protected $salt;
     /** @var BigInteger|string */
     protected $N;

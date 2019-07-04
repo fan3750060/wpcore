@@ -7,7 +7,7 @@ use app\Common\int_helper;
 
 class Srp6
 {
-    # A is the client's public value.
+    # A is the client's public value. 
     public $A = null;
 
     # B is the server's public value.
