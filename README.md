@@ -7,30 +7,35 @@
 
 	运行世界服务器(Run Worldserver): php script Server/start world
 
-	注: 账户 TEST003 密码 TEST003  (数据库密码哈希值加密为: sha1("TEST003:TEST003") )
+	注: 测试账户(test user) TEST003 密码 TEST003  (数据库密码哈希值加密为: sha1("TEST003:TEST003") )
 
-		登录服务器和世界服务器并未完善,仅能登录~(正在开发中)
+		创建账户(create user): account create username password
+
+		GM权限(set gmlevel): account set gmlevel username 3 1
+
+		当前核心只能在linux下运行(win版正在兼容中...)
 
 =====
 
 # Introduction
-	This is a World of Warcraft server written in php. 
-	Now it has debugged the process of logging in to the server. 
-	The current World of Warcraft client is 3.3.5. 
+	This is a World of Warcraft server written in php.
+	Now it has debugged the process of logging in to the server.
+	The current World of Warcraft client is 3.3.5.
 	The server list and account password data need to query the auth library.
-	The logged in data is not stored in the database and does not 
-	completely limit the account. After the login server is improved,
-	the world server will start writing..
+	The world server is being written...
 
 	The database file is in the root directory: sql/auth.sql
+
+	Limited energy, welcome to submit version, QQ group: 186510932 welcome to learn together ~
+
+	Wow client link: https://pan.baidu.com/s/1A4EeOdngdtIrcgSzfkj6-A extraction code: 2vkt
 
 # 介绍
 	这是用php编写的魔兽世界服务器。
 	现在它已经调试了登录服务器的过程。
 	目前的魔兽世界客户端是3.3.5。
 	服务器列表和帐户密码数据需要查询auth库。
-	登录的数据不会存储在数据库中,也没有完全限制帐户。
-	世界服务器将在登录服务器改进后编写。.
+	世界服务器正在编写中...
 
 	数据库文件在根目录: sql/auth.sql
 

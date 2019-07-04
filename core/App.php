@@ -2,6 +2,7 @@
 namespace core;
 use core\Route;
 use core\Config;
+use Dotenv\Dotenv;
 
 class App{
 
@@ -32,6 +33,9 @@ class App{
 	 */
 	static function loadfile()
 	{
+		$dotenv = Dotenv::create(BASE_PATH);//加载env
+        $dotenv->load();
+        
 		$loadfile = array(
 			'common' => CORE_PATH.DIRECTORY_SEPARATOR.'Common.php',
 		);

@@ -59,6 +59,7 @@ class ComposerStaticInitedbc2beedbd021906fa7cbe75839f161
         ),
         'D' => 
         array (
+            'Dotenv\\' => 7,
             'Doctrine\\Common\\Lexer\\' => 22,
             'Doctrine\\Common\\Annotations\\' => 28,
         ),
@@ -162,6 +163,10 @@ class ComposerStaticInitedbc2beedbd021906fa7cbe75839f161
         array (
             0 => __DIR__ . '/..' . '/paragonie/constant_time_encoding/src',
         ),
+        'Dotenv\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/vlucas/phpdotenv/src',
+        ),
         'Doctrine\\Common\\Lexer\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/lexer/lib/Doctrine/Common/Lexer',
@@ -185,6 +190,13 @@ class ComposerStaticInitedbc2beedbd021906fa7cbe75839f161
     );
 
     public static $prefixesPsr0 = array (
+        'P' => 
+        array (
+            'PhpOption\\' => 
+            array (
+                0 => __DIR__ . '/..' . '/phpoption/phpoption/src',
+            ),
+        ),
         'M' => 
         array (
             'Math_' => 

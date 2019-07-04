@@ -28,9 +28,12 @@ class Help
 		{
 			$classname = explode('.', $value)[0];
 			$class = $namespace.'\\'.$classname;
-			foreach (get_class_methods($class) as $k1 => $v1) 
+			if($methods = get_class_methods($class))
 			{
-				$this->allclassaction[] = PHP_EOL."\t".$classname.'/'.$v1.PHP_EOL;
+				foreach ($methods as $k1 => $v1) 
+				{
+					$this->allclassaction[] = PHP_EOL."\t".$classname.'/'.$v1.PHP_EOL;
+				}
 			}
 		}
 

@@ -110,6 +110,10 @@ class SRP6:
     # M = H(H(N) xor H(g), H(I), s, A, B, K)
     M = None
 
+    sessionkey = None
+
+    sessionkey_save = None
+
     def __init__(self, username, password):
         """ Initializes a new instance of the SRP6 class.
         :param username: The client´s identifier.
@@ -210,7 +214,8 @@ class SRP6:
         for i in range(20):
             vK[i * 2 + 1] = t1_hash[i]
 
-        sessionkey = bytes(vK)
+        self.sessionkey = bytes(vK)
+        self.sessionkey_save = binascii.hexlify(self.sessionkey).decode('utf-8')
 
         N_byte = self.N.to_bytes(32, byteorder='little').rstrip(b'\x00')
         g_byte = self.g.to_bytes(32, byteorder='little').rstrip(b'\x00')
@@ -223,11 +228,11 @@ class SRP6:
 
         t4 = self.hash_sha1(self.I.encode('utf8'))
 
-        c_proof = self.hash_sha1(bytes(t3) + t4 + self.s +self.A + self.B + sessionkey)
+        c_proof = self.hash_sha1(bytes(t3) + t4 + self.s +self.A + self.B + self.sessionkey)
 
         if M1 != c_proof:
             return False
 
-        # self.M = self.hash_sha1(self.A + c_proof + sessionkey + bytes(0))
-        self.M = self.hash_sha1(self.A + c_proof + sessionkey)
+        # self.M = self.hash_sha1(self.A + c_proof + self.sessionkey + bytes(0))
+        self.M = self.hash_sha1(self.A + c_proof + self.sessionkey)
         return True

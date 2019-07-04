@@ -1,6 +1,6 @@
 from app.Python.srp6 import SRP6
 import pickle
-
+import binascii
 class checkuser:
 	I = None
 	P = None
@@ -26,7 +26,8 @@ class checkuser:
 		strobj = pickle.dumps(self.srp)
 		output_hal.write(strobj)
 		output_hal.close()
-
+		# print(binascii.hexlify(self.srp.s).decode('utf-8'))
+		# print(self.srp.v)
 		# data = bytearray(self.get())
 		data = self.get()
 		return data

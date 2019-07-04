@@ -5,7 +5,8 @@ use app\World\Connection;
 use app\World\Message;
 use app\World\MessageCache;
 use app\Common\Account;
-
+use phpseclib\Crypt\RC4;
+use app\Common\int_helper;
 /**
  * world server
  */
@@ -25,6 +26,29 @@ class WorldServer
      */
     public function start()
     {
+        // $rc4 = new RC4();
+        // $rc4->setKey('abcdefgh');
+        // $size = 10 * 1024;
+        // $plaintext = '这是加密文件';
+        // $encodestr = $rc4->encrypt($plaintext);
+        // $decodestr = $rc4->decrypt($encodestr);
+        // var_dump($encodestr);
+        // var_dump($decodestr);
+
+        // $data = [0x00,0x2a,0xec,0x01,0x01,0x00,0x00,0x00,0x8a,0xd0,0x07,0x33,0x37,0x33,0xe6,0x9c,0x11,0xcd,0x6b,0x73,
+        //     0x24,0xfe,0x8d,0x6d,0x2a,0x53,0xdf,0x91,0xcb,0x15,0x27,0xeb,0x02,0x7d,0x41,0x26,0x15,0xd6,0xd6,0xc8,0x05,0x3b,0x7b,0xe2];
+
+        // $str = int_helper::toStr($data);
+        // $datastr = int_helper::getBytes($str);
+
+        // $newstr = $rc4->decrypt($str); 
+
+        // $data = [0xec,0x01,0x01,0x00,0x00,0x00];
+        // $a = int_helper::toStr($data);
+        // $data = int_helper::getBytes($a);var_dump($a,$data);die; 
+
+        // var_dump($str,$datastr,$newstr,$data);die;
+
         $Account      = new Account();
         $realmlist = $Account -> get_realmlist();
         $this->ServerConfig = $realmlist[0];
@@ -108,7 +132,7 @@ class WorldServer
             // 'open_eof_check' => true, //打开EOF检测
             'package_eof'              => "###", //设置EOF
             // 'open_eof_split'=>true, //是否分包
-            'package_max_length'       => 1024,
+            'package_max_length'       => 2000000,
         ));
 
         $this->serv->on('Start', array(
@@ -171,7 +195,7 @@ class WorldServer
 
         // 将当前连接用户添加到连接池和待检池
         $connectionCls = new Connection();
-        $connectionCls->saveConnector($fd, 0, 1, $fd);//变更为二次连接
+        $connectionCls->saveConnector($fd,1, $fd);//变更为二次连接
         $connectionCls->saveCheckConnector($fd);
 
         (new Message())->newConnect($serv, $fd);//首次连接需要告知客户端验证
@@ -235,7 +259,7 @@ class WorldServer
         $fd       = $paramArr['fd'];
         $data     = base64_decode($paramArr['data']);
 
-        (new Message())->send($serv, $fd, $data);
+        (new Message())->serverreceive($serv, $fd, $data);
         return "Task {$task_id}'s result";
     }
 

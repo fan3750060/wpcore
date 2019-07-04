@@ -1,12 +1,12 @@
 import os
 import pickle
+import binascii
 
 class authkuser:
 
 	def __init__(self,I,data):
 		self.I = I
 		self.packet = data
-
 
 	def _parse(self):
 		with open('runtime/SRP6CAHE_'+self.I+"_0.pkl",'rb') as file:
@@ -20,7 +20,13 @@ class authkuser:
 	def _work(self):
 		self.srp.A = self.A
 		data = self.get(self.M1)
-		# data = bytearray(data)
+
+		#保存sessionkey
+		output_hal = open('runtime/SESSIONKEY_'+self.I+"_0.pkl", 'wb')
+		strobj = pickle.dumps(self.srp.sessionkey_save)
+		output_hal.write(strobj)
+		output_hal.close()
+		
 		return data
 
 	def get(self, M1):

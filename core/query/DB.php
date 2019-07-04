@@ -182,11 +182,22 @@ class DB
 	 * ------------------------------------------------------------------------------
 	 * @return  [type]          [description]
 	 */
-	private function field_replace($value = '')
+	private function field_replace($value = null)
 	{
-		$value = str_replace("'", "\'", $value);
-		$value = str_replace('"', '\"', $value);
-		$value = is_int($value) ||  is_float($value) ? $value :  '"'.$value.'"';
+		if(is_array($value))
+		{
+			foreach ($value as $k => $v) 
+			{
+				$value[$k] = str_replace("'", "\'", $v);
+				$value[$k] = str_replace('"', '\"', $v);
+				$value[$k] = is_int($v) ||  is_float($v) ? $v :  '"'.$v.'"';
+			}
+		}else{
+			$value = str_replace("'", "\'", $value);
+			$value = str_replace('"', '\"', $value);
+			$value = is_int($value) ||  is_float($value) ? $value :  '"'.$value.'"';
+		}
+		
 		return $value;
 	}
 

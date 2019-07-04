@@ -5,6 +5,9 @@ defined('ARGV') or define('ARGV',json_encode($argv));
 // [ 应用入口文件 ]
 header("Content-type: text/html; charset=utf-8"); 
 
+// 框架目录
+defined('BASE_PATH') or define('BASE_PATH', __DIR__ . '/');
+
 // 定义应用目录
 defined('APP_PATH') or define('APP_PATH', __DIR__ . '/app/');
 
@@ -16,3 +19,5 @@ defined('VENDOR') or define('VENDOR', __DIR__ . '/vendor/');
 
 //加载框架
 require __DIR__ . '/core/Base.php';
+
+

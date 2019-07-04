@@ -16,11 +16,10 @@ class Connection
     public function createConnectorTable()
     {
         //创建表格 行数参数大小得为2的指数
-        self::$_connectorTable = new \swoole_table(131072);
+        self::$_connectorTable = new \swoole_table(1000);
 
         // 表字段
         self::$_connectorTable->column('state', \swoole_table::TYPE_INT, 1); // 1,2,4,8
-        self::$_connectorTable->column('connectionType', \swoole_table::TYPE_INT, 2);
         self::$_connectorTable->column('createTime', \swoole_table::TYPE_STRING, 20);
         self::$_connectorTable->column('username', \swoole_table::TYPE_STRING, 30);
 
@@ -61,7 +60,7 @@ class Connection
      * @param int $fd
      * @return int
      */
-    public function getConnectorUserId($fd)
+    public function getConnectorState($fd)
     {
         $connector = $this->getConnector($fd);
         if (!empty($connector)) {
@@ -87,44 +86,14 @@ class Connection
     }
 
     /**
-     * 根据连接id获取连接类型
-     * @param int $fd
-     * @return int
-     */
-    public function getConnectionType($fd)
-    {
-        $connector = $this->getConnector($fd);
-        if (!empty($connector)) {
-            return intval($connector["connectionType"]);
-        }
-
-        return Clientstate::CONNECTION_TYPE_SOCKET;
-    }
-
-    /**
-     * 根据连接id检查该连接是否合法
-     * @param int $fd
-     * @return boolean
-     */
-    public function isValidConnector($fd)
-    {
-        $userId = $this->getConnectorUserId($fd);
-        return $userId > 0;
-    }
-
-    /**
      * 保存当前连接到连接池
      * @param int $fd
-     * @param int $connectionType
+     * @param int 
      * @param int $userId
      */
-    public function saveConnector($fd, $connectionType = 0, $state = Clientstate::Init, $username = null)
+    public function saveConnector($fd, $state = Clientstate::Init, $username = null)
     {
         $arr = $this->getConnector($fd);
-
-        if ($connectionType > 0) {
-            $arr["connectionType"] = $connectionType;
-        }
 
         if (!array_key_exists("createTime", $arr)) {
             $arr["createTime"] = time();

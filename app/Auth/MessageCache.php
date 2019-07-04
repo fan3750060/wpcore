@@ -17,7 +17,7 @@ class MessageCache
         // 表格包含fd和content两个字段
         self::$dataCacheTable->column('fd', \swoole_table::TYPE_INT, 8); // 1,2,4,8
 
-        self::$dataCacheTable->column('content', \swoole_table::TYPE_STRING, 5000);
+        self::$dataCacheTable->column('content', \swoole_table::TYPE_STRING, 300);
 
         self::$dataCacheTable->create();
     }
