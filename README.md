@@ -15,6 +15,10 @@
 
 		当前核心只能在linux下运行(win版正在兼容中...)
 
+		数据库配置文件是.env，请将.env.example复制到.env并更改配置。
+
+		The database configuration file is in .env, please copy .env.example to .env and change the configuration.
+
 =====
 
 # Introduction
