@@ -17,7 +17,8 @@
 
 		数据库配置文件是.env，请将.env.example复制到.env并更改配置。
 
-		The database configuration file is in .env, please copy .env.example to .env and change the configuration.
+		The database configuration file is in .env
+		please copy .env.example to .env and change the configuration.
 
 =====
 
