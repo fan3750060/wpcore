@@ -26,29 +26,6 @@ class WorldServer
      */
     public function start()
     {
-        // $rc4 = new RC4();
-        // $rc4->setKey('abcdefgh');
-        // $size = 10 * 1024;
-        // $plaintext = '这是加密文件';
-        // $encodestr = $rc4->encrypt($plaintext);
-        // $decodestr = $rc4->decrypt($encodestr);
-        // var_dump($encodestr);
-        // var_dump($decodestr);
-
-        // $data = [0x00,0x2a,0xec,0x01,0x01,0x00,0x00,0x00,0x8a,0xd0,0x07,0x33,0x37,0x33,0xe6,0x9c,0x11,0xcd,0x6b,0x73,
-        //     0x24,0xfe,0x8d,0x6d,0x2a,0x53,0xdf,0x91,0xcb,0x15,0x27,0xeb,0x02,0x7d,0x41,0x26,0x15,0xd6,0xd6,0xc8,0x05,0x3b,0x7b,0xe2];
-
-        // $str = int_helper::toStr($data);
-        // $datastr = int_helper::getBytes($str);
-
-        // $newstr = $rc4->decrypt($str);
-
-        // $data = [0xec,0x01,0x01,0x00,0x00,0x00];
-        // $a = int_helper::toStr($data);
-        // $data = int_helper::getBytes($a);var_dump($a,$data);die;
-
-        // var_dump($str,$datastr,$newstr,$data);die;
-
         Checksystem::check();
 
         $Account            = new Account();
