@@ -29,7 +29,7 @@ class OpCode
     const AUTH_SUSPENDED              = 0x20;
     const AUTH_PARENTAL_CONTROL       = 0x21;
 
-	const CMSG_CHAR_CREATE = '0x036';
+    const CMSG_CHAR_CREATE = '0x036';
     const CMSG_CHAR_ENUM   = '0x037';
     const CMSG_CHAR_DELETE = '0x038';
     const SMSG_CHAR_CREATE = '0x03A';

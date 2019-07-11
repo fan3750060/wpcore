@@ -1,12 +1,12 @@
 <?php
 namespace app\World;
 
+use app\Common\Account;
+use app\Common\Checksystem;
 use app\World\Connection;
 use app\World\Message;
 use app\World\MessageCache;
-use app\Common\Account;
-use phpseclib\Crypt\RC4;
-use app\Common\int_helper;
+
 /**
  * world server
  */
@@ -41,20 +41,22 @@ class WorldServer
         // $str = int_helper::toStr($data);
         // $datastr = int_helper::getBytes($str);
 
-        // $newstr = $rc4->decrypt($str); 
+        // $newstr = $rc4->decrypt($str);
 
         // $data = [0xec,0x01,0x01,0x00,0x00,0x00];
         // $a = int_helper::toStr($data);
-        // $data = int_helper::getBytes($a);var_dump($a,$data);die; 
+        // $data = int_helper::getBytes($a);var_dump($a,$data);die;
 
         // var_dump($str,$datastr,$newstr,$data);die;
 
-        $Account      = new Account();
-        $realmlist = $Account -> get_realmlist();
+        Checksystem::check();
+
+        $Account            = new Account();
+        $realmlist          = $Account->get_realmlist();
         $this->ServerConfig = $realmlist[0];
 
         $str = "
-        
+
  PPPP    PPPP     PPP                    PPPPPPP
   PPP    PPPPP    PPP                   PPPPPPPPP
   PPPP   PPPPP   PPPP                  PPPP   PPPP
@@ -76,11 +78,11 @@ class WorldServer
                       PPP
                       PPP
         ";
-        echolog($str);
-        echolog('WorldServer version 1.0.1');
-        echolog('author by.fan <fan3750060@163.com>');
-        echolog('Gameversion: ' . config('Gameversion'));
-        echolog('bind server port:'.$this->ServerConfig['address'].' ' .$this->ServerConfig['port']);
+        WORLD_LOG($str);
+        WORLD_LOG('WorldServer version 1.0.1');
+        WORLD_LOG('author by.fan <fan3750060@163.com>');
+        WORLD_LOG('Gameversion: ' . config('Gameversion'));
+        WORLD_LOG('bind server port:' . $this->ServerConfig['address'] . ' ' . $this->ServerConfig['port']);
 
         // 初始状态
         $this->active = true;
@@ -102,7 +104,7 @@ class WorldServer
         if ($this->active) {
             $this->listen('WorldServer'); //开启监听
         } else {
-            echolog('Error: Did not start the service according to the process...');
+            WORLD_LOG('Error: Did not start the service according to the process...');
         }
     }
 
@@ -179,7 +181,7 @@ class WorldServer
     {
         // 设置进程名称
         @cli_set_process_title("swoole_im_master");
-        echolog("Start");
+        WORLD_LOG("Start");
     }
 
     /**
@@ -191,14 +193,14 @@ class WorldServer
      */
     public function onConnect($serv, $fd, $from_id)
     {
-        echolog("Client {$fd} connect");
+        WORLD_LOG("Client {$fd} connect");
 
         // 将当前连接用户添加到连接池和待检池
         $connectionCls = new Connection();
-        $connectionCls->saveConnector($fd,1, $fd);//变更为二次连接
+        $connectionCls->saveConnector($fd, 1, $fd); //变更为二次连接
         $connectionCls->saveCheckConnector($fd);
 
-        (new Message())->newConnect($serv, $fd);//首次连接需要告知客户端验证
+        (new Message())->newConnect($serv, $fd); //首次连接需要告知客户端验证
     }
 
     /**
@@ -211,7 +213,7 @@ class WorldServer
      */
     public function onReceive($serv, $fd, $from_id, $data)
     {
-        echolog("Get Message From Client {$fd}");
+        WORLD_LOG("Get Message From Client {$fd}");
 
         (new Connection())->update_checkTable($fd);
 
@@ -222,7 +224,7 @@ class WorldServer
         );
 
         $serv->task(json_encode($param, JSON_UNESCAPED_UNICODE));
-        echolog("Continue Handle Worker");
+        WORLD_LOG("Continue Handle Worker");
     }
 
     /**
@@ -236,7 +238,7 @@ class WorldServer
     {
         // 将连接从连接池中移除
         (new Connection())->removeConnector($fd);
-        echolog("Client {$fd} close connection\n");
+        WORLD_LOG("Client {$fd} close connection\n");
     }
 
     /**
@@ -254,7 +256,7 @@ class WorldServer
      */
     public function onTask($serv, $task_id, $from_id, $param)
     {
-        echolog("This Task {$task_id} from Worker {$from_id}");
+        WORLD_LOG("This Task {$task_id} from Worker {$from_id}");
         $paramArr = json_decode($param, true);
         $fd       = $paramArr['fd'];
         $data     = base64_decode($paramArr['data']);
@@ -273,8 +275,8 @@ class WorldServer
      */
     public function onFinish($serv, $task_id, $data)
     {
-        echolog("Task {$task_id} finish");
-        echolog("Result: {$data}");
+        WORLD_LOG("Task {$task_id} finish");
+        WORLD_LOG("Result: {$data}");
     }
 
     /**
@@ -285,7 +287,7 @@ class WorldServer
      */
     public function onWorkerStart($serv, $worker_id)
     {
-        echolog("onWorkerStart");
+        WORLD_LOG("onWorkerStart");
 
         // 只有当worker_id为0时才添加定时器,避免重复添加
         if ($worker_id == 0) {
@@ -293,7 +295,7 @@ class WorldServer
 
             // 清除数据
             $connectionCls->clearData();
-            echolog("clear data finished");
+            WORLD_LOG("clear data finished");
 
             // 在Worker进程开启时绑定定时器
             // 低于1.8.0版本task进程不能使用tick/after定时器，所以需要使用$serv->taskworker进行判断
@@ -304,7 +306,7 @@ class WorldServer
             } else {
                 $serv->addtimer(5000);
             }
-            echolog("start timer finished");
+            WORLD_LOG("start timer finished");
         }
     }
 

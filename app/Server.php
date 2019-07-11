@@ -1,5 +1,6 @@
 <?php
 namespace app;
+
 use app\Auth\AuthServer;
 use app\World\WorldServer;
 
@@ -23,10 +24,9 @@ class Server
     {
         $param = input();
 
-        if($param[0] == 'auth')
-        {
-            (new AuthServer())->start(); 
-        }elseif ($param[0] == 'world') {
+        if ($param[0] == 'auth') {
+            (new AuthServer())->start();
+        } elseif ($param[0] == 'world') {
             (new WorldServer())->start();
         }
     }

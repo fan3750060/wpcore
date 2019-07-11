@@ -1,7 +1,21 @@
-[2019-06-03 23:01:07 ^8628.4]	NOTICE	zm_deactivate_swoole (ERROR 9003): worker process is terminated by exit()/die().
-[2019-06-04 00:36:48 *8633.3]	WARNING	swSignalfd_onSignal: signal[1] callback is null.
-[2019-06-04 00:36:48 *8632.2]	WARNING	swSignalfd_onSignal: signal[1] callback is null.
-[2019-06-04 00:36:48 *8631.1]	WARNING	swSignalfd_onSignal: signal[1] callback is null.
-[2019-06-04 00:36:48 *8630.0]	WARNING	swSignalfd_onSignal: signal[1] callback is null.
-[2019-06-04 00:36:48 $8625.0]	WARNING	swSignal_callback: signal[1] callback is null.
-[2019-06-04 00:36:48 #8624.1]	WARNING	swSignalfd_onSignal: signal[1] callback is null.
+[2019-07-11 09:12:28]: The current system is: Windows
+[2019-07-11 09:14:59]: The current system is: Windows
+[2019-07-11 09:15:43]: The current system is: Windows
+[2019-07-11 09:17:05]: The current system is: Windows
+[2019-07-11 09:21:05]: The current system is: Windows
+[2019-07-11 09:22:48]: The current system is: Windows
+[2019-07-11 09:24:04]: The current system is: Windows
+[2019-07-11 09:27:23]: The current system is: Windows
+[2019-07-11 09:27:23]: This core needs to use php's bcmath extension for high-precision calculations.
+[2019-07-11 09:28:03]: The current system is: Windows
+[2019-07-11 09:28:03]: This core needs to use php's bcmath extension for high-precision calculations.
+[2019-07-11 09:28:52]: The current system is: Windows
+[2019-07-11 09:28:52]: This core needs to use php's bcmath extension for high-precision calculations.
+[2019-07-11 09:29:12]: The current system is: Windows
+[2019-07-11 09:29:12]: This core needs to use php's bcmath extension for high-precision calculations.
+[2019-07-11 09:29:40]: The current system is: Windows
+[2019-07-11 09:29:40]: This core needs to use php's bcmath extension for high-precision calculations.
+[2019-07-11 09:30:13]: The current system is: Windows
+[2019-07-11 09:30:13]: This core needs to use php's bcmath extension for high-precision calculations.
+[2019-07-11 09:32:24]: The current system is: Windows
+[2019-07-11 09:35:18]: The current system is: Windows

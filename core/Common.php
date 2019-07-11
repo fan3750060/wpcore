@@ -1,11 +1,10 @@
 <?php
 use core\Config;
 use core\filter\Filter;
-use core\lib\Session;
 use core\lib\Cookie;
+use core\lib\Session;
 
-if (!function_exists('config'))
-{
+if (!function_exists('config')) {
     /**
      * [config 获取和设置配置参数]
      * ------------------------------------------------------------------------------
@@ -28,8 +27,7 @@ if (!function_exists('config'))
     }
 }
 
-if (!function_exists('input'))
-{
+if (!function_exists('input')) {
     /**
      * [input 获取输入数据 支持默认值和过滤]
      * ------------------------------------------------------------------------------
@@ -41,22 +39,20 @@ if (!function_exists('input'))
      * @param   string          $filter [过滤方法 int,string,float,bool]
      * @return  [type]                  [description]
      */
-    function input($key = '',$filter = '')
+    function input($key = '', $filter = '')
     {
-        $param = json_decode(ARGV,true);
+        $param = json_decode(ARGV, true);
         unset($param[0]);
         unset($param[1]);
         $array = [];
-        foreach ($param as $key => $value) 
-        {
+        foreach ($param as $key => $value) {
             $array[] = $value;
         }
         return $array;
     }
 }
 
-if (!function_exists('session'))
-{
+if (!function_exists('session')) {
     /**
      * [session]
      * ------------------------------------------------------------------------------
@@ -68,24 +64,20 @@ if (!function_exists('session'))
      * @param   string          $value [参数值]
      * @return  [type]                 [description]
      */
-    function session($key = null,$value = '_null')
+    function session($key = null, $value = '_null')
     {
 
-        if (is_null($key) || !$key)
-        {
+        if (is_null($key) || !$key) {
             return Session::boot()->all();
-        }elseif($key && $value === '_null')
-        {
+        } elseif ($key && $value === '_null') {
             return Session::boot()->get($key);
-        }elseif($key && $value !== '_null')
-        {
-            return Session::boot()->set($key,$value);
+        } elseif ($key && $value !== '_null') {
+            return Session::boot()->set($key, $value);
         }
     }
 }
 
-if (!function_exists('cookie'))
-{
+if (!function_exists('cookie')) {
     /**
      * [cookie]
      * ------------------------------------------------------------------------------
@@ -98,23 +90,19 @@ if (!function_exists('cookie'))
      * @param   integer         $time  [过期时间]
      * @return  [type]                 [description]
      */
-    function cookie($key = null,$value = '_null',$time = 0)
+    function cookie($key = null, $value = '_null', $time = 0)
     {
-        if (is_null($key) || !$key)
-        {
+        if (is_null($key) || !$key) {
             return Cookie::boot()->all();
-        }elseif($key && $value === '_null')
-        {
+        } elseif ($key && $value === '_null') {
             return Cookie::boot()->get($key);
-        }elseif($key && $value !== '_null')
-        {
-            return Cookie::boot()->set($key,$value,$time);
+        } elseif ($key && $value !== '_null') {
+            return Cookie::boot()->set($key, $value, $time);
         }
     }
 }
 
-if (!function_exists('echolog'))
-{
+if (!function_exists('echolog')) {
     /**
      * [echolog]
      * ------------------------------------------------------------------------------
@@ -125,39 +113,84 @@ if (!function_exists('echolog'))
      * @param   string          $string   [内容]
      * @return  [type]                 [description]
      */
-    function echolog($string = null,$type = 'no')
+    function echolog($string = null, $type = 'no', $save = null,$filename = 'swoole.log')
     {
-        if(is_array($string))
-        {
-            $string = var_export($string,TRUE).PHP_EOL;
+        if (is_array($string)) {
+            $str = $string = var_export($string, true) . PHP_EOL;
         }
 
         switch ($type) {
             case 'success':
-                echo "\033[32m[".date('Y-m-d H:i:s')."]：".$string.PHP_EOL."\033[0m";
+                $str = "\033[32m[" . date('Y-m-d H:i:s') . "]: " . $string . PHP_EOL . "\033[0m";
                 break;
-            
+
             case 'warning':
-                echo "\033[33m[".date('Y-m-d H:i:s')."]：".$string.PHP_EOL."\033[0m";
+                $str = "\033[33m[" . date('Y-m-d H:i:s') . "]: " . $string . PHP_EOL . "\033[0m";
                 break;
 
             case 'error':
-                echo "\033[31m[".date('Y-m-d H:i:s')."]：".$string.PHP_EOL."\033[0m";
+                $str = "\033[31m[" . date('Y-m-d H:i:s') . "]: " . $string . PHP_EOL . "\033[0m";
                 break;
 
             case 'info':
-                echo "\033[36m[".date('Y-m-d H:i:s')."]：".$string.PHP_EOL."\033[0m";
+                $str = "\033[36m[" . date('Y-m-d H:i:s') . "]: " . $string . PHP_EOL . "\033[0m";
                 break;
 
             default:
-                echo "\033[35m[".date('Y-m-d H:i:s')."]：".$string.PHP_EOL."\033[0m";
+                $str = "\033[35m[" . date('Y-m-d H:i:s') . "]: " . $string . PHP_EOL . "\033[0m";
                 break;
+        }
+
+        echo $str;
+
+        $save = $save === null ? env('LOG_SAVE',false) : false;
+        if($save)
+        {
+            $logstr = "[".date('Y-m-d H:i:s') . "]: " . $string . PHP_EOL;
+            $log_file = fopen(RUNTIME_PATH.$filename, 'a');
+            fputs($log_file,$logstr);
+            fclose($log_file);
         }
     }
 }
 
-if (!function_exists('import'))
-{
+if (!function_exists('AUTH_LOG')) {
+    /**
+     * [AUTH_LOG]
+     * ------------------------------------------------------------------------------
+     * @author  by.fan <fan3750060@163.com>
+     * ------------------------------------------------------------------------------
+     * @version date:2018-01-05
+     * ------------------------------------------------------------------------------
+     * @param   string          $string   [内容]
+     * @return  [type]                 [description]
+     */
+    function AUTH_LOG($string = null, $type = 'no', $save = null,$filename = 'auth.log')
+    {
+        $save = $save === null ? env('LOG_SAVE',false) : false;
+        echolog($string,$type,$save,$filename);
+    }
+}
+
+if (!function_exists('WORLD_LOG')) {
+    /**
+     * [WORLD_LOG]
+     * ------------------------------------------------------------------------------
+     * @author  by.fan <fan3750060@163.com>
+     * ------------------------------------------------------------------------------
+     * @version date:2018-01-05
+     * ------------------------------------------------------------------------------
+     * @param   string          $string   [内容]
+     * @return  [type]                 [description]
+     */
+    function WORLD_LOG($string = null, $type = 'no', $save = null,$filename = 'world.log')
+    {
+        $save = $save === null ? env('LOG_SAVE',false) : false;
+        echolog($string,$type,$save,$filename);
+    }
+}
+
+if (!function_exists('import')) {
     /**
      * [import 加载第三方类库]
      * ------------------------------------------------------------------------------
@@ -172,20 +205,28 @@ if (!function_exists('import'))
      *
      * 加载类库: import('PHPMailer','PHPMailerAutoload','PHPMailer')
      */
-    function import($folder,$name,$class=null)
+    function import($folder, $name, $class = null)
     {
         //参数处理
-        if(!is_string($name)) return false;
-        $file_path = $folder.'/'.$name.'.php';
-        if(!file_exists($file_path)) return false;
-        require_once($file_path);
-        if(!class_exists($class)) return false;
-        return new $class();//实例化模型
+        if (!is_string($name)) {
+            return false;
+        }
+
+        $file_path = $folder . '/' . $name . '.php';
+        if (!file_exists($file_path)) {
+            return false;
+        }
+
+        require_once $file_path;
+        if (!class_exists($class)) {
+            return false;
+        }
+
+        return new $class(); //实例化模型
     }
 }
 
-if(!function_exists('http_curl'))
-{
+if (!function_exists('http_curl')) {
     /**
      * [http_curl 获取]
      * ------------------------------------------------------------------------------
@@ -198,13 +239,12 @@ if(!function_exists('http_curl'))
      */
     function http_curl($param = [])
     {
-        if(!$param || !$param['url'])
-        {
+        if (!$param || !$param['url']) {
             return 'url为必填';
         }
 
         // 初始化
-        $ch = curl_init();        
+        $ch = curl_init();
 
         // 设置浏览器的特定header
         $header = [
@@ -215,37 +255,32 @@ if(!function_exists('http_curl'))
             "Accept-Language: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
         ];
 
-        if(!empty($param['header']))
-        {
+        if (!empty($param['header'])) {
             $header = $param['header'];
         }
-        curl_setopt($ch, CURLOPT_HTTPHEADER,$header);
-        
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
 
         //访问网页
         curl_setopt($ch, CURLOPT_URL, $param['url']);
 
         //代理服务器设置
-        if(!empty($param['proxy']))
-        {
+        if (!empty($param['proxy'])) {
             curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC); //代理认证模式
             curl_setopt($ch, CURLOPT_PROXY, $param['proxy'][0]); //代理服务器地址
-            curl_setopt($ch, CURLOPT_PROXYPORT,$param['proxy'][1]); //代理服务器端口
-            curl_setopt($ch, CURLOPT_PROXYUSERPWD, $param['proxy'][2].":".$param['proxy'][3]); //http代理认证帐号，username:password的格式
+            curl_setopt($ch, CURLOPT_PROXYPORT, $param['proxy'][1]); //代理服务器端口
+            curl_setopt($ch, CURLOPT_PROXYUSERPWD, $param['proxy'][2] . ":" . $param['proxy'][3]); //http代理认证帐号，username:password的格式
             curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_HTTP); //使用SOCKS5代理模式
         }
 
         //浏览器设置
         $user_agent = 'User-Agent: Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Mobile Safari/537.36';
-        if(!empty($param['user_agent']))
-        {
+        if (!empty($param['user_agent'])) {
             $user_agent = $param['user_agent'];
         }
 
-        curl_setopt($ch, CURLOPT_USERAGENT,$user_agent); 
+        curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
 
-        if(!empty($param['autoreferer']))
-        {
+        if (!empty($param['autoreferer'])) {
             //重定向
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             //多级自动跳转
@@ -253,46 +288,41 @@ if(!function_exists('http_curl'))
             //设置跳转location 最多10次
             curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
         }
-        
+
         //来源
-        if(!empty($param['referer']))
-        {
-            curl_setopt ($ch, CURLOPT_REFERER, $param['referer']);  
+        if (!empty($param['referer'])) {
+            curl_setopt($ch, CURLOPT_REFERER, $param['referer']);
         }
 
         //cookie设置
-        if (!empty($param['cookiepath']))
-        {
+        if (!empty($param['cookiepath'])) {
             curl_setopt($ch, CURLOPT_COOKIEJAR, $param['cookiepath']); //存储cookies
-            curl_setopt($ch, CURLOPT_COOKIEFILE,$param['cookiepath']); //发送cookie
+            curl_setopt($ch, CURLOPT_COOKIEFILE, $param['cookiepath']); //发送cookie
         }
 
         //是否显示头信息
-        if(!empty($param['showheader']))
-        {
+        if (!empty($param['showheader'])) {
             curl_setopt($ch, CURLOPT_HEADER, 1);
         }
 
         //是否post提交
-        if(!empty($param['data']))
-        {
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST,'POST');    // 请求方式
-            curl_setopt($ch, CURLOPT_POST, true);    // post提交
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $param['data']);// post的变量
+        if (!empty($param['data'])) {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST'); // 请求方式
+            curl_setopt($ch, CURLOPT_POST, true); // post提交
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $param['data']); // post的变量
         }
 
         //超时设置
-        $timeout = isset($param['timeout']) && (int)$param['timeout'] ? $param['timeout'] : 30;
-        curl_setopt($ch, CURLOPT_TIMEOUT,$timeout);
+        $timeout = isset($param['timeout']) && (int) $param['timeout'] ? $param['timeout'] : 30;
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
 
         //是否为https请求
-        if(!empty($param['https']))
-        {
+        if (!empty($param['https'])) {
             // 针对https的设置
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         }
-        
+
         //获取内容不直接输出
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
@@ -303,35 +333,33 @@ if(!function_exists('http_curl'))
         curl_close($ch);
 
         if (!empty($param['returndecode'])) {
-            $response = json_decode($response,true);
+            $response = json_decode($response, true);
         }
-        
+
         return $response;
     }
 
-
-    
     /**
      * 生成uuid
      * @return string
      */
-    function getuuid(){
+    function getuuid()
+    {
         $uuid = '';
-        if (function_exists('uuid_create') === true){
+        if (function_exists('uuid_create') === true) {
             $uuid = uuid_create(1);
-        }else{
-            $data = openssl_random_pseudo_bytes(16);
+        } else {
+            $data    = openssl_random_pseudo_bytes(16);
             $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
             $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-            $uuid =  vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+            $uuid    = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
         }
         return $uuid;
     }
 
 }
 
-
-if (! function_exists('env')) {
+if (!function_exists('env')) {
     /**
      * Gets the value of an environment variable.
      *

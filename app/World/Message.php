@@ -1,5 +1,6 @@
 <?php
 namespace app\World;
+
 use app\Common\int_helper;
 use app\World\Clientstate;
 use app\World\Connection;
@@ -23,7 +24,7 @@ class Message
 
             $data = int_helper::getBytes($data);
 
-            echolog("接收:" . json_encode($data), 'info');
+            WORLD_LOG("Receive: " . json_encode($data), 'info');
 
             $this->handlePacket($serv, $fd, $data, $state);
         }
@@ -42,11 +43,11 @@ class Message
      */
     public function newConnect($serv, $fd)
     {
-        echolog('[SMSG_AUTH_CHALLENGE]: Send Client : ' . $fd, 'warning');
+        WORLD_LOG('[SMSG_AUTH_CHALLENGE]: Send Client : ' . $fd, 'warning');
 
         //要求客户端鉴权
-        $data = [0x00,0x2a,0xec,0x01,0x01,0x00,0x00,0x00,0x8a,0xd0,0x07,0x33,0x37,0x33,0xe6,0x9c,0x11,0xcd,0x6b,0x73,
-            0x24,0xfe,0x8d,0x6d,0x2a,0x53,0xdf,0x91,0xcb,0x15,0x27,0xeb,0x02,0x7d,0x41,0x26,0x15,0xd6,0xd6,0xc8,0x05,0x3b,0x7b,0xe2];
+        $data = [0x00, 0x2a, 0xec, 0x01, 0x01, 0x00, 0x00, 0x00, 0x8a, 0xd0, 0x07, 0x33, 0x37, 0x33, 0xe6, 0x9c, 0x11, 0xcd, 0x6b, 0x73,
+            0x24, 0xfe, 0x8d, 0x6d, 0x2a, 0x53, 0xdf, 0x91, 0xcb, 0x15, 0x27, 0xeb, 0x02, 0x7d, 0x41, 0x26, 0x15, 0xd6, 0xd6, 0xc8, 0x05, 0x3b, 0x7b, 0xe2];
 
         $this->serversend($serv, $fd, $data);
     }
@@ -60,11 +61,11 @@ class Message
      * ------------------------------------------------------------------------------
      * @return  [type]          [description]
      */
-    public function checkauth($fd,$data)
+    public function checkauth($fd, $data)
     {
-        echolog('[SMSG_AUTH_RESPONSE]: Send Client : ' . $fd, 'warning');
+        WORLD_LOG('[SMSG_AUTH_RESPONSE]: Send Client : ' . $fd, 'warning');
 
-        $data = [0x0C,0x00,0x00,0x00,0x2];
+        $data = [0x0C, 0x00, 0x00, 0x00, 0x2];
         return $data;
     }
 
@@ -81,7 +82,7 @@ class Message
     {
         switch ($state) {
             case 1:
-                $data = $this->checkauth($fd,$data);
+                $data = $this->checkauth($fd, $data);
                 $this->serversend($serv, $fd, $data);
                 break;
         }
@@ -98,7 +99,7 @@ class Message
      */
     public function serversend($serv, $fd, $data = null)
     {
-        echolog("发送:" . json_encode($data), 'info');
+        WORLD_LOG("Send: " . json_encode($data), 'info');
         $serv->send($fd, int_helper::toStr($data));
     }
 }

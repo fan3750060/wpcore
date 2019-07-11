@@ -2,10 +2,20 @@
 	World of Warcraft server
 
 	魔兽世界服务器
+	
+	Linux:
 
-	运行登录服务器(Run Authserver): php script Server/start auth
+	运行登录服务器(Run Authserver): php script Server/start auth OR ./start_auth.sh
 
-	运行世界服务器(Run Worldserver): php script Server/start world
+	运行世界服务器(Run Worldserver): php script Server/start world OR ./start_world.sh
+
+	关闭服务器( Stop Server): ctrl+C OR ./stop.sh 
+
+	Win:
+
+	运行登录服务器(Run Authserver): php script Server/start auth OR win_start_auth.bat
+
+	运行世界服务器(Run Worldserver): php script Server/start world OR win_start_world.bat
 
 	注: 测试账户(test user) TEST003 密码 TEST003  (数据库密码哈希值加密为: sha1("TEST003:TEST003") )
 
@@ -13,7 +23,7 @@
 
 		GM权限(set gmlevel): account set gmlevel username 3 1
 
-		当前核心只能在linux下运行(win版正在兼容中...)
+		当前核心在linux下运行正常,windows下swoole出现异常(正在排查中...)
 
 		数据库配置文件是.env，请将.env.example复制到.env并更改配置。
 

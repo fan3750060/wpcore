@@ -405,14 +405,15 @@ class DB
 
 		if($this->table)
 		{
+			$strSql.= '`'.$this->table.'`';
+
 			if($this->alias)
 			{
-				$this->table .= ' as '.$this->alias;
+				$strSql .= ' as '.$this->alias;
 			}
-
-			$strSql.= '`'.$this->table.'` ';
+			
 		}else{
-			return null;
+			return false;
 		}
 
 		if($this->join)
@@ -537,12 +538,13 @@ class DB
 
 		if($this->table)
 		{
+			$strSql.= '`'.$this->table.'`';
+
 			if($this->alias)
 			{
-				$this->table .= ' as '.$this->alias;
+				$strSql .= ' as '.$this->alias;
 			}
-
-			$strSql.= '`'.$this->table.'` ';
+			
 		}else{
 			return false;
 		}

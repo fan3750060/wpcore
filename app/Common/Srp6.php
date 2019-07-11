@@ -1,13 +1,12 @@
 <?php
 namespace app\Common;
-use phpseclib\Math\BigInteger;
-use phpseclib\Crypt\Random;
-use Riimu\Kit\SecureRandom\SecureRandom;
+
 use app\Common\int_helper;
+use app\Common\Math_BigInteger;
 
 class Srp6
 {
-    # A is the client's public value. 
+    # A is the client's public value.
     public $A = null;
 
     # B is the server's public value.
@@ -18,13 +17,10 @@ class Srp6
     public $g = 7;
 
     # N is a safe-prime.
-    public $N = 0x894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7;
+    public $N = '0x894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7';
 
     # s is the salt, a random value.
-    public $s = [0xF4, 0x3C, 0xAA, 0x7B, 0x24, 0x39, 0x81, 0x44,
-         0xBF, 0xA5, 0xB5, 0x0C, 0x0E, 0x07, 0x8C, 0x41,
-         0x03, 0x04, 0x5B, 0x6E, 0x57, 0x5F, 0x37, 0x87,
-         0x31, 0x9F, 0xC4, 0xF8, 0x0D, 0x35, 0x94, 0x29];
+    public $s = null;
 
     # v is the SRP6 Verification value.
     public $v = null;
@@ -50,84 +46,229 @@ class Srp6
     # M = H(H(N) xor H(g), H(I), s, A, B, K)
     public $M = null;
 
-    protected $randomGenerator;
+    public $data;
 
-    /* Initializes a new instance of the SRP6 class.
-        :param username: The client´s identifier.
-        :param password: The client´s password.
-        */
-    function __construct($username, $password)
+    public $sessionkey;
+
+    /**
+     * [BigInteger 大数字]
+     * ------------------------------------------------------------------------------
+     * @author  by.fan <fan3750060@163.com>
+     * ------------------------------------------------------------------------------
+     * @version date:2019-07-11
+     * ------------------------------------------------------------------------------
+     * @param   integer         $numstr [description]
+     * @param   integer         $base   [description]
+     */
+    public function BigInteger($numstr = 0,$base = 10)
+    {
+        return new Math_BigInteger($numstr,$base);
+    }
+
+    /**
+     * [authSrp6 description]
+     * ------------------------------------------------------------------------------
+     * @author  by.fan <fan3750060@163.com>
+     * ------------------------------------------------------------------------------
+     * @version date:2019-07-05
+     * ------------------------------------------------------------------------------
+     * @param   [type]          $username [用户名]
+     * @param   [type]          $password [用户名密码哈希值]
+     */
+    public function authSrp6($username, $password)
     {
         $this->I = $username;
         $this->P = $password;
-        $this->b = $this->myfmod(bin2hex(Random::string(152)),$this->N);
-    
-        var_dump($thi->b);die;
 
+        $N = $this->BigInteger($this->N, 16);
+        $g = $this->BigInteger($this->g, 10);
+        $s = (new Math_BigInteger())->_random_number_helper(32);
+        $b = (new Math_BigInteger())->_random_number_helper(19 * 8);
+        $b = $this->Littleendian($b->toHex());
 
-        $this->_x();
-        $x_int = strrev($this->x);
-        $this->v = $this->myfmod(pow($this->g,$x_int) , $this->N);
+        // //删除
+        // $s = '110471522494970994944798342883164591279279963255104947336945878247464192283689';
+        // $b = '36643632094460098713645300148642114838734081063340387910680922598953262708594';
+        // $s = new Math_BigInteger($s, 10);
+        // $b = new Math_BigInteger($b, 10);
+        // //删除
 
-        $gmod = $this->myfmod(pow($this->g,$this->b) , $this->N);
-        $this->B = $this->myfmod(((3 * $this->v) + $gmod) , $this->N);
-        echolog($this->B);return;
-        
-        // self.I = username
-        // self.P = password
-        // self.b = int.from_bytes(os.urandom(152), "little") % self.N
-        // self._x()
-        // x_int = int.from_bytes(self.x, byteorder='little')
-        // self.v = pow(self.g, x_int, self.N)
+        list(, $b) = $b->divide($N);
 
-        // gmod = pow(self.g, self.b, self.N)
-        // B = ((3 * self.v) + gmod) % self.N
-        // self.B = int.to_bytes(B, 32, byteorder='little')
+        $tempsp = $s->toHex() . $this->P;
+        $tempsp = $this->BigInteger($tempsp, 16);
+        $x      = sha1($tempsp->toBytes());
+        $x      = $this->BigInteger($x, 16);
+        $x      = $this->Littleendian($x->toHex());
 
+        $v    = $g->modPow($x, $N);
+        $gmod = $g->modPow($b, $N);
+
+        $newint  = $this->BigInteger(3, 10);
+        $newgmod = $newint->multiply($v);
+        $newgmod = $newgmod->add($gmod);
+
+        list(, $B) = $newgmod->divide($N);
+        $B         = $this->Littleendian($B->toHex());
+
+        $N       = $this->Littleendian($N->toHex());
+        $this->N = $N;
+        $this->g = $g;
+        $this->s = $s;
+        $this->b = $b;
+        $this->x = $x;
+        $this->v = $v;
+        $this->B = $B;
+
+        $B          = $B->toBytes();
+        $N          = $N->toBytes();
+        $s_bytes    = $s->toBytes();
+        $s          = $s->toHex();
+        $v          = $v->toHex();
+        $b          = $b->toHex();
+        $g          = $g->toHex();
+        $this->data = [
+            'B'       => int_helper::getBytes($B),
+            'N'       => int_helper::getBytes($N),
+            's_bytes' => int_helper::getBytes($s_bytes),
+            's'       => $s,
+            'v'       => $v,
+            'b'       => $b,
+            'g'       => $g,
+        ];
     }
 
-    function myfmod($x,$y)
+    //16进制小端字节序
+    public function Littleendian($str)
     {
-        return fmod($x , $y);
+        $str = pack('h*', $str);
+        $str = $this->BigInteger($str, 256);
+        $str = strrev($str->toHex());
+        return $this->BigInteger($str, 16);
     }
 
-    function hash_sha1($str)
+    public function configvs($v, $s, $b, $B, $I)
     {
-        return sha1($str);
+        $this->I = $I;
+        $this->v = $this->BigInteger($v, 16);
+        $this->s = $this->BigInteger($s, 16);
+        $this->b = $this->BigInteger($b, 16);
+        $this->B = $this->BigInteger($B, 16);
+        $this->N = $this->BigInteger($this->N, 16);
+        $this->g = $this->BigInteger($this->g, 10);
     }
 
-    function get_random($len=3){
-        //range 是将10到99列成一个数组 
-        $numbers = range (0,9);
-        
-        $random = "";
-        for ($i=0;$i<$len;$i++){
-            $random.= $numbers[rand(0,9)];
+    public function getM($A, $M1)
+    {
+        $this->A = $this->BigInteger($A, 16);
+        $strinfo = $this->A->toHex() . $this->B->toHex();
+        $strinfo = $this->BigInteger($strinfo, 16);
+        $this->u = sha1($strinfo->toBytes());
+        $this->u = $this->BigInteger($this->u, 16);
+
+        $temp_A  = $this->Littleendian($this->A->toHex());
+        $temp_u  = $this->Littleendian($this->u->toHex());
+        $this->S = $temp_A->multiply($this->v->modPow($temp_u, $this->N))->modPow($this->b, $this->N);
+        $S_bytes = $this->Littleendian($this->S->toHex());
+        $S_bytes = $S_bytes->toHex() . '0000000000000000';
+
+        $S_bytes = $this->BigInteger($S_bytes, 16);
+        $this->K = sha1($S_bytes->toBytes());
+
+        var_dump('A:' . $this->A->toHex());
+        var_dump('B:' . $this->B->toHex());
+        var_dump('u:' . $this->u->toHex());
+        var_dump('v:' . $this->v->toString());
+        var_dump('b:' . $this->b->toString());
+
+        $check = $this->set_client_proof($M1);
+        return $check;
+    }
+
+    public function set_client_proof($M1)
+    {
+        $t  = $this->Littleendian($this->S->toHex());
+        $t  = $t->toHex() . '0000000000000000';
+        $t  = $this->BigInteger($t, 16);
+        $t  = $t->toBytes();
+        $t  = int_helper::getBytes($t);
+        $t1 = [];
+        $vk = [];
+
+        foreach (range(0, 39) as $k => $v) {
+            $vk[] = 0;
         }
-        return $random;
-    }
 
-    public function getBigInteger($x = 0, $base = 16)
-    {
-        return new BigInteger($x, $base);
-    }
-
-    function _x()
-    {
-        /* Generates x and sets it. */
-        $this->x = sha1(int_helper::toStr($this->s).$this->P);
-    }
-
-    public function binary2hex($string)
-    {
-        $chars  = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f');
-        $length = strlen($string);
-        $result = '';
-        for ($i = 0; $i < $length; $i++) {
-            $b      = ord($string[$i]);
-            $result = $result . $chars[($b & 0xF0) >> 4];
-            $result = $result . $chars[$b & 0x0F];
+        foreach (range(0, 15) as $k => $v) {
+            $t1[] = $t[$v * 2];
         }
-        return $result;
+
+        $t11     = int_helper::toStr($t1);
+        $t11     = $this->BigInteger($t11, 256);
+        $t1_hash = sha1($t11->toBytes());
+
+        $t1_hash = $this->BigInteger($t1_hash, 16);
+        $t1_hash = $t1_hash->toBytes();
+        $t1_hash = int_helper::getBytes($t1_hash);
+
+        foreach (range(0, 19) as $k => $v) {
+            $vk[$v * 2] = $t1_hash[$v];
+        }
+
+        foreach (range(0, 15) as $k => $v) {
+            $t1[$v] = $t[$v * 2 + 1];
+        }
+
+        $t11     = int_helper::toStr($t1);
+        $t11     = $this->BigInteger($t11, 256);
+        $t1_hash = sha1($t11->toBytes());
+
+        $t1_hash = $this->BigInteger($t1_hash, 16);
+        $t1_hash = $t1_hash->toBytes();
+        $t1_hash = int_helper::getBytes($t1_hash);
+
+        foreach (range(0, 19) as $k => $v) {
+            $vk[$v * 2 + 1] = $t1_hash[$v];
+        }
+
+        $sessionkey       = int_helper::toStr($vk);
+        $this->sessionkey = $sessionkey = $this->BigInteger($sessionkey, 256);
+
+        $N_byte = $this->Littleendian($this->N->toHex());
+        $g_byte = $this->Littleendian($this->g->toHex());
+        $N_hash = sha1($N_byte->toBytes());
+        $g_hash = sha1($g_byte->toBytes());
+
+        $N_hash = $this->BigInteger($N_hash, 16);
+        $N_hash = $N_hash->toBytes();
+        $N_hash = int_helper::getBytes($N_hash);
+
+        $g_hash = $this->BigInteger($g_hash, 16);
+        $g_hash = $g_hash->toBytes();
+        $g_hash = int_helper::getBytes($g_hash);
+
+        $t3 = [];
+        foreach (range(0, 19) as $k => $v) {
+            $t3[] = $N_hash[$v] ^ $g_hash[$v];
+        }
+        $t3 = int_helper::toStr($t3);
+        $t3 = $this->BigInteger($t3, 256);
+
+        $t4 = sha1($this->I);
+        $t4 = $this->BigInteger($t4, 16);
+
+        $c_proof = sha1($t3->toBytes() . $t4->toBytes() . $this->s->toBytes() . $this->A->toBytes() . $this->B->toBytes() . $sessionkey->toBytes());
+
+        var_dump('c1:' . $c_proof);
+        var_dump('m1:' . $M1);
+
+        if ($c_proof != $M1) {
+            return false;
+        }
+
+        $c_proof = $this->BigInteger($c_proof, 16);
+        $this->M = sha1($this->A->toBytes() . $c_proof->toBytes() . $sessionkey->toBytes());
+        $this->M = $this->BigInteger($this->M, 16);
+        return true;
     }
 }

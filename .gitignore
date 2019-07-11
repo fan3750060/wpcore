@@ -11,3 +11,4 @@ yarn-error.log
 .phpunit.result.cache
 sftp-config.json
 www
+runtime/*.*

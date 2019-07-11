@@ -4,6 +4,7 @@ namespace app\Auth;
 use app\Auth\Connection;
 use app\Auth\Message;
 use app\Auth\MessageCache;
+use app\Common\Checksystem;
 use core\Work;
 
 /**
@@ -25,8 +26,10 @@ class AuthServer
      */
     public function start()
     {
+        Checksystem::check();
+
         $str = "
-        
+
  PPPP    PPPP     PPP                    PPPPPPP
   PPP    PPPPP    PPP                   PPPPPPPPP
   PPPP   PPPPP   PPPP                  PPPP   PPPP
@@ -48,18 +51,20 @@ class AuthServer
                       PPP
                       PPP
         ";
-        echolog($str);
-        echolog('AuthServer version 1.0.1');
-        echolog('author by.fan <fan3750060@163.com>');
-        echolog('Gameversion: ' . config('Gameversion'));
-        echolog('bind server port:'.config('LogonServer.Address').' ' .config('LogonServer.Port'));
+        AUTH_LOG($str);
+        AUTH_LOG('AuthServer version 1.0.1');
+        AUTH_LOG('author by.fan <fan3750060@163.com>');
+        AUTH_LOG('Gameversion: ' . config('Gameversion'));
+        AUTH_LOG('bind server port:' . config('LogonServer.Address') . ' ' . config('LogonServer.Port'));
 
         // 初始状态
         $this->active = true;
 
-        //开启命令进程
-        $param[] = ['controller' =>'Command','action'=>'run','param' => []];
-        Work::run($param);
+        //开启命令进程(windows不进行线程操作)
+        if (strpos(strtoupper(PHP_OS), 'WIN') == false) {
+            $param[] = ['controller' => 'Command', 'action' => 'run', 'param' => []];
+            Work::run($param);
+        }
 
         //开启socket
         $this->runAuthServer();
@@ -79,7 +84,7 @@ class AuthServer
         if ($this->active) {
             $this->listen('LogonServer'); //开启监听
         } else {
-            echolog('Error: Did not start the service according to the process...');
+            AUTH_LOG('Error: Did not start the service according to the process...');
         }
     }
 
@@ -158,7 +163,7 @@ class AuthServer
     {
         // 设置进程名称
         @cli_set_process_title("swoole_im_master");
-        echolog("Start");
+        AUTH_LOG("Start");
     }
 
     /**
@@ -170,7 +175,7 @@ class AuthServer
      */
     public function onConnect($serv, $fd, $from_id)
     {
-        echolog("Client {$fd} connect");
+        AUTH_LOG("Client {$fd} connect");
 
         // 将当前连接用户添加到连接池和待检池
         $connectionCls = new Connection();
@@ -188,7 +193,7 @@ class AuthServer
      */
     public function onReceive($serv, $fd, $from_id, $data)
     {
-        echolog("Get Message From Client {$fd}");
+        AUTH_LOG("Get Message From Client {$fd}");
 
         (new Connection())->update_checkTable($fd);
 
@@ -199,7 +204,7 @@ class AuthServer
         );
 
         $serv->task(json_encode($param, JSON_UNESCAPED_UNICODE));
-        echolog("Continue Handle Worker");
+        AUTH_LOG("Continue Handle Worker");
     }
 
     /**
@@ -212,9 +217,9 @@ class AuthServer
     public function onClose($serv, $fd, $from_id)
     {
         // 将连接从连接池中移除
-        (new Connection())->saveConnector($fd,0, '',''); //初始化auth状态 1
+        (new Connection())->saveConnector($fd, 0, '', ''); //初始化auth状态 1
         (new Connection())->removeConnector($fd);
-        echolog("Client {$fd} close connection\n");
+        AUTH_LOG("Client {$fd} close connection\n");
     }
 
     /**
@@ -232,7 +237,7 @@ class AuthServer
      */
     public function onTask($serv, $task_id, $from_id, $param)
     {
-        echolog("This Task {$task_id} from Worker {$from_id}");
+        AUTH_LOG("This Task {$task_id} from Worker {$from_id}");
         $paramArr = json_decode($param, true);
         $fd       = $paramArr['fd'];
         $data     = base64_decode($paramArr['data']);
@@ -251,8 +256,8 @@ class AuthServer
      */
     public function onFinish($serv, $task_id, $data)
     {
-        echolog("Task {$task_id} finish");
-        echolog("Result: {$data}");
+        AUTH_LOG("Task {$task_id} finish");
+        AUTH_LOG("Result: {$data}");
     }
 
     /**
@@ -263,7 +268,7 @@ class AuthServer
      */
     public function onWorkerStart($serv, $worker_id)
     {
-        echolog("onWorkerStart");
+        AUTH_LOG("onWorkerStart");
 
         // 只有当worker_id为0时才添加定时器,避免重复添加
         if ($worker_id == 0) {
@@ -271,7 +276,7 @@ class AuthServer
 
             // 清除数据
             $connectionCls->clearData();
-            echolog("clear data finished");
+            AUTH_LOG("clear data finished");
 
             // 在Worker进程开启时绑定定时器
             // 低于1.8.0版本task进程不能使用tick/after定时器，所以需要使用$serv->taskworker进行判断
@@ -282,7 +287,7 @@ class AuthServer
             } else {
                 $serv->addtimer(5000);
             }
-            echolog("start timer finished");
+            AUTH_LOG("start timer finished");
         }
     }
 

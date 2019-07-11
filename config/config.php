@@ -3,11 +3,11 @@ return [
 
     //Login configuration
     'LogonServer' => [
-        'Address'     => '127.0.0.1',
-        'Port'        => 3724,
-        'Backlog'     => 8
+        'Address' => '127.0.0.1',
+        'Port'    => 3724,
+        'Backlog' => 8,
     ],
-    
+
     // Gameversion
     'Gameversion' => '3.3.5',
 

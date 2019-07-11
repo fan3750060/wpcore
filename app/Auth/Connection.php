@@ -113,7 +113,7 @@ class Connection
      * @param int $
      * @param int $userId
      */
-    public function saveConnector($fd,$state = Clientstate::Init, $username = null,$userinfo = null)
+    public function saveConnector($fd, $state = Clientstate::Init, $username = null, $userinfo = null)
     {
         $arr = $this->getConnector($fd);
 
@@ -171,18 +171,18 @@ class Connection
     public function clearInvalidConnection($serv)
     {
         if (self::$_checkTable) {
-            // echolog("check count0: ".count(self::$_checkTable));
+            // AUTH_LOG("check count0: ".count(self::$_checkTable));
             foreach (self::$_checkTable as $key => $value) {
                 $connector = $this->getConnector($key);
                 if (empty($connector)) {
-                    echolog("Remove : " . $key);
+                    AUTH_LOG("Remove : " . $key);
 
                     //连接不在连接池，从待检池移除并关闭连接
                     self::$_checkTable->del("$key");
                     $serv->close($key);
                     continue;
                 } else if ($connector['state'] > Clientstate::Init || !$serv->exist($key)) {
-                    echolog("Remove : " . $key);
+                    AUTH_LOG("Remove : " . $key);
                     //已正常连接或者连接已不存在从待检池移除
                     self::$_checkTable->del("$key");
                     continue;
@@ -190,7 +190,7 @@ class Connection
 
                 $createTime = $connector["createTime"];
                 if ($createTime < strtotime("-5 seconds")) {
-                    echolog("Remove and close : " . $key);
+                    AUTH_LOG("Remove and close : " . $key);
                     //过期，从待检池移除并关闭连接
                     self::$_checkTable->del("$key");
                     $serv->close($key);
@@ -198,7 +198,7 @@ class Connection
                 }
 
             }
-            // echolog("check count1: ".count(self::$_checkTable));
+            // AUTH_LOG("check count1: ".count(self::$_checkTable));
         }
     }
 
