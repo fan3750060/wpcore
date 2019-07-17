@@ -34,18 +34,18 @@ class Authchallenge
         $hardcoded = $Srp6->BigInteger($hardcoded, 16)->toBytes();
 
         // 固定
-        $seed  = '0xc44ce743';
-        $seed1 = '0xaadbdbb7c17ae75388505c510d0fe637';
-        $seed2 = '0xc6b2c29ff50b0cb1ba2d0d3f7c130f51';
+        // $seed  = '0xc44ce743';
+        // $seed1 = '0xaadbdbb7c17ae75388505c510d0fe637';
+        // $seed2 = '0xc6b2c29ff50b0cb1ba2d0d3f7c130f51';
+
+        // $seed  = $Srp6->Littleendian($Srp6->BigInteger($seed, 16)->toHex())->toBytes();
+        // $seed1 = $Srp6->Littleendian($Srp6->BigInteger($seed1, 16)->toHex())->toBytes();
+        // $seed2 = $Srp6->Littleendian($Srp6->BigInteger($seed2, 16)->toHex())->toBytes();
 
         // 随机
-        // $seed  = $Srp6->_random_number_helper(4)->toHex();
-        // $seed1 = $Srp6->_random_number_helper(16)->toHex();
-        // $seed2 = $Srp6->_random_number_helper(16)->toHex();
-
-        $seed  = $Srp6->Littleendian($Srp6->BigInteger($seed, 16)->toHex())->toBytes();
-        $seed1 = $Srp6->Littleendian($Srp6->BigInteger($seed1, 16)->toHex())->toBytes();
-        $seed2 = $Srp6->Littleendian($Srp6->BigInteger($seed2, 16)->toHex())->toBytes();
+        $seed  = $Srp6->Littleendian($Srp6->_random_number_helper(4)->toHex())->toBytes();
+        $seed1 = $Srp6->Littleendian($Srp6->_random_number_helper(16)->toHex())->toBytes();
+        $seed2 = $Srp6->Littleendian($Srp6->_random_number_helper(16)->toHex())->toBytes();
 
         $data = $hardcoded . $seed . $seed1 . $seed2;
 
@@ -98,18 +98,18 @@ class Authchallenge
         }
         $packdata['account_name'] = int_helper::toStr($account_name);
         $account_name             = $Srp6->BigInteger($packdata['account_name'], 256)->toBytes();
-        $next_length = strlen($account_name)+8+5;
+        $next_length              = strlen($account_name) + 8 + 5;
 
         //client_seed
         $client_seed             = array_slice($content, $next_length, 4);
         $packdata['client_seed'] = $Srp6->BigInteger(int_helper::toStr($client_seed), 256)->toHex();
         $client_seed_Bytes       = $Srp6->BigInteger(int_helper::toStr($client_seed), 256)->toBytes();
-        $next_length = $next_length+4+4+4;
+        $next_length             = $next_length + 4 + 4 + 4;
 
         //realm_id
         $realm_id             = array_slice($content, $next_length, 4);
-        $packdata['realm_id'] =  $Srp6->BigInteger(strrev(int_helper::toStr($realm_id)), 256)->toString();
-        $next_length = $next_length+4+4+4;
+        $packdata['realm_id'] = $Srp6->BigInteger(strrev(int_helper::toStr($realm_id)), 256)->toString();
+        $next_length          = $next_length + 4 + 4 + 4;
 
         //client_hash
         $client_hash             = array_slice($content, $next_length, 20);
