@@ -18,12 +18,13 @@ class Realmlist
      * ------------------------------------------------------------------------------
      * @return  [type]          [description]
      */
-    public function get_realmlist()
+    public function get_realmlist($param)
     {
-        $Account   = new Account();
-        $realmlist = $Account->get_realmlist();
-        $data      = $this->getRealmInfo($realmlist[0]); //暂时支持第一个服务器
-        $RealmInfo = array_merge($data[0], $data[1], $data[2]);
+        $Account    = new Account();
+        $realmlist  = $Account->get_realmlist();
+        $num_player = $Account->get_realmlistuserinfo($param);
+        $data       = $this->getRealmInfo($realmlist[0], $num_player); //暂时支持第一个服务器
+        $RealmInfo  = array_merge($data[0], $data[1], $data[2]);
 
         return $RealmInfo;
     }
@@ -37,20 +38,21 @@ class Realmlist
      * ------------------------------------------------------------------------------
      * @return  [type]          [description]
      */
-    public function getRealmInfo($realmlist)
+    public function getRealmInfo($realmlist,$num_player = 0)
     {
         // 模拟数据
         $name      = $realmlist['name']; //服务器名称
         $addr_port = $realmlist['address'] . ':' . $realmlist['port']; //服务器端口
+        $realm_id  = $realmlist['id']; //服务器ID
 
         $type_b     = [0, 0, 0, 0];
-        $population = int_helper::HexToDecimal('0x00');
-        $num_chars  = int_helper::HexToDecimal('0x00');
-        $time_zone  = int_helper::HexToDecimal('0x00');
-        $unknown    = int_helper::HexToDecimal('0x00');
-        $cmd        = int_helper::HexToDecimal('0x10');
-        $name       = array_merge(int_helper::getBytes($name), [0]);
-        $addr_port  = array_merge(int_helper::getBytes($addr_port), [0]);
+        $population = int_helper::HexToDecimal('0x01');
+
+        $time_zone = int_helper::HexToDecimal('0x00');
+        $unknown   = int_helper::HexToDecimal('0x00');
+        $cmd       = int_helper::HexToDecimal('0x10');
+        $name      = array_merge(int_helper::getBytes($name), [0]);
+        $addr_port = array_merge(int_helper::getBytes($addr_port), [0]);
 
         // 拼装服内容信息 5
         $RealmInfo_Server = [];
@@ -70,12 +72,12 @@ class Realmlist
 
         //4
         $RealmInfo_Server[] = $population;
-        $RealmInfo_Server[] = $num_chars;
+        $RealmInfo_Server[] = 0;
         $RealmInfo_Server[] = $time_zone;
         $RealmInfo_Server[] = $unknown;
 
         //拼装服脚信息
-        $RealmFooter_Server = [1, 1, 44, 16, 0];
+        $RealmFooter_Server = [$num_player, 1, $realm_id, 16, 0];
 
         //拼装服头信息
         $length               = 5 + count($RealmInfo_Server) + count($RealmFooter_Server);

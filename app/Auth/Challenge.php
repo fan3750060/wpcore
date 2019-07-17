@@ -5,12 +5,14 @@ use app\Common\int_helper;
 use app\Common\Math_BigInteger;
 use app\Common\Srp6;
 use core\lib\Cache;
+use app\Common\Account;
 
 /**
  *
  */
 class Challenge
 {
+    public static $srpdata_my;
     public $srpdata;
     public $seesionkey;
 
@@ -72,8 +74,22 @@ class Challenge
         $SRP->authSrp6($data['username'], $data['sha_pass_hash']);
         $this->srpdata = $SRP->data;
 
-        //储存缓存 TODO mysql
-        Cache::drive()->set($data['username'], $this->srpdata, 100);
+        //协程写入数据库
+        go(function () use($data) {
+            $param = [
+                'v' => $this->srpdata['v'],
+                's' => $this->srpdata['s'],
+                'sessionkey' => $this->srpdata['b'], //兼容数据库 暂时用sessionkey存储
+                'token_key' => $this->srpdata['B_hex'],
+                'username' => $data['username']
+            ];
+
+            $Account = new Account();
+            $Account->updateinfo($param);
+        });
+
+        //储存缓存 mysql
+        // Cache::drive()->set($data['username'], $this->srpdata, 100);
 
         $return_data   = [];
         $return_data[] = $cmd;
@@ -116,8 +132,11 @@ class Challenge
      */
     public function AuthServerLogonChallenge($data, $username)
     {
-        //获取缓存 TODO mysql
-        $this->srpdata = Cache::drive()->get($username);
+        $Account = new Account();
+        $userinfo = $Account -> get_account($username);
+
+        //获取缓存 mysql
+        // $this->srpdata = Cache::drive()->get($username);
 
         $A  = array_slice($data, 1, 32);
         $M1 = array_slice($data, 33, 20);
@@ -129,13 +148,10 @@ class Challenge
         $A  = $A->toHex();
         $M1 = $M1->toHex();
 
-        $v = $this->srpdata['v'];
-        $s = $this->srpdata['s'];
-        $b = $this->srpdata['b'];
-        $B = $this->srpdata['B'];
-        $B = int_helper::toStr($B);
-        $B = new Math_BigInteger($B, 256);
-        $B = $B->toHex();
+        $v = $userinfo['v'];
+        $s = $userinfo['s'];
+        $b = $userinfo['sessionkey'];
+        $B = $userinfo['token_key'];
 
         $SRP = new Srp6();
         $SRP->configvs($v, $s, $b, $B, $username);

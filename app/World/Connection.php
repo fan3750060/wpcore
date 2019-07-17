@@ -3,9 +3,6 @@ namespace app\World;
 
 use app\Auth\Clientstate;
 
-// use app\ConfigHandler;
-// use app\FileHandler;
-
 class Connection
 {
     private static $_connectorTable;
@@ -20,9 +17,10 @@ class Connection
         self::$_connectorTable = new \swoole_table(1000);
 
         // 表字段
-        self::$_connectorTable->column('state', \swoole_table::TYPE_INT, 1); // 1,2,4,8
+        self::$_connectorTable->column('state', \swoole_table::TYPE_INT, 0); // 1,2,4,8
         self::$_connectorTable->column('createTime', \swoole_table::TYPE_STRING, 20);
         self::$_connectorTable->column('username', \swoole_table::TYPE_STRING, 30);
+        self::$_connectorTable->column('serverseed', \swoole_table::TYPE_STRING, 100);
 
         self::$_connectorTable->create();
     }
@@ -57,30 +55,25 @@ class Connection
     }
 
     /**
-     * 根据连接id获取用户状态
-     * @param int $fd
-     * @return int
+     * [getCache 获取fd的缓存]
+     * ------------------------------------------------------------------------------
+     * @author  by.fan <fan3750060@163.com>
+     * ------------------------------------------------------------------------------
+     * @version date:2019-07-16
+     * ------------------------------------------------------------------------------
+     * @param   [type]          $fd [description]
+     * @return  [type]              [description]
      */
-    public function getConnectorState($fd)
+    public function getCache($fd, $key = null)
     {
         $connector = $this->getConnector($fd);
         if (!empty($connector)) {
-            return intval($connector["state"]);
-        }
 
-        return 0;
-    }
+            if ($key) {
+                return $connector[$key];
+            }
 
-    /**
-     * 根据连接id获取用户名
-     * @param int $fd
-     * @return int
-     */
-    public function getConnectorUsername($fd)
-    {
-        $connector = $this->getConnector($fd);
-        if (!empty($connector)) {
-            return $connector["username"];
+            return $connector;
         }
 
         return null;
@@ -92,7 +85,7 @@ class Connection
      * @param int
      * @param int $userId
      */
-    public function saveConnector($fd, $state = Clientstate::Init, $username = null)
+    public function saveConnector($fd, $param)
     {
         $arr = $this->getConnector($fd);
 
@@ -100,10 +93,20 @@ class Connection
             $arr["createTime"] = time();
         }
 
-        $arr['state'] = $state;
+        if (!empty($param['state'])) {
+            $arr['state'] = $param['state'];
+        } else {
+            if (empty($arr['state'])) {
+                $arr['state'] = Clientstate::Init;
+            }
+        }
 
-        if ($username) {
-            $arr['username'] = $username;
+        if (!empty($param['username'])) {
+            $arr['username'] = $param['username'];
+        }
+
+        if (!empty($param['serverseed'])) {
+            $arr['serverseed'] = $param['serverseed'];
         }
 
         // 保存连接
@@ -153,13 +156,13 @@ class Connection
                     WORLD_LOG("Remove : " . $key);
 
                     //连接不在连接池，从待检池移除并关闭连接
-                    self::$_checkTable->del("$key");
+                    self::$_checkTable->del($key);
                     $serv->close($key);
                     continue;
                 } else if ($connector['state'] > Clientstate::Init || !$serv->exist($key)) {
                     WORLD_LOG("Remove : " . $key);
                     //已正常连接或者连接已不存在从待检池移除
-                    self::$_checkTable->del("$key");
+                    self::$_checkTable->del($key);
                     continue;
                 }
 
@@ -167,7 +170,7 @@ class Connection
                 if ($createTime < strtotime("-5 seconds")) {
                     WORLD_LOG("Remove and close : " . $key);
                     //过期，从待检池移除并关闭连接
-                    self::$_checkTable->del("$key");
+                    self::$_checkTable->del($key);
                     $serv->close($key);
                     continue;
                 }
@@ -188,14 +191,4 @@ class Connection
         );
         self::$_checkTable->set($fd, $arr);
     }
-
-    /**
-     * 清理数据
-     */
-    public function clearData()
-    {
-        // $connectorDir=ConfigHandler::getLocalConfigs("connectorDir");
-        // FileHandler::deleteFiles($connectorDir);
-    }
-
 }

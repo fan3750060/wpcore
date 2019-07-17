@@ -4,6 +4,7 @@ namespace app\World;
 use app\Common\int_helper;
 use app\World\Clientstate;
 use app\World\Connection;
+use app\World\Authchallenge;
 
 class Message
 {
@@ -20,7 +21,7 @@ class Message
             $connectionCls = new Connection();
 
             // 状态
-            $state = $connectionCls->getConnectorState($fd);
+            $state = $connectionCls->getCache($fd,'state');
 
             $data = int_helper::getBytes($data);
 
@@ -45,9 +46,9 @@ class Message
     {
         WORLD_LOG('[SMSG_AUTH_CHALLENGE]: Send Client : ' . $fd, 'warning');
 
-        //要求客户端鉴权
-        $data = [0x00, 0x2a, 0xec, 0x01, 0x01, 0x00, 0x00, 0x00, 0x8a, 0xd0, 0x07, 0x33, 0x37, 0x33, 0xe6, 0x9c, 0x11, 0xcd, 0x6b, 0x73,
-            0x24, 0xfe, 0x8d, 0x6d, 0x2a, 0x53, 0xdf, 0x91, 0xcb, 0x15, 0x27, 0xeb, 0x02, 0x7d, 0x41, 0x26, 0x15, 0xd6, 0xd6, 0xc8, 0x05, 0x3b, 0x7b, 0xe2];
+        $Authchallenge = new Authchallenge();
+
+        $data = $Authchallenge->Authchallenge($fd);
 
         $this->serversend($serv, $fd, $data);
     }
@@ -63,10 +64,31 @@ class Message
      */
     public function checkauth($fd, $data)
     {
-        WORLD_LOG('[SMSG_AUTH_RESPONSE]: Send Client : ' . $fd, 'warning');
+        WORLD_LOG('[CMSG_AUTH_SESSION]: Send Client : ' . $fd, 'warning');
 
-        $data = [0x0C, 0x00, 0x00, 0x00, 0x2];
+        $Authchallenge = new Authchallenge();
+
+        $data = $Authchallenge->AuthSession($fd,$data);
+
         return $data;
+    }
+
+    /**
+     * [Offline 下线]
+     * ------------------------------------------------------------------------------
+     * @author  by.fan <fan3750060@163.com>
+     * ------------------------------------------------------------------------------
+     * @version date:2019-07-17
+     * ------------------------------------------------------------------------------
+     * @param   [type]          $fd [description]
+     */
+    public function Offline($fd)
+    {
+        $connectionCls = new Connection();
+        $username = $connectionCls->getCache($fd,'username');
+
+        $Account = new \app\Common\Account();
+        $Account -> Offline($username);
     }
 
     /**
@@ -82,8 +104,22 @@ class Message
     {
         switch ($state) {
             case 1:
-                $data = $this->checkauth($fd, $data);
-                $this->serversend($serv, $fd, $data);
+                $opcode = \app\World\Worldpackt::getopcode($data);
+
+                switch ($opcode) {
+                    case 'CMSG_AUTH_SESSION':
+                        $data = $this->checkauth($fd, $data);
+                        WORLD_LOG('[SMSG_AUTH_RESPONSE]: Send Client : ' . $fd, 'warning');
+                        $this->serversend($serv, $fd, $data);
+                        break;
+
+                    default:
+                        WORLD_LOG('[CMSG_PING]: Send Client : ' . $fd, 'warning');
+                        $data = [0x00,0x00,0x00,0x00];
+                        $this->serversend($serv, $fd, $data);
+                    break;
+                }
+
                 break;
         }
     }

@@ -3,9 +3,8 @@ return [
 
     //Login configuration
     'LogonServer' => [
-        'Address' => '127.0.0.1',
-        'Port'    => 3724,
-        'Backlog' => 8,
+        'Address' => env('LOGON_ADDRESS','127.0.0.1'),
+        'Port'    => env('LOGON_Port',3724),
     ],
 
     // Gameversion

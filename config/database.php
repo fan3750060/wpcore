@@ -27,27 +27,27 @@ return [
     ],
 
     /**************** 数据库配置 ****************/
-    'database_2' => [
+    'characters' => [
         // 数据库类型
-        'type'     => 'mysql',
+        'type'     => env('CHARACTERS_CONNECTION', 'mysql'),
 
         // 服务器地址
-        'hostname' => '127.0.0.1',
+        'hostname' => env('CHARACTERS_HOST', '127.0.0.1'),
 
         //数据库名称
-        'dbname'   => 'test',
+        'dbname'   => env('CHARACTERS_DATABASE', 'test'),
 
         //用户名
-        'username' => 'root',
+        'username' => env('CHARACTERS_USERNAME', 'root'),
 
         //密码
-        'password' => 'root',
+        'password' => env('CHARACTERS_PASSWORD', ''),
 
         //端口
-        'hostport' => '3306',
+        'hostport' => env('CHARACTERS_PORT', '3306'),
 
         //字符编码
-        'charset'  => 'UTF8',
+        'charset'  => env('CHARACTERS_CHARSET', 'UTF8'),
     ],
 
     /**************** memcache配置 ****************/

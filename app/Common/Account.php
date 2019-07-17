@@ -77,6 +77,21 @@ class Account
     }
 
     /**
+     * [Offline 下线]
+     * ------------------------------------------------------------------------------
+     * @author  by.fan <fan3750060@163.com>
+     * ------------------------------------------------------------------------------
+     * @version date:2019-07-17
+     * ------------------------------------------------------------------------------
+     */
+    public function Offline($username)
+    {
+        $where       = [];
+        $where['username'] = $username;
+        return DB::table('account')->where($where)->update(['online' => 0]);
+    }
+
+    /**
      * [get_realmlist 获取世界服务器信息]
      * ------------------------------------------------------------------------------
      * @author  by.fan <fan3750060@163.com>
@@ -88,6 +103,24 @@ class Account
     public function get_realmlist()
     {
         return DB::table('realmlist')->select();
+    }
+
+    /**
+     * [get_realmlistuserinfo 获取服务器角色数量]
+     * ------------------------------------------------------------------------------
+     * @author  by.fan <fan3750060@163.com>
+     * ------------------------------------------------------------------------------
+     * @version date:2019-07-13
+     * ------------------------------------------------------------------------------
+     * @param   [type]          $param [description]
+     * @return  [type]                 [description]
+     */
+    public function get_realmlistuserinfo($param)
+    {
+        $where = [
+            'accountId' => $param['accountId']
+        ];
+        return DB::table('account_data','characters')->where($where)->count();
     }
 
     /**
@@ -122,6 +155,21 @@ class Account
 
         if (!empty($param['sessionkey'])) {
             $data['sessionkey'] = $param['sessionkey'];
+        }
+
+        if(!empty($param['v']))
+        {
+            $data['v'] = $param['v'];
+        }
+
+        if(!empty($param['s']))
+        {
+            $data['s'] = $param['s'];
+        }
+
+        if(!empty($param['token_key']))
+        {
+            $data['token_key'] = $param['token_key'];
         }
 
         $where             = [];
@@ -163,12 +211,12 @@ class Account
                     'gmlevel' => 0,
                 ];
                 DB::table('account_access')->insert($access_data);
-                $this->commandsuccess('账户创建成功:' . $param['username']);
+                $this->commandsuccess('Account created successfully: ' . $param['username']);
             } else {
-                $this->commanderror('账户创建失败:' . $param['username']);
+                $this->commanderror('Account creation failed: ' . $param['username']);
             }
         } else {
-            $this->commanderror('当前账户已经存在:' . $param['username']);
+            $this->commanderror('Account already exists: ' . $param['username']);
         }
     }
 

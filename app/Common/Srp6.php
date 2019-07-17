@@ -66,6 +66,21 @@ class Srp6
     }
 
     /**
+     * [_random_number_helper 随机数]
+     * ------------------------------------------------------------------------------
+     * @author  by.fan <fan3750060@163.com>
+     * ------------------------------------------------------------------------------
+     * @version date:2019-07-16
+     * ------------------------------------------------------------------------------
+     * @param   [type]          $Bytes_length [description]
+     * @return  [type]                        [description]
+     */
+    public function _random_number_helper($Bytes_length)
+    {
+        return (new Math_BigInteger()) -> _random_number_helper($Bytes_length);
+    }
+
+    /**
      * [authSrp6 description]
      * ------------------------------------------------------------------------------
      * @author  by.fan <fan3750060@163.com>
@@ -112,14 +127,15 @@ class Srp6
         $B         = $this->Littleendian($B->toHex());
 
         $N       = $this->Littleendian($N->toHex());
-        $this->N = $N;
-        $this->g = $g;
-        $this->s = $s;
-        $this->b = $b;
-        $this->x = $x;
-        $this->v = $v;
-        $this->B = $B;
-
+        // $this->N = $N;
+        // $this->g = $g;
+        // $this->s = $s;
+        // $this->b = $b;
+        // $this->x = $x;
+        // $this->v = $v;
+        // $this->B = $B;
+        
+        $B_hex      = $B->toHex();
         $B          = $B->toBytes();
         $N          = $N->toBytes();
         $s_bytes    = $s->toBytes();
@@ -128,6 +144,7 @@ class Srp6
         $b          = $b->toHex();
         $g          = $g->toHex();
         $this->data = [
+            'B_hex'   => $B_hex,
             'B'       => int_helper::getBytes($B),
             'N'       => int_helper::getBytes($N),
             's_bytes' => int_helper::getBytes($s_bytes),
@@ -142,6 +159,15 @@ class Srp6
     public function Littleendian($str)
     {
         $str = pack('h*', $str);
+        $str = $this->BigInteger($str, 256);
+        $str = strrev($str->toHex());
+        return $this->BigInteger($str, 16);
+    }
+
+    //16进制大端字节序
+    public function Bigend($str)
+    {
+        $str = pack('H*', $str);
         $str = $this->BigInteger($str, 256);
         $str = strrev($str->toHex());
         return $this->BigInteger($str, 16);
@@ -175,11 +201,11 @@ class Srp6
         $S_bytes = $this->BigInteger($S_bytes, 16);
         $this->K = sha1($S_bytes->toBytes());
 
-        var_dump('A:' . $this->A->toHex());
-        var_dump('B:' . $this->B->toHex());
-        var_dump('u:' . $this->u->toHex());
-        var_dump('v:' . $this->v->toString());
-        var_dump('b:' . $this->b->toString());
+        // var_dump('A:' . $this->A->toHex());
+        // var_dump('B:' . $this->B->toHex());
+        // var_dump('u:' . $this->u->toHex());
+        // var_dump('v:' . $this->v->toString());
+        // var_dump('b:' . $this->b->toString());
 
         $check = $this->set_client_proof($M1);
         return $check;
@@ -259,8 +285,8 @@ class Srp6
 
         $c_proof = sha1($t3->toBytes() . $t4->toBytes() . $this->s->toBytes() . $this->A->toBytes() . $this->B->toBytes() . $sessionkey->toBytes());
 
-        var_dump('c1:' . $c_proof);
-        var_dump('m1:' . $M1);
+        echolog('server_auth: ' . $c_proof,'warning');
+        echolog('client_auth: ' . $M1,'warning');
 
         if ($c_proof != $M1) {
             return false;

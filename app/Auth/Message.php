@@ -91,6 +91,7 @@ class Message
                 $this->serversend($serv, $fd, $returndata);
 
                 //5) 缓存用户信息
+                $userinfo['id'] = $account_info['id'];
                 $Connection = new Connection();
                 $Connection->saveConnector($fd, Clientstate::ClientLogonChallenge, $userinfo['username'], json_encode($userinfo)); //初始化auth状态 1
                 break;
@@ -116,12 +117,22 @@ class Message
                     $Connection = new Connection();
                     $userinfo   = json_decode($Connection->getConnectorUserInfo($fd), true);
                     if ($userinfo) {
-                        //获取sessionkey
-                        $sessionkey             = $Challenge->AuthServerSeesionKey($username);
-                        $userinfo['sessionkey'] = $sessionkey;
+                        // //获取sessionkey
+                        // $sessionkey             = $Challenge->AuthServerSeesionKey($username);
+                        // $userinfo['sessionkey'] = $sessionkey;
 
-                        $Account = new Account();
-                        $Account->updateinfo($userinfo);
+                        // $Account = new Account();
+                        // $Account->updateinfo($userinfo);
+
+                        //协程写入数据库
+                        go(function () use($userinfo,$Challenge,$username) {
+                            //获取sessionkey
+                            $sessionkey             = $Challenge->AuthServerSeesionKey($username);
+                            $userinfo['sessionkey'] = $sessionkey;
+
+                            $Account = new Account();
+                            $Account->updateinfo($userinfo);
+                        });
                     }
 
                 } else {
@@ -140,13 +151,12 @@ class Message
 
                 AUTH_LOG('Get server domain list');
 
-                //模拟数据
-                // $data = [0x10,0x27,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x00,0x58,0x59,0x57,0x4f,0x57,0x00,0x31,0x32,0x37,0x2e,0x30,0x2e,0x30,0x2e,0x31,0x3a,0x38,0x30,0x38,0x35,0x00,0x00,0x00,0x00,0x00,0x01,0x01,0x2c,0x10,0x00];
-                // $this->serversend($serv, $fd, $data);
+                $Connection = new Connection();
+                $userinfo   = json_decode($Connection->getConnectorUserInfo($fd), true);
 
                 // 获取服务器列表
                 $Realmlist = new Realmlist();
-                $RealmInfo = $Realmlist->get_realmlist();
+                $RealmInfo = $Realmlist->get_realmlist(['accountId' => $userinfo['id']]);
                 $this->serversend($serv, $fd, $RealmInfo);
                 break;
         }

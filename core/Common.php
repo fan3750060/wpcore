@@ -113,7 +113,7 @@ if (!function_exists('echolog')) {
      * @param   string          $string   [内容]
      * @return  [type]                 [description]
      */
-    function echolog($string = null, $type = 'no', $save = null,$filename = 'swoole.log')
+    function echolog($string = null, $type = 'no', $save = null, $filename = 'swoole.log')
     {
         if (is_array($string)) {
             $str = $string = var_export($string, true) . PHP_EOL;
@@ -143,13 +143,19 @@ if (!function_exists('echolog')) {
 
         echo $str;
 
-        $save = $save === null ? env('LOG_SAVE',false) : false;
-        if($save)
-        {
-            $logstr = "[".date('Y-m-d H:i:s') . "]: " . $string . PHP_EOL;
-            $log_file = fopen(RUNTIME_PATH.$filename, 'a');
-            fputs($log_file,$logstr);
+        $save = $save === null ? env('LOG_SAVE', false) : $save;
+
+        if ($save) {
+
+            $logstr   = "[" . date('Y-m-d H:i:s') . "]: " . $string . PHP_EOL;
+            $log_file = fopen(RUNTIME_PATH . $filename, 'a');
+            fputs($log_file, $logstr);
             fclose($log_file);
+
+            if(count_line(RUNTIME_PATH . $filename) > env('LOG_LINE', 1000))
+            {
+                unlink(RUNTIME_PATH . $filename);
+            }
         }
     }
 }
@@ -165,10 +171,10 @@ if (!function_exists('AUTH_LOG')) {
      * @param   string          $string   [内容]
      * @return  [type]                 [description]
      */
-    function AUTH_LOG($string = null, $type = 'no', $save = null,$filename = 'auth.log')
+    function AUTH_LOG($string = null, $type = 'no', $save = null, $filename = 'auth.log')
     {
-        $save = $save === null ? env('LOG_SAVE',false) : false;
-        echolog($string,$type,$save,$filename);
+        $save = $save === null ? env('LOG_SAVE', false) : false;
+        echolog($string, $type, $save, $filename);
     }
 }
 
@@ -183,10 +189,28 @@ if (!function_exists('WORLD_LOG')) {
      * @param   string          $string   [内容]
      * @return  [type]                 [description]
      */
-    function WORLD_LOG($string = null, $type = 'no', $save = null,$filename = 'world.log')
+    function WORLD_LOG($string = null, $type = 'no', $save = null, $filename = 'world.log')
     {
-        $save = $save === null ? env('LOG_SAVE',false) : false;
-        echolog($string,$type,$save,$filename);
+        $save = $save === null ? env('LOG_SAVE', false) : false;
+        echolog($string, $type, $save, $filename);
+    }
+}
+
+if (!function_exists('count_line')) {
+    function count_line($file)
+    {
+        $fp = fopen($file, "r");
+        $i  = 0;
+        while (!feof($fp)) {
+            //每次读取2M
+            if ($data = fread($fp, 1024 * 1024 * 2)) {
+                //计算读取到的行数
+                $num = substr_count($data, "\n");
+                $i += $num;
+            }
+        }
+        fclose($fp);
+        return $i;
     }
 }
 

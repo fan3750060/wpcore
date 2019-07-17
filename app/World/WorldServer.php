@@ -171,10 +171,11 @@ class WorldServer
     public function onConnect($serv, $fd, $from_id)
     {
         WORLD_LOG("Client {$fd} connect");
+        // var_dump($serv->getClientInfo($fd)['remote_ip']);
 
         // 将当前连接用户添加到连接池和待检池
         $connectionCls = new Connection();
-        $connectionCls->saveConnector($fd, 1, $fd); //变更为二次连接
+        $connectionCls->saveConnector($fd,['state' => 1]); //变更为二次连接
         $connectionCls->saveCheckConnector($fd);
 
         (new Message())->newConnect($serv, $fd); //首次连接需要告知客户端验证
@@ -213,6 +214,9 @@ class WorldServer
      */
     public function onClose($serv, $fd, $from_id)
     {
+        //断开连接账户下线
+        (new Message())->Offline($fd);
+
         // 将连接从连接池中移除
         (new Connection())->removeConnector($fd);
         WORLD_LOG("Client {$fd} close connection\n");
@@ -269,10 +273,6 @@ class WorldServer
         // 只有当worker_id为0时才添加定时器,避免重复添加
         if ($worker_id == 0) {
             $connectionCls = new Connection();
-
-            // 清除数据
-            $connectionCls->clearData();
-            WORLD_LOG("clear data finished");
 
             // 在Worker进程开启时绑定定时器
             // 低于1.8.0版本task进程不能使用tick/after定时器，所以需要使用$serv->taskworker进行判断
