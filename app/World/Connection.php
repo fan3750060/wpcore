@@ -21,6 +21,7 @@ class Connection
         self::$_connectorTable->column('createTime', \swoole_table::TYPE_STRING, 20);
         self::$_connectorTable->column('username', \swoole_table::TYPE_STRING, 30);
         self::$_connectorTable->column('serverseed', \swoole_table::TYPE_STRING, 100);
+        self::$_connectorTable->column('sessionkey', \swoole_table::TYPE_STRING, 100);
 
         self::$_connectorTable->create();
     }
@@ -107,6 +108,10 @@ class Connection
 
         if (!empty($param['serverseed'])) {
             $arr['serverseed'] = $param['serverseed'];
+        }
+
+        if (!empty($param['sessionkey'])) {
+            $arr['sessionkey'] = $param['sessionkey'];
         }
 
         // 保存连接

@@ -30,7 +30,7 @@ class MessageCache
      */
     public function clearCacheData($serv, $fd)
     {
-        self::$dataCacheTable->del("$fd");
+        self::$dataCacheTable->del($fd);
     }
 
     /**
@@ -44,7 +44,7 @@ class MessageCache
     public function getSplitDataList($fd, $data)
     {
         // 获取指定连接的缓存消息
-        $dataCacheArr = self::$dataCacheTable->get("$fd");
+        $dataCacheArr = self::$dataCacheTable->get($fd);
 
         $content = "";
         if (!empty($dataCacheArr)) {
@@ -62,7 +62,7 @@ class MessageCache
 
         // 如果不包含结束符，则尚未接收到完整的包，先缓存起来
         if (!strstr($data, $endFlag)) {
-            self::$dataCacheTable->set("$fd", array(
+            self::$dataCacheTable->set($fd, array(
                 "fd"      => $fd,
                 "content" => $data,
             ));
@@ -72,7 +72,7 @@ class MessageCache
             $count  = count($result);
             if (!empty($result[$count - 1])) {
                 // 如果末尾不是结束符，则剔除完整包还有残余数据 继续留在缓存中
-                self::$dataCacheTable->set("$fd", array(
+                self::$dataCacheTable->set($fd, array(
                     "fd"      => $fd,
                     "content" => $result[$count - 1],
                 ));
@@ -80,7 +80,7 @@ class MessageCache
                 array_splice($result, $count - 1, 1);
             } else {
                 // 数据被切割为完整的包，没有残余未完整的数据包，删除当前记录
-                self::$dataCacheTable->del("$fd");
+                self::$dataCacheTable->del($fd);
                 // 移除最后一个空数据
                 array_splice($result, $count - 1, 1);
             }

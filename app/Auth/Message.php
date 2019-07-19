@@ -23,7 +23,7 @@ class Message
             $connectionCls = new Connection();
 
             // 验证逻辑
-            $state = $connectionCls->getConnectorState($fd);
+            $state = $connectionCls->getCache($fd,'state');
 
             $data = int_helper::getBytes($data);
 
@@ -93,14 +93,16 @@ class Message
                 //5) 缓存用户信息
                 $userinfo['id'] = $account_info['id'];
                 $Connection = new Connection();
-                $Connection->saveConnector($fd, Clientstate::ClientLogonChallenge, $userinfo['username'], json_encode($userinfo)); //初始化auth状态 1
+
+                //初始化auth状态 1
+                $Connection->saveConnector($fd,['state' => Clientstate::ClientLogonChallenge,'username' => $userinfo['username'],'userinfo' => json_encode($userinfo)]); 
                 break;
 
             case Clientstate::ClientLogonChallenge:
                 // file_put_contents('runtime/2_auth_.log', int_helper::toStr($data));
 
                 $Connection = new Connection();
-                $username   = $Connection->getConnectorUsername($fd);
+                $username   = $Connection->getCache($fd,'username');
 
                 $Challenge = new Challenge();
                 $data      = $Challenge->AuthServerLogonChallenge($data, $username); //校验
@@ -110,12 +112,10 @@ class Message
 
                     // 验证成功
                     $this->serversend($serv, $fd, $data);
-
-                    $Connection->saveConnector($fd, Clientstate::Authenticated); //初始化auth状态 5
+                    $Connection->saveConnector($fd,['state' => Clientstate::Authenticated]); //初始化auth状态 5
 
                     //更新用户信息
-                    $Connection = new Connection();
-                    $userinfo   = json_decode($Connection->getConnectorUserInfo($fd), true);
+                    $userinfo   = json_decode($Connection->getCache($fd,'userinfo'), true);
                     if ($userinfo) {
                         // //获取sessionkey
                         // $sessionkey             = $Challenge->AuthServerSeesionKey($username);
@@ -140,8 +140,7 @@ class Message
 
                     // 验证失败
                     $this->serversend($serv, $fd, [0, 0, int_helper::HexToDecimal(Clientstate::WOW_FAIL_INCORRECT_PASSWORD)]);
-
-                    $Connection->saveConnector($fd, Clientstate::Init); //初始化auth状态 0
+                    $Connection->saveConnector($fd,['state' => Clientstate::Init]); //初始化auth状态 0
                 }
 
                 break;
@@ -152,7 +151,7 @@ class Message
                 AUTH_LOG('Get server domain list');
 
                 $Connection = new Connection();
-                $userinfo   = json_decode($Connection->getConnectorUserInfo($fd), true);
+                $userinfo   = json_decode($Connection->getCache($fd,'userinfo'), true);
 
                 // 获取服务器列表
                 $Realmlist = new Realmlist();

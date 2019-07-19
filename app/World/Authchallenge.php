@@ -5,7 +5,7 @@ use app\Common\int_helper;
 use app\Common\Srp6;
 use app\World\Connection;
 use app\World\OpCode;
-use app\World\Worldpackt;
+use app\World\Worldpacket;
 
 /**
  * 世界服务器鉴权
@@ -22,11 +22,6 @@ class Authchallenge
      */
     public function Authchallenge($fd)
     {
-        // //要求客户端鉴权
-        // $data = [0x00, 0x2a, 0xec, 0x01, 0x01, 0x00, 0x00, 0x00, 0x8a, 0xd0, 0x07, 0x33, 0x37, 0x33, 0xe6, 0x9c, 0x11, 0xcd, 0x6b, 0x73,
-        //     0x24, 0xfe, 0x8d, 0x6d, 0x2a, 0x53, 0xdf, 0x91, 0xcb, 0x15, 0x27, 0xeb, 0x02, 0x7d, 0x41, 0x26, 0x15, 0xd6, 0xd6, 0xc8, 0x05, 0x3b, 0x7b, 0xe2];
-        // 00,2a,ec,01,01,00,00,00,43,e7,4c,c4,37,e6,0f,0d,51,5c,50,88,53,e7,7a,c1,b7,db,db,aa,51,0f137c3f0d2dbab10c0bf59fc2b2c6
-
         $cmd       = 0x00;
         $hardcoded = '0x01000000';
 
@@ -49,7 +44,7 @@ class Authchallenge
 
         $data = $hardcoded . $seed . $seed1 . $seed2;
 
-        $ThePackt = Worldpackt::Packtdata(OpCode::SMSG_AUTH_CHALLENGE, $data);
+        $ThePackt = Worldpacket::Packtdata(OpCode::SMSG_AUTH_CHALLENGE, $data);
         $packdata = $Srp6->BigInteger($ThePackt, 16)->toBytes();
         $packdata = int_helper::getBytes($packdata);
 
@@ -75,7 +70,7 @@ class Authchallenge
     {
         $Srp6 = new Srp6();
 
-        $packdata = Worldpackt::Unpackdata($data);
+        $packdata = Worldpacket::Unpackdata($data);
         $content  = int_helper::getBytes($packdata[2]);
 
         $packdata = [];
@@ -122,16 +117,19 @@ class Authchallenge
 
         if (!$userinfo) {
 
-            WORLD_LOG('unknown account: ' . $account_name, 'error');
+            WORLD_LOG('Sent Auth Response (unknown account): ' . $account_name, 'error');
 
             // 用户不存在
             $AUTH_UNKNOWN_ACCOUNT = $Srp6->BigInteger(OpCode::AUTH_UNKNOWN_ACCOUNT, 16)->toString();
-            $data                 = [$AUTH_UNKNOWN_ACCOUNT];
+            $data                 = [(int) $AUTH_UNKNOWN_ACCOUNT, 0];
             $data                 = int_helper::toStr($data);
-            $ThePackt             = Worldpackt::Packtdata(OpCode::SMSG_AUTH_RESPONSE, $data);
+            $ThePackt             = Worldpacket::Packtdata(OpCode::SMSG_AUTH_RESPONSE, $data);
 
             $packdata = $Srp6->BigInteger($ThePackt, 16)->toBytes();
             $packdata = int_helper::getBytes($packdata);
+
+            // $SMSG_AUTH_RESPONSE = $Srp6->BigInteger(OpCode::SMSG_AUTH_RESPONSE, 16)->toString();
+            // $packdata = [(int)$SMSG_AUTH_RESPONSE,(int)$AUTH_UNKNOWN_ACCOUNT];
 
             return $packdata;
         }
@@ -139,10 +137,12 @@ class Authchallenge
         //K
         $sessionkey = $Srp6->BigInteger($userinfo['sessionkey'], 16)->toBytes();
 
-        //计算Hash
+        //保存session
         $connectionCls = new Connection();
-        $serverseed    = $connectionCls->getCache($fd, 'serverseed');
+        $connectionCls->saveConnector($fd, ['sessionkey' => $sessionkey]);
+        $serverseed = $connectionCls->getCache($fd, 'serverseed');
 
+        //计算Hash
         $server_hash       = sha1($account_name . int_helper::toStr([0x00, 0x00, 0x00, 0x00]) . $client_seed_Bytes . $serverseed . $sessionkey);
         $server_hash_Bytes = $Srp6->BigInteger($server_hash, 16)->toBytes();
 
@@ -161,15 +161,22 @@ class Authchallenge
         WORLD_LOG('client_hash: ' . $packdata['client_hash'], 'warning');
         WORLD_LOG('AUTH_OK: Successful verification', 'success');
 
-        // 鉴权完成
-        $AUTH_OK  = $Srp6->BigInteger(OpCode::AUTH_OK, 16)->toString();
-        $data     = [$AUTH_OK, 0, 0, 0, 2];
-        $data     = int_helper::toStr($data);
-        $ThePackt = Worldpackt::Packtdata(OpCode::SMSG_AUTH_RESPONSE, $data);
+        // 包体
+        $Srp6                 = new Srp6();
+        $AUTH_OK              = $Srp6->BigInteger(OpCode::AUTH_OK, 16)->toString();
+        $BillingTimeRemaining = [0, 0, 0, 0];
+        $BillingPlanFlags     = [0];
+        $BillingTimeRested    = [0, 0, 0, 0];
+        $expansion            = [(int) $userinfo['expansion']];
+        $data                 = array_merge([(int) $AUTH_OK], $BillingTimeRemaining, $BillingPlanFlags, $BillingTimeRested, $expansion);
+        
+        //加密
+        $encodeheader         = Worldpacket::encrypter(OpCode::SMSG_AUTH_RESPONSE, $data, $sessionkey);
+        $packdata             = array_merge($encodeheader, $data);
 
-        $packdata = $Srp6->BigInteger($ThePackt, 16)->toBytes();
-        $packdata = int_helper::getBytes($packdata);
-        // $packdata = array_merge([0x01], $packdata);
+        // //解包
+        // $decode = Worldpacket::decrypter($packdata, $sessionkey);
+        // var_dump($decode);
 
         return $packdata;
     }

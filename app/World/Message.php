@@ -5,6 +5,7 @@ use app\Common\int_helper;
 use app\World\Clientstate;
 use app\World\Connection;
 use app\World\Authchallenge;
+use app\World\Worldpacket;
 
 class Message
 {
@@ -44,8 +45,6 @@ class Message
      */
     public function newConnect($serv, $fd)
     {
-        WORLD_LOG('[SMSG_AUTH_CHALLENGE]: Send Client : ' . $fd, 'warning');
-
         $Authchallenge = new Authchallenge();
 
         $data = $Authchallenge->Authchallenge($fd);
@@ -64,8 +63,6 @@ class Message
      */
     public function checkauth($fd, $data)
     {
-        WORLD_LOG('[CMSG_AUTH_SESSION]: Send Client : ' . $fd, 'warning');
-
         $Authchallenge = new Authchallenge();
 
         $data = $Authchallenge->AuthSession($fd,$data);
@@ -104,17 +101,23 @@ class Message
     {
         switch ($state) {
             case 1:
-                $opcode = \app\World\Worldpackt::getopcode($data);
+                $opcode = Worldpacket::getopcode($data,$fd);
 
                 switch ($opcode) {
                     case 'CMSG_AUTH_SESSION':
                         $data = $this->checkauth($fd, $data);
-                        WORLD_LOG('[SMSG_AUTH_RESPONSE]: Send Client : ' . $fd, 'warning');
+                        WORLD_LOG('[SMSG_AUTH_RESPONSE] Client : ' . $fd, 'warning');
                         $this->serversend($serv, $fd, $data);
                         break;
 
                     default:
-                        WORLD_LOG('[CMSG_PING]: Send Client : ' . $fd, 'warning');
+                        //解包
+                        // $connectionCls = new Connection();
+                        // $sessionkey = $connectionCls->getCache($fd,'sessionkey');
+                        // $decode = Worldpacket::decrypter($data, $sessionkey);
+                        // var_dump($decode);
+
+                        WORLD_LOG('[CMSG_PING] Client : ' . $fd, 'warning');
                         $data = [0x00,0x00,0x00,0x00];
                         $this->serversend($serv, $fd, $data);
                     break;

@@ -58,50 +58,25 @@ class Connection
     }
 
     /**
-     * [getConnectorUserInfo 获取用户信息]
+     * [getCache 获取fd的缓存]
      * ------------------------------------------------------------------------------
      * @author  by.fan <fan3750060@163.com>
      * ------------------------------------------------------------------------------
-     * @version date:2019-07-03
+     * @version date:2019-07-16
      * ------------------------------------------------------------------------------
      * @param   [type]          $fd [description]
      * @return  [type]              [description]
      */
-    public function getConnectorUserInfo($fd)
+    public function getCache($fd, $key = null)
     {
         $connector = $this->getConnector($fd);
         if (!empty($connector)) {
-            return $connector["userinfo"];
-        }
 
-        return 0;
-    }
+            if ($key) {
+                return $connector[$key];
+            }
 
-    /**
-     * 根据连接id获取用户状态
-     * @param int $fd
-     * @return int
-     */
-    public function getConnectorState($fd)
-    {
-        $connector = $this->getConnector($fd);
-        if (!empty($connector)) {
-            return intval($connector["state"]);
-        }
-
-        return 0;
-    }
-
-    /**
-     * 根据连接id获取用户名
-     * @param int $fd
-     * @return int
-     */
-    public function getConnectorUsername($fd)
-    {
-        $connector = $this->getConnector($fd);
-        if (!empty($connector)) {
-            return $connector["username"];
+            return $connector;
         }
 
         return null;
@@ -110,10 +85,10 @@ class Connection
     /**
      * 保存当前连接到连接池
      * @param int $fd
-     * @param int $
+     * @param int
      * @param int $userId
      */
-    public function saveConnector($fd, $state = Clientstate::Init, $username = null, $userinfo = null)
+    public function saveConnector($fd, $param=[])
     {
         $arr = $this->getConnector($fd);
 
@@ -121,14 +96,20 @@ class Connection
             $arr["createTime"] = time();
         }
 
-        $arr['state'] = $state;
-
-        if ($username !== null) {
-            $arr['username'] = $username;
+        if (!empty($param['state'])) {
+            $arr['state'] = $param['state'];
+        } else {
+            if (empty($arr['state'])) {
+                $arr['state'] = Clientstate::Init;
+            }
         }
 
-        if ($userinfo !== null) {
-            $arr['userinfo'] = $userinfo;
+        if (!empty($param['username'])) {
+            $arr['username'] = $param['username'];
+        }
+
+        if (!empty($param['userinfo'])) {
+            $arr['userinfo'] = $param['userinfo'];
         }
 
         // 保存连接
@@ -178,13 +159,13 @@ class Connection
                     AUTH_LOG("Remove : " . $key);
 
                     //连接不在连接池，从待检池移除并关闭连接
-                    self::$_checkTable->del("$key");
+                    self::$_checkTable->del($key);
                     $serv->close($key);
                     continue;
                 } else if ($connector['state'] > Clientstate::Init || !$serv->exist($key)) {
                     AUTH_LOG("Remove : " . $key);
                     //已正常连接或者连接已不存在从待检池移除
-                    self::$_checkTable->del("$key");
+                    self::$_checkTable->del($key);
                     continue;
                 }
 
@@ -192,7 +173,7 @@ class Connection
                 if ($createTime < strtotime("-5 seconds")) {
                     AUTH_LOG("Remove and close : " . $key);
                     //过期，从待检池移除并关闭连接
-                    self::$_checkTable->del("$key");
+                    self::$_checkTable->del($key);
                     $serv->close($key);
                     continue;
                 }

@@ -217,7 +217,6 @@ class AuthServer
     public function onClose($serv, $fd, $from_id)
     {
         // 将连接从连接池中移除
-        (new Connection())->saveConnector($fd, 0, '', ''); //初始化auth状态 1
         (new Connection())->removeConnector($fd);
         AUTH_LOG("Client {$fd} close connection\n");
     }

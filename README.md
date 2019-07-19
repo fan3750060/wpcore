@@ -33,11 +33,11 @@
 =====
 
 # Introduction
-	This is a World of Warcraft server written in php.
+	This is a World of Warcraft server written in PHP.
 	Now it has debugged the process of logging in to the server.
 	The current World of Warcraft client is 3.3.5.
-	The server list and account password data need to query the auth library.
-	The world server is being written...
+	The server list and account password data need to query the authoritative library.
+	The world server authentication process is complete and is developing packet encryption...
 
 	The database file is in the root directory: sql/auth.sql
 
@@ -46,11 +46,11 @@
 	Wow client link: https://pan.baidu.com/s/1A4EeOdngdtIrcgSzfkj6-A extraction code: 2vkt
 
 # 介绍
-	这是用php编写的魔兽世界服务器。
+	这是用PHP编写的魔兽世界服务器。
 	现在它已经调试了登录服务器的过程。
 	目前的魔兽世界客户端是3.3.5。
-	服务器列表和帐户密码数据需要查询auth库。
-	世界服务器正在编写中...
+	服务器列表和帐户密码数据需要查询权威库。
+	世界服务器身份验证过程已完成，正在开发数据包加密...
 
 	数据库文件在根目录: sql/auth.sql
 
