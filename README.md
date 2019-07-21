@@ -36,8 +36,9 @@
 	This is a World of Warcraft server written in PHP.
 	Now it has debugged the process of logging in to the server.
 	The current World of Warcraft client is 3.3.5.
-	The server list and account password data need to query the authoritative library.
-	The world server authentication process is complete and is developing packet encryption...
+	The server list and account password data need to query the AUTH library.
+	The world server authentication process is complete and packet encryption is complete
+	The follow-up process is in development...
 
 	The database file is in the root directory: sql/auth.sql
 
@@ -49,8 +50,9 @@
 	这是用PHP编写的魔兽世界服务器。
 	现在它已经调试了登录服务器的过程。
 	目前的魔兽世界客户端是3.3.5。
-	服务器列表和帐户密码数据需要查询权威库。
-	世界服务器身份验证过程已完成，正在开发数据包加密...
+	服务器列表和帐户密码数据需要查询AUTH库。
+	世界服务器身份验证过程已完成，数据包加密已完成
+	后续进程正在开发中......
 
 	数据库文件在根目录: sql/auth.sql
 

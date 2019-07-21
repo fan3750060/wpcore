@@ -158,10 +158,8 @@ class Srp6
     //16进制小端字节序
     public function Littleendian($str)
     {
-        $str = pack('h*', $str);
-        $str = $this->BigInteger($str, 256);
-        $str = strrev($str->toHex());
-        return $this->BigInteger($str, 16);
+        // return $this->BigInteger(strrev(unpack('h*',$this->BigInteger($str, 16)->toBytes())[1]),16);
+        return $this->BigInteger(strrev($this->BigInteger(pack('h*', $str), 256)->toHex()), 16);
     }
 
     //16进制大端字节序

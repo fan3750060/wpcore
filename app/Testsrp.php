@@ -4,41 +4,36 @@ namespace app;
 use app\Common\int_helper;
 use app\Common\Math_BigInteger;
 use app\Common\Srp6;
+use app\World\Worldpacket;
+use app\World\OpCode;
 
 class Testsrp
 {
+     // const CMSG_PING = '0x1DC';
     public function run()
     {
-        $username      = 'FAN3750060';
-        $sha_pass_hash = '578b994cb24aa8521315b2e8dbd8fc3fd70ee9f2';
-        $SRP           = new Srp6();
-        $SRP->authSrp6($username, $sha_pass_hash);
-        $srpdata = $SRP->data;
+        $Srp6 = new Srp6();
+        $sessionkey = '671D37F36AA281507F041491EAA0CBFB9A1BC022C252AD3EBA552CEC79DC3FFFD250246A18BDB713';
+        $sessionkey = $Srp6->BigInteger($sessionkey, 16)->toBytes();
 
-        $param = 'AYJ6YDagD42v/Yb+fVbBHOhVZ4vA5Sg84etk/I75I20Srcf9w/EQDzhHx7mDYaVUOQqQ3AlAWwfv8pb2LmvuGF/GaDtTTcawTAAA';
-        $param = base64_decode($param);
-        $param = int_helper::getBytes($param);
+        //加密
+        // $data = [0x0c,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00];
+        // $packdata = Worldpacket::encrypter(OpCode::CMSG_PING,$data, $sessionkey);
+        // $data = $packdata = array_merge($packdata,$data);
 
-        $A  = array_slice($param, 1, 32);
-        $M1 = array_slice($param, 33, 20);
+        // var_dump($data);
+        // $packdata = $Srp6->BigInteger(int_helper::toStr($packdata), 256)->toHex();
+        // var_dump($packdata);
 
-        $A  = int_helper::toStr($A);
-        $M1 = int_helper::toStr($M1);
-        $A  = new Math_BigInteger($A, 256);
-        $M1 = new Math_BigInteger($M1, 256);
-        $A  = $A->toHex();
-        $M1 = $M1->toHex();
-
-        $v = $srpdata['v'];
-        $s = $srpdata['s'];
-        $b = $srpdata['b'];
-        $B = $srpdata['B'];
-        $B = int_helper::toStr($B);
-        $B = new Math_BigInteger($B, 256);
-        $B = $B->toHex();
-
-        $SRP = new Srp6();
-        $SRP->configvs($v, $s, $b, $B, $username);
-        $check = $SRP->getM($A, $M1);
+        //解包
+        // $data = [0x88,0xe3,0x31,0x1a,0x23,0x9f];
+        $data = [0x1c,0x67,0x49,0x8b,0x00];
+        $packdata = Worldpacket::decrypter($data, $sessionkey);
+        // unset($packdata['content']);
+        var_dump($packdata);
     }
 }
+
+
+
+

@@ -46,7 +46,7 @@ class Realmlist
         $realm_id  = $realmlist['id']; //服务器ID
 
         $type_b     = [0, 0, 0, 0];
-        $population = int_helper::HexToDecimal('0x01');
+        $population = 1;
 
         $time_zone = int_helper::HexToDecimal('0x00');
         $unknown   = int_helper::HexToDecimal('0x00');
@@ -77,7 +77,7 @@ class Realmlist
         $RealmInfo_Server[] = $unknown;
 
         //拼装服脚信息
-        $RealmFooter_Server = [$num_player, 1, $realm_id, 16, 0];
+        $RealmFooter_Server = [$num_player, 1, (int)$realm_id, 16, 1];
 
         //拼装服头信息
         $length               = 5 + count($RealmInfo_Server) + count($RealmFooter_Server);

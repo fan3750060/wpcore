@@ -108,15 +108,12 @@ class Message
                         $data = $this->checkauth($fd, $data);
                         WORLD_LOG('[SMSG_AUTH_RESPONSE] Client : ' . $fd, 'warning');
                         $this->serversend($serv, $fd, $data);
+
+                        
+                        
                         break;
 
                     default:
-                        //解包
-                        // $connectionCls = new Connection();
-                        // $sessionkey = $connectionCls->getCache($fd,'sessionkey');
-                        // $decode = Worldpacket::decrypter($data, $sessionkey);
-                        // var_dump($decode);
-
                         WORLD_LOG('[CMSG_PING] Client : ' . $fd, 'warning');
                         $data = [0x00,0x00,0x00,0x00];
                         $this->serversend($serv, $fd, $data);
