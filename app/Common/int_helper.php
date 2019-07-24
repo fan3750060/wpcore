@@ -82,6 +82,48 @@ class int_helper
         return is_array($i) ? $i[1] : $i;
     }
 
+    public static function PackInt($int,$type=8)
+    {
+        switch ($type) {
+            case 8:
+                return self::getBytes(self::int8($int));
+                break;
+
+            case 16:
+                return self::getBytes(self::int16($int));
+                break;
+
+            case 32:
+                return self::getBytes(self::int32($int));
+                break;
+
+            case 64:
+                return self::getBytes(self::int64($int));
+                break;
+        }
+    }
+
+    public static function UnPackInt($int,$type=8)
+    {
+        switch ($type) {
+            case 8:
+                return self::uInt8($int);
+                break;
+
+            case 16:
+                return self::uInt16($int);
+                break;
+
+            case 32:
+                return self::uInt32($int);
+                break;
+
+            case 64:
+                return self::uInt64($int);
+                break;
+        }
+    }
+
     //16进制转10进制
     public static function HexToDecimal($Hex)
     {

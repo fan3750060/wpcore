@@ -1,10 +1,11 @@
 <?php
 namespace app\World;
 
-use app\Common\int_helper;
+use app\Common\Srp6;
+use app\World\Authchallenge;
 use app\World\Clientstate;
 use app\World\Connection;
-use app\World\Authchallenge;
+use app\World\OpCode;
 use app\World\Worldpacket;
 
 class Message
@@ -22,9 +23,9 @@ class Message
             $connectionCls = new Connection();
 
             // 状态
-            $state = $connectionCls->getCache($fd,'state');
+            $state = $connectionCls->getCache($fd, 'state');
 
-            $data = int_helper::getBytes($data);
+            $data = GetBytes($data);
 
             WORLD_LOG("Receive: " . json_encode($data), 'info');
 
@@ -65,7 +66,7 @@ class Message
     {
         $Authchallenge = new Authchallenge();
 
-        $data = $Authchallenge->AuthSession($fd,$data);
+        $data = $Authchallenge->AuthSession($fd, $data);
 
         return $data;
     }
@@ -82,10 +83,10 @@ class Message
     public function Offline($fd)
     {
         $connectionCls = new Connection();
-        $username = $connectionCls->getCache($fd,'username');
+        $username      = $connectionCls->getCache($fd, 'username');
 
         $Account = new \app\Common\Account();
-        $Account -> Offline($username);
+        $Account->Offline($username);
     }
 
     /**
@@ -101,7 +102,7 @@ class Message
     {
         switch ($state) {
             case 1:
-                $opcode = Worldpacket::getopcode($data,$fd);
+                $opcode = Worldpacket::getopcode($data, $fd);
 
                 switch ($opcode) {
                     case 'CMSG_AUTH_SESSION':
@@ -109,15 +110,39 @@ class Message
                         WORLD_LOG('[SMSG_AUTH_RESPONSE] Client : ' . $fd, 'warning');
                         $this->serversend($serv, $fd, $data);
 
-                        
-                        
+                        $connectionCls = new Connection();
+                        $sessionkey    = $connectionCls->getCache($fd, 'sessionkey');
+                        $Srp6          = new Srp6();
+
+                        WORLD_LOG('[SMSG_ADDON_INFO] Client : ' . $fd, 'warning');
+                        //加密
+                        $data         = [0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00];
+                        // $data         = GetBytes($Srp6->BigInteger($data, 16)->toBytes());
+                        $encodeheader = Worldpacket::encrypter(OpCode::SMSG_ADDON_INFO, $data, $sessionkey);
+                        $packdata     = array_merge($encodeheader,$data);
+                        $this->serversend($serv, $fd, $packdata);
+
+                        WORLD_LOG('[SMSG_CLIENTCACHE_VERSION] Client : ' . $fd, 'warning');
+                        $data         = [0x57,0x4a,0x00,0x00];
+                        // $data         = GetBytes($Srp6->BigInteger($data, 16)->toBytes());
+                        $encodeheader = Worldpacket::encrypter(OpCode::SMSG_CLIENTCACHE_VERSION, $data, $sessionkey);
+                        $packdata     = array_merge($encodeheader,$data);
+                        $this->serversend($serv, $fd, $packdata);
+
+                        WORLD_LOG('[SMSG_TUTORIAL_FLAGS] Client : ' . $fd, 'warning');
+                        $data         = [0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00];
+                        // $data         = GetBytes($Srp6->BigInteger($data, 16)->toBytes());
+                        $encodeheader = Worldpacket::encrypter(OpCode::SMSG_TUTORIAL_FLAGS, $data, $sessionkey);
+                        $packdata     = array_merge($encodeheader,$data);
+                        $this->serversend($serv, $fd, $packdata);
+
                         break;
 
                     default:
                         WORLD_LOG('[CMSG_PING] Client : ' . $fd, 'warning');
-                        $data = [0x00,0x00,0x00,0x00];
+                        $data = [0x00, 0x00, 0x00, 0x00];
                         $this->serversend($serv, $fd, $data);
-                    break;
+                        break;
                 }
 
                 break;
@@ -136,6 +161,6 @@ class Message
     public function serversend($serv, $fd, $data = null)
     {
         WORLD_LOG("Send: " . json_encode($data), 'info');
-        $serv->send($fd, int_helper::toStr($data));
+        $serv->send($fd, ToStr($data));
     }
 }

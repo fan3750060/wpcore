@@ -2,7 +2,6 @@
 namespace app\Auth;
 
 use app\Common\Account;
-use app\Common\int_helper;
 
 /**
  *
@@ -38,7 +37,7 @@ class Realmlist
      * ------------------------------------------------------------------------------
      * @return  [type]          [description]
      */
-    public function getRealmInfo($realmlist,$num_player = 0)
+    public function getRealmInfo($realmlist, $num_player = 0)
     {
         // 模拟数据
         $name      = $realmlist['name']; //服务器名称
@@ -48,11 +47,11 @@ class Realmlist
         $type_b     = [0, 0, 0, 0];
         $population = 1;
 
-        $time_zone = int_helper::HexToDecimal('0x00');
-        $unknown   = int_helper::HexToDecimal('0x00');
-        $cmd       = int_helper::HexToDecimal('0x10');
-        $name      = array_merge(int_helper::getBytes($name), [0]);
-        $addr_port = array_merge(int_helper::getBytes($addr_port), [0]);
+        $time_zone = HexToDecimal('0x00');
+        $unknown   = HexToDecimal('0x00');
+        $cmd       = HexToDecimal('0x10');
+        $name      = array_merge(GetBytes($name), [0]);
+        $addr_port = array_merge(GetBytes($addr_port), [0]);
 
         // 拼装服内容信息 5
         $RealmInfo_Server = [];
@@ -77,7 +76,7 @@ class Realmlist
         $RealmInfo_Server[] = $unknown;
 
         //拼装服脚信息
-        $RealmFooter_Server = [$num_player, 1, (int)$realm_id, 16, 1];
+        $RealmFooter_Server = [$num_player, 1, (int) $realm_id, 16, 1];
 
         //拼装服头信息
         $length               = 5 + count($RealmInfo_Server) + count($RealmFooter_Server);

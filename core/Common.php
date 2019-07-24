@@ -152,8 +152,7 @@ if (!function_exists('echolog')) {
             fputs($log_file, $logstr);
             fclose($log_file);
 
-            if(count_line(RUNTIME_PATH . $filename) > env('LOG_LINE', 1000))
-            {
+            if (count_line(RUNTIME_PATH . $filename) > env('LOG_LINE', 1000)) {
                 unlink(RUNTIME_PATH . $filename);
             }
         }
@@ -362,11 +361,13 @@ if (!function_exists('http_curl')) {
 
         return $response;
     }
+}
 
-    /**
-     * 生成uuid
-     * @return string
-     */
+if (!function_exists('getuuid')) {
+/**
+ * 生成uuid
+ * @return string
+ */
     function getuuid()
     {
         $uuid = '';
@@ -380,7 +381,6 @@ if (!function_exists('http_curl')) {
         }
         return $uuid;
     }
-
 }
 
 if (!function_exists('env')) {
@@ -419,5 +419,64 @@ if (!function_exists('env')) {
         }
 
         return $value;
+    }
+}
+
+if (!function_exists('getIP')) {
+    //[getIP 获取客户端IP
+    function getIP()
+    {
+        global $ip;
+        if (getenv("HTTP_CLIENT_IP")) {
+            $ip = getenv("HTTP_CLIENT_IP");
+        } else if (getenv("HTTP_X_FORWARDED_FOR")) {
+            $ip = getenv("HTTP_X_FORWARDED_FOR");
+        } else if (getenv("REMOTE_ADDR")) {
+            $ip = getenv("REMOTE_ADDR");
+        } else {
+            $ip = "Unknow";
+        }
+
+        return $ip;
+    }
+}
+
+if (!function_exists('PackInt')) {
+    //PackInt
+    function PackInt($int,$type=8)
+    {
+        return \app\Common\int_helper::PackInt($int,$type);
+    }
+}
+
+if (!function_exists('UnPackInt')) {
+    //UnPackInt
+    function UnPackInt($int,$type=8)
+    {
+        return \app\Common\int_helper::UnPackInt($int,$type);
+    }
+}
+
+if (!function_exists('GetBytes')) {
+    //GetBytes
+    function GetBytes($string)
+    {
+        return \app\Common\int_helper::getBytes($string);
+    }
+}
+
+if (!function_exists('ToStr')) {
+    //ToStr
+    function ToStr($bytes)
+    {
+        return \app\Common\int_helper::toStr($bytes);
+    }
+}
+
+if (!function_exists('HexToDecimal')) {
+    //HexToDecimal
+    function HexToDecimal($Hex)
+    {
+        return \app\Common\int_helper::HexToDecimal($Hex);
     }
 }

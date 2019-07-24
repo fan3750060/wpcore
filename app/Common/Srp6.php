@@ -1,7 +1,6 @@
 <?php
 namespace app\Common;
 
-use app\Common\int_helper;
 use app\Common\Math_BigInteger;
 
 class Srp6
@@ -60,9 +59,9 @@ class Srp6
      * @param   integer         $numstr [description]
      * @param   integer         $base   [description]
      */
-    public function BigInteger($numstr = 0,$base = 10)
+    public function BigInteger($numstr = 0, $base = 10)
     {
-        return new Math_BigInteger($numstr,$base);
+        return new Math_BigInteger($numstr, $base);
     }
 
     /**
@@ -77,7 +76,7 @@ class Srp6
      */
     public function _random_number_helper($Bytes_length)
     {
-        return (new Math_BigInteger()) -> _random_number_helper($Bytes_length);
+        return (new Math_BigInteger())->_random_number_helper($Bytes_length);
     }
 
     /**
@@ -126,15 +125,8 @@ class Srp6
         list(, $B) = $newgmod->divide($N);
         $B         = $this->Littleendian($B->toHex());
 
-        $N       = $this->Littleendian($N->toHex());
-        // $this->N = $N;
-        // $this->g = $g;
-        // $this->s = $s;
-        // $this->b = $b;
-        // $this->x = $x;
-        // $this->v = $v;
-        // $this->B = $B;
-        
+        $N = $this->Littleendian($N->toHex());
+
         $B_hex      = $B->toHex();
         $B          = $B->toBytes();
         $N          = $N->toBytes();
@@ -145,9 +137,9 @@ class Srp6
         $g          = $g->toHex();
         $this->data = [
             'B_hex'   => $B_hex,
-            'B'       => int_helper::getBytes($B),
-            'N'       => int_helper::getBytes($N),
-            's_bytes' => int_helper::getBytes($s_bytes),
+            'B'       => GetBytes($B),
+            'N'       => GetBytes($N),
+            's_bytes' => GetBytes($s_bytes),
             's'       => $s,
             'v'       => $v,
             'b'       => $b,
@@ -215,7 +207,7 @@ class Srp6
         $t  = $t->toHex() . '0000000000000000';
         $t  = $this->BigInteger($t, 16);
         $t  = $t->toBytes();
-        $t  = int_helper::getBytes($t);
+        $t  = GetBytes($t);
         $t1 = [];
         $vk = [];
 
@@ -227,13 +219,13 @@ class Srp6
             $t1[] = $t[$v * 2];
         }
 
-        $t11     = int_helper::toStr($t1);
+        $t11     = ToStr($t1);
         $t11     = $this->BigInteger($t11, 256);
         $t1_hash = sha1($t11->toBytes());
 
         $t1_hash = $this->BigInteger($t1_hash, 16);
         $t1_hash = $t1_hash->toBytes();
-        $t1_hash = int_helper::getBytes($t1_hash);
+        $t1_hash = GetBytes($t1_hash);
 
         foreach (range(0, 19) as $k => $v) {
             $vk[$v * 2] = $t1_hash[$v];
@@ -243,19 +235,19 @@ class Srp6
             $t1[$v] = $t[$v * 2 + 1];
         }
 
-        $t11     = int_helper::toStr($t1);
+        $t11     = ToStr($t1);
         $t11     = $this->BigInteger($t11, 256);
         $t1_hash = sha1($t11->toBytes());
 
         $t1_hash = $this->BigInteger($t1_hash, 16);
         $t1_hash = $t1_hash->toBytes();
-        $t1_hash = int_helper::getBytes($t1_hash);
+        $t1_hash = GetBytes($t1_hash);
 
         foreach (range(0, 19) as $k => $v) {
             $vk[$v * 2 + 1] = $t1_hash[$v];
         }
 
-        $sessionkey       = int_helper::toStr($vk);
+        $sessionkey       = ToStr($vk);
         $this->sessionkey = $sessionkey = $this->BigInteger($sessionkey, 256);
 
         $N_byte = $this->Littleendian($this->N->toHex());
@@ -265,17 +257,17 @@ class Srp6
 
         $N_hash = $this->BigInteger($N_hash, 16);
         $N_hash = $N_hash->toBytes();
-        $N_hash = int_helper::getBytes($N_hash);
+        $N_hash = GetBytes($N_hash);
 
         $g_hash = $this->BigInteger($g_hash, 16);
         $g_hash = $g_hash->toBytes();
-        $g_hash = int_helper::getBytes($g_hash);
+        $g_hash = GetBytes($g_hash);
 
         $t3 = [];
         foreach (range(0, 19) as $k => $v) {
             $t3[] = $N_hash[$v] ^ $g_hash[$v];
         }
-        $t3 = int_helper::toStr($t3);
+        $t3 = ToStr($t3);
         $t3 = $this->BigInteger($t3, 256);
 
         $t4 = sha1($this->I);
@@ -283,8 +275,8 @@ class Srp6
 
         $c_proof = sha1($t3->toBytes() . $t4->toBytes() . $this->s->toBytes() . $this->A->toBytes() . $this->B->toBytes() . $sessionkey->toBytes());
 
-        echolog('server_auth: ' . $c_proof,'warning');
-        echolog('client_auth: ' . $M1,'warning');
+        echolog('server_auth: ' . $c_proof, 'warning');
+        echolog('client_auth: ' . $M1, 'warning');
 
         if ($c_proof != $M1) {
             return false;

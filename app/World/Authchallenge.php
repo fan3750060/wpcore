@@ -1,7 +1,6 @@
 <?php
 namespace app\World;
 
-use app\Common\int_helper;
 use app\Common\Srp6;
 use app\World\Connection;
 use app\World\OpCode;
@@ -32,7 +31,7 @@ class Authchallenge
         $seed2 = $Srp6->Littleendian($Srp6->_random_number_helper(16)->toHex())->toBytes();
 
         $data     = $hardcoded . $seed . $seed1 . $seed2;
-        $data     = int_helper::getBytes($data);
+        $data     = GetBytes($data);
         $packdata = Worldpacket::encrypter(OpCode::SMSG_AUTH_CHALLENGE, $data);
         $data     = array_merge($packdata, $data);
 
@@ -57,15 +56,15 @@ class Authchallenge
         $Srp6 = new Srp6();
 
         $packdata = Worldpacket::Unpackdata($data);
-        $content  = int_helper::getBytes($packdata[2]);
+        $content  = GetBytes($packdata[2]);
 
         $packdata = [];
 
         // 版本
         $build             = array_slice($content, 0, 2);
-        $build_0           = $Srp6->BigInteger(int_helper::toStr([$build[1]]), 256)->toHex();
-        $build_1           = $Srp6->BigInteger(int_helper::toStr([$build[0]]), 256)->toHex();
-        $packdata['build'] = int_helper::HexToDecimal($build_0 . $build_1);
+        $build_0           = $Srp6->BigInteger(ToStr([$build[1]]), 256)->toHex();
+        $build_1           = $Srp6->BigInteger(ToStr([$build[0]]), 256)->toHex();
+        $packdata['build'] = HexToDecimal($build_0 . $build_1);
 
         // 账户名称
         $account_name_bytes = array_slice($content, 8);
@@ -77,25 +76,25 @@ class Authchallenge
                 break;
             }
         }
-        $packdata['account_name'] = int_helper::toStr($account_name);
+        $packdata['account_name'] = ToStr($account_name);
         $account_name             = $Srp6->BigInteger($packdata['account_name'], 256)->toBytes();
         $next_length              = strlen($account_name) + 8 + 5;
 
         //client_seed
         $client_seed             = array_slice($content, $next_length, 4);
-        $packdata['client_seed'] = $Srp6->BigInteger(int_helper::toStr($client_seed), 256)->toHex();
-        $client_seed_Bytes       = $Srp6->BigInteger(int_helper::toStr($client_seed), 256)->toBytes();
+        $packdata['client_seed'] = $Srp6->BigInteger(ToStr($client_seed), 256)->toHex();
+        $client_seed_Bytes       = $Srp6->BigInteger(ToStr($client_seed), 256)->toBytes();
         $next_length             = $next_length + 4 + 4 + 4;
 
         //realm_id
         $realm_id             = array_slice($content, $next_length, 4);
-        $packdata['realm_id'] = $Srp6->BigInteger(strrev(int_helper::toStr($realm_id)), 256)->toString();
+        $packdata['realm_id'] = $Srp6->BigInteger(strrev(ToStr($realm_id)), 256)->toString();
         $next_length          = $next_length + 4 + 4 + 4;
 
         //client_hash
         $client_hash             = array_slice($content, $next_length, 20);
-        $packdata['client_hash'] = $Srp6->BigInteger(int_helper::toStr($client_hash), 256)->toHex();
-        $client_hash_Bytes       = $Srp6->BigInteger(int_helper::toStr($client_hash), 256)->toBytes();
+        $packdata['client_hash'] = $Srp6->BigInteger(ToStr($client_hash), 256)->toHex();
+        $client_hash_Bytes       = $Srp6->BigInteger(ToStr($client_hash), 256)->toBytes();
 
         // 查看账户
         $Account  = new \app\Common\Account();
@@ -124,7 +123,7 @@ class Authchallenge
         $serverseed = $connectionCls->getCache($fd, 'serverseed');
 
         //计算Hash
-        $server_hash       = sha1($account_name . int_helper::toStr([0x00, 0x00, 0x00, 0x00]) . $client_seed_Bytes . $serverseed . $sessionkey);
+        $server_hash       = sha1($account_name . ToStr(PackInt(0, 32)) . $client_seed_Bytes . $serverseed . $sessionkey);
         $server_hash_Bytes = $Srp6->BigInteger($server_hash, 16)->toBytes();
 
         //验证
@@ -145,9 +144,9 @@ class Authchallenge
         // 包体
         $Srp6                 = new Srp6();
         $AUTH_OK              = $Srp6->BigInteger(OpCode::AUTH_OK, 16)->toString();
-        $BillingTimeRemaining = [0, 0, 0, 0];
-        $BillingPlanFlags     = [0];
-        $BillingTimeRested    = [0, 0, 0, 0];
+        $BillingTimeRemaining = PackInt(0, 32);
+        $BillingPlanFlags     = PackInt(0, 8);
+        $BillingTimeRested    = PackInt(0, 32);
         $expansion            = [(int) $userinfo['expansion']];
         $data                 = array_merge([(int) $AUTH_OK], $BillingTimeRemaining, $BillingPlanFlags, $BillingTimeRested, $expansion);
 

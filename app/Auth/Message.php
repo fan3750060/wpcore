@@ -6,7 +6,6 @@ use app\Auth\Clientstate;
 use app\Auth\Connection;
 use app\Auth\Realmlist;
 use app\Common\Account;
-use app\Common\int_helper;
 
 class Message
 {
@@ -23,9 +22,9 @@ class Message
             $connectionCls = new Connection();
 
             // 验证逻辑
-            $state = $connectionCls->getCache($fd,'state');
+            $state = $connectionCls->getCache($fd, 'state');
 
-            $data = int_helper::getBytes($data);
+            $data = GetBytes($data);
 
             AUTH_LOG("Receive: " . json_encode($data), 'info');
 
@@ -46,7 +45,7 @@ class Message
     {
         switch ($state) {
             case Clientstate::Init:
-                // file_put_contents('runtime/1_auth_.log', int_helper::toStr($data));
+                // file_put_contents('runtime/1_auth_.log', ToStr($data));
 
                 $Challenge      = new Challenge();
                 $userinfo       = $Challenge->getinfo_ClientLogonChallenge($data); //解析数据包
@@ -62,7 +61,7 @@ class Message
                     AUTH_LOG('IP is banned : ' . $userinfo['username'], 'warning');
 
                     // IP被冻结
-                    $this->serversend($serv, $fd, [0, 0, int_helper::HexToDecimal(Clientstate::WOW_FAIL_GAME_ACCOUNT_LOCKED)]);
+                    $this->serversend($serv, $fd, [0, 0, HexToDecimal(Clientstate::WOW_FAIL_GAME_ACCOUNT_LOCKED)]);
                     return;
                 }
 
@@ -72,7 +71,7 @@ class Message
                     AUTH_LOG('Account does not exist : ' . $userinfo['username'], 'warning');
 
                     // 账户不存在
-                    $this->serversend($serv, $fd, [0, 0, int_helper::HexToDecimal(Clientstate::WOW_FAIL_UNKNOWN_ACCOUNT)]);
+                    $this->serversend($serv, $fd, [0, 0, HexToDecimal(Clientstate::WOW_FAIL_UNKNOWN_ACCOUNT)]);
                     return;
                 }
 
@@ -82,7 +81,7 @@ class Message
                     AUTH_LOG('Account is banned : ' . $userinfo['username'], 'warning');
 
                     // 账户被冻结
-                    $this->serversend($serv, $fd, [0, 0, int_helper::HexToDecimal(Clientstate::WOW_FAIL_BANNED)]);
+                    $this->serversend($serv, $fd, [0, 0, HexToDecimal(Clientstate::WOW_FAIL_BANNED)]);
                     return;
                 }
 
@@ -92,17 +91,17 @@ class Message
 
                 //5) 缓存用户信息
                 $userinfo['id'] = $account_info['id'];
-                $Connection = new Connection();
+                $Connection     = new Connection();
 
                 //初始化auth状态 1
-                $Connection->saveConnector($fd,['state' => Clientstate::ClientLogonChallenge,'username' => $userinfo['username'],'userinfo' => json_encode($userinfo)]); 
+                $Connection->saveConnector($fd, ['state' => Clientstate::ClientLogonChallenge, 'username' => $userinfo['username'], 'userinfo' => json_encode($userinfo)]);
                 break;
 
             case Clientstate::ClientLogonChallenge:
-                // file_put_contents('runtime/2_auth_.log', int_helper::toStr($data));
+                // file_put_contents('runtime/2_auth_.log', ToStr($data));
 
                 $Connection = new Connection();
-                $username   = $Connection->getCache($fd,'username');
+                $username   = $Connection->getCache($fd, 'username');
 
                 $Challenge = new Challenge();
                 $data      = $Challenge->AuthServerLogonChallenge($data, $username); //校验
@@ -112,10 +111,10 @@ class Message
 
                     // 验证成功
                     $this->serversend($serv, $fd, $data);
-                    $Connection->saveConnector($fd,['state' => Clientstate::Authenticated]); //初始化auth状态 5
+                    $Connection->saveConnector($fd, ['state' => Clientstate::Authenticated]); //初始化auth状态 5
 
                     //更新用户信息
-                    $userinfo   = json_decode($Connection->getCache($fd,'userinfo'), true);
+                    $userinfo = json_decode($Connection->getCache($fd, 'userinfo'), true);
                     if ($userinfo) {
                         // //获取sessionkey
                         // $sessionkey             = $Challenge->AuthServerSeesionKey($username);
@@ -125,7 +124,7 @@ class Message
                         // $Account->updateinfo($userinfo);
 
                         //协程写入数据库
-                        go(function () use($userinfo,$Challenge,$username) {
+                        go(function () use ($userinfo, $Challenge, $username) {
                             //获取sessionkey
                             $sessionkey             = $Challenge->AuthServerSeesionKey($username);
                             $userinfo['sessionkey'] = $sessionkey;
@@ -139,8 +138,8 @@ class Message
                     AUTH_LOG('Password verification failed', 'warning');
 
                     // 验证失败
-                    $this->serversend($serv, $fd, [0, 0, int_helper::HexToDecimal(Clientstate::WOW_FAIL_INCORRECT_PASSWORD)]);
-                    $Connection->saveConnector($fd,['state' => Clientstate::Init]); //初始化auth状态 0
+                    $this->serversend($serv, $fd, [0, 0, HexToDecimal(Clientstate::WOW_FAIL_INCORRECT_PASSWORD)]);
+                    $Connection->saveConnector($fd, ['state' => Clientstate::Init]); //初始化auth状态 0
                 }
 
                 break;
@@ -151,7 +150,7 @@ class Message
                 AUTH_LOG('Get server domain list');
 
                 $Connection = new Connection();
-                $userinfo   = json_decode($Connection->getCache($fd,'userinfo'), true);
+                $userinfo   = json_decode($Connection->getCache($fd, 'userinfo'), true);
 
                 // 获取服务器列表
                 $Realmlist = new Realmlist();
@@ -173,6 +172,6 @@ class Message
     public function serversend($serv, $fd, $data = null)
     {
         AUTH_LOG("Send: " . json_encode($data), 'info');
-        $serv->send($fd, int_helper::toStr($data));
+        $serv->send($fd, ToStr($data));
     }
 }

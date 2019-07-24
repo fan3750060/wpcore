@@ -1,10 +1,9 @@
 <?php
 namespace app\World;
 
-use app\Common\int_helper;
+use app\World\Rc4;
 use app\Common\Srp6;
 use app\World\OpCode;
-use phpseclib\Crypt\RC4;
 
 /**
  * 包
@@ -28,7 +27,7 @@ class Worldpacket
     public static function getopcode($data, $fd)
     {
         $Srp6   = new Srp6();
-        $OpCode = int_helper::toStr(array_slice($data, 2, 2));
+        $OpCode = ToStr(array_slice($data, 2, 2));
         $OpCode = $Srp6->Littleendian($Srp6->BigInteger($OpCode, 256)->toHex())->toHex();
 
         //获取类的所有常量
@@ -37,7 +36,7 @@ class Worldpacket
 
         $OpCode_name = '';
         foreach ($arrConst as $k => $v) {
-            if (int_helper::HexToDecimal($v) == int_helper::HexToDecimal($OpCode)) {
+            if (HexToDecimal($v) == HexToDecimal($OpCode)) {
                 $OpCode_name = $k;
                 continue;
             }
@@ -85,9 +84,9 @@ class Worldpacket
     {
         $packdata = [];
 
-        $size_bytes = int_helper::toStr(array_slice($data, 0, 2));
-        $OpCode     = int_helper::toStr(array_slice($data, 2, 4));
-        $content    = int_helper::toStr(array_slice($data, 6));
+        $size_bytes = ToStr(array_slice($data, 0, 2));
+        $OpCode     = ToStr(array_slice($data, 2, 4));
+        $content    = ToStr(array_slice($data, 6));
 
         $Srp6       = new Srp6();
         $packdata[] = $Srp6->BigInteger($size_bytes, 256)->toString();
@@ -110,17 +109,20 @@ class Worldpacket
      * @param   [type]          $data       [description]
      * @param   [type]          $sessionkey [description]
      */
-    public static function encrypter($OpCode, $data, $sessionkey = null,$encryption = true)
+    public static function encrypter($OpCode, $data, $sessionkey = null)
     {
         // 包头
-        $header = self::ServerPktHeader(int_helper::HexToDecimal($OpCode), count($data) + 2);
+        $header = self::ServerPktHeader(HexToDecimal($OpCode), count($data) + 2);
 
-        if($encryption && $sessionkey)
-        {
+        if ($sessionkey) {
             // 加密
-            $seed   = self::AuthCrypt_c_seed($sessionkey); //hash_hmac
-            $header = self::rc4_encode_decode($seed, int_helper::toStr($header)); //RC4
-            $header = int_helper::getBytes($header);
+            $seed   = self::AuthCrypt_s_seed($sessionkey); //hash_hmac
+
+            // $header = self::rc4_encode_decode($seed, ToStr($header)); //RC4(备用)
+            
+            $header = Rc4::getInstance($seed)->rc4_endecode(ToStr($header));
+
+            $header = GetBytes($header);
         }
 
         return $header;
@@ -139,17 +141,21 @@ class Worldpacket
      */
     public static function decrypter($data, $sessionkey = null)
     {
-        $seed = self::AuthCrypt_c_seed($sessionkey); //hash_hmac
+        if ($sessionkey) {
+            $seed         = self::AuthCrypt_c_seed($sessionkey); //hash_hmac
 
-        $decodeheader = self::rc4_encode_decode($seed, int_helper::toStr(array_slice($data, 0, 4))); //RC4
+            // $decodeheader = self::rc4_encode_decode($seed, ToStr(array_slice($data, 0, 6))); //RC4
 
-        $decodeheader = int_helper::getBytes($decodeheader);
+            $decodeheader = Rc4::getInstance($seed)->rc4_endecode(ToStr(array_slice($data, 0, 6)));
+
+            $decodeheader = GetBytes($decodeheader);
+            $data         = array_merge($decodeheader, array_slice($data, 6));
+        }
 
         $Srp6 = new Srp6();
+        $size = $Srp6->BigInteger(ToStr(array_slice($data, 0, 2)), 256)->toString();
 
-        $size = $Srp6->BigInteger(int_helper::toStr(array_slice($decodeheader, 0, 2)), 256)->toString();
-
-        $opcode = $Srp6->Littleendian($Srp6->BigInteger(int_helper::toStr(array_slice($decodeheader, 2, 2)), 256)->toHex())->toHex();
+        $opcode = $Srp6->Littleendian($Srp6->BigInteger(ToStr(array_slice($data, 2, 2)), 256)->toHex())->toHex();
 
         $data = ['size' => $size, 'opcode' => $opcode, 'content' => array_slice($data, 4)];
 
@@ -254,7 +260,7 @@ class Worldpacket
      */
     public static function AuthCrypt_s_seed($sessionkey)
     {
-        return hash_hmac('sha1', strrev($sessionkey), int_helper::toStr(self::$ServerEncryptionKey), true);
+        return hash_hmac('sha1', strrev($sessionkey), ToStr(self::$ServerEncryptionKey), true);
     }
 
     /**
@@ -268,6 +274,6 @@ class Worldpacket
      */
     public static function AuthCrypt_c_seed($sessionkey)
     {
-        return hash_hmac('sha1', strrev($sessionkey), int_helper::toStr(self::$ServerDecryptionKey), true);
+        return hash_hmac('sha1', strrev($sessionkey), ToStr(self::$ServerDecryptionKey), true);
     }
 }

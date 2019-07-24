@@ -1,11 +1,9 @@
 <?php
 namespace app\Auth;
 
-use app\Common\int_helper;
+use app\Common\Account;
 use app\Common\Math_BigInteger;
 use app\Common\Srp6;
-use core\lib\Cache;
-use app\Common\Account;
 
 /**
  *
@@ -31,20 +29,20 @@ class Challenge
         $info                  = [];
         $info['cmd']           = $data[0]; //命令
         $info['error']         = $data[1]; //错误
-        $info['size']          = int_helper::uInt16(int_helper::toStr(array_slice($data, 2, 2)));
-        $info['gamename']      = strrev(int_helper::toStr(array_slice($data, 4, 3)));
+        $info['size']          = UnPackInt(ToStr(array_slice($data, 2, 2)), 16);
+        $info['gamename']      = strrev(ToStr(array_slice($data, 4, 3)));
         $info['version']       = $data[8] . '.' . $data[9] . '.' . $data[10];
-        $info['build']         = int_helper::uInt16(int_helper::toStr(array_slice($data, 11, 2)));
-        $info['platform']      = strrev(int_helper::toStr(array_slice($data, 13, 3)));
-        $info['os']            = strrev(int_helper::toStr(array_slice($data, 17, 3)));
-        $info['country']       = strrev(int_helper::toStr(array_slice($data, 21, 4)));
+        $info['build']         = UnPackInt(ToStr(array_slice($data, 11, 2)), 16);
+        $info['platform']      = strrev(ToStr(array_slice($data, 13, 3)));
+        $info['os']            = strrev(ToStr(array_slice($data, 17, 3)));
+        $info['country']       = strrev(ToStr(array_slice($data, 21, 4)));
         $info['timezone_bias'] = array_slice($data, 25, 4);
         $info['ip']            = array_slice($data, 29, 4);
         $info['ip']            = implode('.', $info['ip']);
 
         $info['user_lenth'] = $data[33]; //用户名长度
         $info['username']   = array_slice($data, 34, $info['user_lenth']); //截取用户名
-        $info['username']   = int_helper::toStr($info['username']);
+        $info['username']   = ToStr($info['username']);
 
         AUTH_LOG('Unpack: ' . json_encode($info), 'info');
         return $info;
@@ -75,13 +73,13 @@ class Challenge
         $this->srpdata = $SRP->data;
 
         //协程写入数据库
-        go(function () use($data) {
+        go(function () use ($data) {
             $param = [
-                'v' => $this->srpdata['v'],
-                's' => $this->srpdata['s'],
+                'v'          => $this->srpdata['v'],
+                's'          => $this->srpdata['s'],
                 'sessionkey' => $this->srpdata['b'], //兼容数据库 暂时用sessionkey存储
-                'token_key' => $this->srpdata['B_hex'],
-                'username' => $data['username']
+                'token_key'  => $this->srpdata['B_hex'],
+                'username'   => $data['username'],
             ];
 
             $Account = new Account();
@@ -132,8 +130,8 @@ class Challenge
      */
     public function AuthServerLogonChallenge($data, $username)
     {
-        $Account = new Account();
-        $userinfo = $Account -> get_account($username);
+        $Account  = new Account();
+        $userinfo = $Account->get_account($username);
 
         //获取缓存 mysql
         // $this->srpdata = Cache::drive()->get($username);
@@ -141,8 +139,8 @@ class Challenge
         $A  = array_slice($data, 1, 32);
         $M1 = array_slice($data, 33, 20);
 
-        $A  = int_helper::toStr($A);
-        $M1 = int_helper::toStr($M1);
+        $A  = ToStr($A);
+        $M1 = ToStr($M1);
         $A  = new Math_BigInteger($A, 256);
         $M1 = new Math_BigInteger($M1, 256);
         $A  = $A->toHex();
@@ -159,7 +157,7 @@ class Challenge
 
         if ($check) {
             $M    = $SRP->M->toBytes();
-            $M    = int_helper::getBytes($M);
+            $M    = GetBytes($M);
             $data = [0x01, 0x00];
             foreach ($M as $k => $v) {
                 $data[] = $v;
