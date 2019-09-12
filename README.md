@@ -95,13 +95,13 @@ Gameversion: 2.4.3
 
 # Demonstration 演示
 
-![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/1.png1.png)
+![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/1.png)
 
-![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/1.png2.png)
+![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/2.png)
 
-![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/1.png3.png)
+![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/3.png)
 
-![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/1.png4.png)
+![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/4.png)
 
 
 
