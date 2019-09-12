@@ -77,7 +77,7 @@
         
 Authserver version 1.0.1
 author by.fan <fan3750060@163.com>
-Gameversion: 3.3.5
+Gameversion: 2.4.3
 
 ~~~
 
