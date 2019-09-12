@@ -3,15 +3,24 @@ namespace app;
 
 use app\Common\Srp6;
 use app\World\Worldpacket;
+use app\World\OpCode;
+use app\World\Packetmanager;
+use core\lib\Cache;
 
 class Testsrp
 {
-    // const CMSG_PING = '0x1DC';
     public function run()
     {
         $Srp6       = new Srp6();
-        $sessionkey = 'A07BB958F170E0828FA97FCCA04B63B55469C1043ED3E5882D31147DB57EDC3F3230DF158A6DD2BC';
+        $sessionkey = 'F5AFC49E1798090EAD1BB1BAE68B8BFDD38BA36B8DB0803B2DEE094FC3D235501D4FB99289D7586D';
         $sessionkey = $Srp6->BigInteger($sessionkey, 16)->toBytes();
+
+        $fd = 'test001';
+        $list = ['serverseed','sessionkey','Worldpacket_encrypter','Worldpacket_decrypter'];
+        foreach ($list as $k => $v) 
+        {
+            Cache::drive('redis')->delete($fd.$v);
+        }
 
         // 角色进入游戏
         // $mapid         = 1;
@@ -23,115 +32,143 @@ class Testsrp
         // $data = GetBytes($data);
         // $encodeheader = Worldpacket::encrypter(OpCode::SMSG_LOGIN_VERIFY_WORLD, $data, $sessionkey);
         // $packdata     = array_merge($encodeheader, $data);
-        // var_dump($packdata);die;
+        // var_dump('Encode:'.$packdata);die;
         //
 
-        // WORLD_LOG('[SMSG_WARDEN_DATA] Client : ', 'warning');
-        // $data = [0xb8,0x71,0xbd,0x0a,0x01,0x9e,0xac,0xd6,0x49,0x52,0x44,0x53,0xb5,0x19,0x5d,0x8b,0xd2,0xd0,0x70,0xd9,0x9f,0x11,0xf0,0x83,0x68,0xca,0x7e,0x0a,0xe0,0x96,0x36,0x4d,0x5f,0xee,0x21,0x48,0x07];
-        // $packdata = Worldpacket::encrypter(OpCode::SMSG_WARDEN_DATA, $data, $sessionkey);
-        // $data     = $packdata     = array_merge($packdata, $data);
-        // // var_dump(json_encode($packdata));
-        // $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
-        // var_dump($packdata);
+        /************** 加密包 ******************/
+        $data = [0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode::SMSG_ADDON_INFO,$data,$sessionkey]);
+        $packdata     = array_merge($encodeheader, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
 
-        // WORLD_LOG('[SMSG_AUTH_RESPONSE] Client : ', 'warning');
-        // //加密
-        // $data     = [0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02];
-        // $packdata = Worldpacket::encrypter(OpCode::SMSG_AUTH_RESPONSE, $data, $sessionkey);
-        // $data     = $packdata     = array_merge($packdata, $data);
-        // // var_dump(json_encode($packdata));
-        // $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
-        // var_dump($packdata);
+        WORLD_LOG('[SMSG_AUTH_RESPONSE] Client : ', 'warning');
+        $data     = [0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01];
+        $packdata = Packetmanager::Worldpacket_encrypter($fd,[OpCode::SMSG_AUTH_RESPONSE,$data,$sessionkey]);
+        $data     = $packdata     = array_merge($packdata, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
 
-        // //加密
-        // $data = [0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
-        // $encodeheader = Worldpacket::encrypter(OpCode::SMSG_ADDON_INFO, $data, $sessionkey);
-        // $packdata     = array_merge($encodeheader, $data);
-        // // var_dump(json_encode($packdata));
-        // $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
-        // var_dump($packdata);
+        WORLD_LOG('[CMSG_CHAR_ENUM] Client : ', 'warning');
+        $data = '027A03000000000000E69FA5E5A89C00050400040900080E0155000000000000005C2FD1448FD2CF44CD8C0A430000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001527000004000000000000000000000000000000000000000000001627000007000000001827000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002A1900000D000000000000000000000000000000000000000000000000000000000000000000000000000000008B030000000000006C6B6C6B000102010705080700010C00000000000000A45B13C6290DB04269C06342000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000C10C00000400000000000000000000000000000000000000000000D12600000700000000D22600000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000F22100001100000000000000000000000000000000000000000000000000000000000000000000000000000000';
+        $data = $Srp6->BigInteger($data, 16)->toBytes();
+        $data = GetBytes($data);
 
-        // WORLD_LOG('[SMSG_CLIENTCACHE_VERSION] Client : ', 'warning');
-        // $data         = [0x57, 0x4a, 0x00, 0x00];
-        // $encodeheader = Worldpacket::encrypter(OpCode::SMSG_CLIENTCACHE_VERSION, $data, $sessionkey);
-        // $packdata     = array_merge($encodeheader, $data);
-        // // var_dump(json_encode($packdata));
-        // $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
-        // var_dump($packdata);
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode::SMSG_CHAR_ENUM,$data,$sessionkey]);
+        $packdata     = array_merge($encodeheader, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
 
-        // WORLD_LOG('[SMSG_TUTORIAL_FLAGS] Client : ', 'warning');
-        // $data         = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
-        // $encodeheader = Worldpacket::encrypter(OpCode::SMSG_TUTORIAL_FLAGS, $data, $sessionkey);
-        // $packdata     = array_merge($encodeheader, $data);
-        // /// var_dump(json_encode($packdata));
-        // $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
-        // var_dump($packdata);
-        // die;
+        WORLD_LOG('[SMSG_MOTD] Client : ' . $fd, 'warning');
+        $data = '0100000057656C636F6D6520746F20746865206964772D636F72652073657276657200';
+        $data = $Srp6->BigInteger($data, 16)->toBytes();
+        $data = GetBytes($data);
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode::SMSG_MOTD,$data,$sessionkey]);
+        $packdata     = array_merge($encodeheader, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
 
-        //解包
-        $data = [0x00, 0x2a, 0xec, 0x01, 0x01, 0x00, 0x00, 0x00, 
-0x0a, 0xd2, 0xf9, 0x4e, 0xef, 0x07, 0xd4, 0x6e, 
-0x1d, 0xef, 0x1c, 0x36, 0x5a, 0xa2, 0x57, 0x1b, 
-0x18, 0xa1, 0xa5, 0xf3, 0xfb, 0x43, 0xac, 0xdb, 
-0x6f, 0x93, 0x79, 0x8f, 0x55, 0xef, 0x0b, 0xbc, 
-0x59, 0x65, 0xad, 0xc8];
-        $packdata = Worldpacket::decrypter($data);
-        $packdata = json_encode($packdata);
-        var_dump($packdata);
+        WORLD_LOG('[SMSG_TUTORIAL_FLAGS] Client : ' . $fd, 'warning');
+        $data = 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
+        $data = $Srp6->BigInteger($data, 16)->toBytes();
+        $data = GetBytes($data);
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode::SMSG_TUTORIAL_FLAGS,$data,$sessionkey]);
+        $packdata     = array_merge($encodeheader, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
 
-        $data = [0x6a, 0x9a, 0xb8, 0x90, 0xb8, 0x71, 0xbd, 0x0a, 0x01, 0x9e, 0xac, 0xd6, 0x49, 0x52, 0x44, 0x53, 0xb5, 0x19, 0x5d, 0x8b, 0xd2, 0xd0, 0x70, 0xd9, 0x9f, 0x11, 0xf0, 0x83, 0x68, 0xca, 0x7e, 0x0a, 0xe0, 0x96, 0x36, 0x4d, 0x5f, 0xee, 0x21, 0x48, 0x07];
-        $packdata = Worldpacket::decrypter($data, $sessionkey);
-        $packdata = json_encode($packdata);
-        var_dump($packdata);
+        WORLD_LOG('[SMSG_LOGIN_VERIFY_WORLD] Client : ' . $fd, 'warning');
+        $data = '000000005C2FD1448FD2CF44CD8C0A435131B740';
+        $data = $Srp6->BigInteger($data, 16)->toBytes();
+        $data = GetBytes($data);
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode::SMSG_LOGIN_VERIFY_WORLD,$data,$sessionkey]);
+        $packdata     = array_merge($encodeheader, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
 
+        WORLD_LOG('[SMSG_ACCOUNT_DATA_TIMES] Client : ' . $fd, 'warning');
+        $data = '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+        $data = $Srp6->BigInteger($data, 16)->toBytes();
+        $data = GetBytes($data);
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode::SMSG_ACCOUNT_DATA_TIMES,$data,$sessionkey]);
+        $packdata     = array_merge($encodeheader, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
 
-        $data     = [0x7c, 0x47, 0x0e, 0x81, 0x0c, 0xe8, 0x03, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x02];
-        $packdata = Worldpacket::decrypter($data, $sessionkey);
-        $packdata = json_encode($packdata);
-        var_dump($packdata);
+        WORLD_LOG('[SMSG_INITIAL_SPELLS] Client : ' . $fd, 'warning');
+        $data = '000C009D0200004945000061500000635000006B140000401E00009D0200004945000061500000635000006B140000401E00000C000000';
+        $data = $Srp6->BigInteger($data, 16)->toBytes();
+        $data = GetBytes($data);
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode::SMSG_INITIAL_SPELLS,$data,$sessionkey]);
+        $packdata     = array_merge($encodeheader, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
 
-        $data     = [0x43, 
-0x33, 0xd3, 0x0e, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
-        $packdata = Worldpacket::decrypter($data, $sessionkey);
-        $packdata = json_encode($packdata);
-        var_dump($packdata);
+        WORLD_LOG('[SMSG_UPDATE_OBJECT] Client : ' . $fd, 'warning');
+        $data = '010000000003037A03047100000000003216795D5C2FD1448FD2CF44CD8C0A435131B74000000000000020400000E04000009040711C9740000020400000E04000009040E00F49400000000031170040141D40000000000000000000000000C00300F80004000001000090010000000000000000000000000400040004000400040004000400040004000400040004000400040004000400040000000000FCFFFFFFFF0000000000000000000000000000000000000000000000000000000000C0BD000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003001800000000000000000000000000000020001040000000800000000000407A03000000000000190000000000803F0C000000000000000C0000000000000001000000050000000504000300000000022BC73E0000C03F39000000390000000F0000000F0000000C0000000700000002000000000000000C00000000000000040900080E0000020000000000000000000000003908000000000000000000007800000079000000000000000000000000000000000000000000000000000000000000002C080000000000000000000000000000000000000000000000000000000000007C03003908000040000000000000000000000000000000007D030078000000407E0300790000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007B03002C080000400000000000000000000000000000000000000000000000000000000000000000A10200002C010000DC0000002C010000010000000100000000000000000000000000000000000000102700000100000000000000FFFFFFFF46000000';
+        $data = $Srp6->BigInteger($data, 16)->toBytes();
+        $data = GetBytes($data);
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode:: SMSG_UPDATE_OBJECT,$data,$sessionkey]);
+        $packdata     = array_merge($encodeheader, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
 
-        $data     = [0xd5, 0x98, 0x7d, 0x8d, 0x34, 0x00, 0x00, 0x00];
-        $packdata = Worldpacket::decrypter($data, $sessionkey);
-        $packdata = json_encode($packdata);
-        var_dump($packdata);
+        WORLD_LOG('[SMSG_LOGIN_SETTIMESPEED] Client : ' . $fd, 'warning');
+        $data = '53F2EF508A88883C';
+        $data = $Srp6->BigInteger($data, 16)->toBytes();
+        $data = GetBytes($data);
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode:: SMSG_LOGIN_SETTIMESPEED,$data,$sessionkey]);
+        $packdata     = array_merge($encodeheader, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
 
-        $data     = [0xeb, 
-0xf8, 0x6a, 0x47, 0x00, 0x00, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00];
-        $packdata = Worldpacket::decrypter($data, $sessionkey);
-        $packdata = json_encode($packdata);
-        var_dump($packdata);
+        WORLD_LOG('[SMSG_TIME_SYNC_REQ] Client : ' . $fd, 'warning');
+        $data = '00000000';
+        $data = $Srp6->BigInteger($data, 16)->toBytes();
+        $data = GetBytes($data);
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode:: SMSG_TIME_SYNC_REQ,$data,$sessionkey]);
+        $packdata     = array_merge($encodeheader, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
+
+        // /************** 解密包 ******************/
+        // $data = '76EFB19E223C5936114FCB46FFFFFFFF';
+        // $data = $Srp6->BigInteger($data, 16)->toBytes();
+        // $data = GetBytes($data);
+        // $packdata = Packetmanager::Worldpacket_decrypter($fd,[$data,$sessionkey]);
+        // $packdata = json_encode($packdata);
+        // var_dump('Decode:'.$packdata);
+
+        // $data = '50CA447F80366B6C7571697100030101020601010000';
+        // $data = $Srp6->BigInteger($data, 16)->toBytes();
+        // $data = GetBytes($data);
+
+        // for ($i=0; $i < 20; $i++) { 
+        //     $packdata = Packetmanager::Worldpacket_decrypter($fd,[$data,$sessionkey]);
+        //     $opcode = Worldpacket::getopcode($packdata['opcode'], $fd);
+        //     if($opcode){
+        //         break;
+        //     }
+        // }
+
+        // // $packdata = Packetmanager::Worldpacket_decrypter($fd,[$data,$sessionkey]);
+        // $packdata = json_encode($packdata);
+        // var_dump('Decode:'.$packdata);
+
+        // $data = '252E6FECE1CE5264F5CB225FFFFFFFFF';
+        // $data = $Srp6->BigInteger($data, 16)->toBytes();
+        // $data = GetBytes($data);
+        // // $packdata = Packetmanager::Worldpacket_decrypter($fd,[$data,$sessionkey]);
+
+        // for ($i=0; $i < 20; $i++) { 
+        //     $packdata = Packetmanager::Worldpacket_decrypter($fd,[$data,$sessionkey]);
+        //     $opcode = Worldpacket::getopcode($packdata['opcode'], $fd);
+        //     if($opcode){
+        //         break;
+        //     }
+        // }
+
+        // $packdata = json_encode($packdata);
+        // var_dump('Decode:'.$packdata);
     }
 }

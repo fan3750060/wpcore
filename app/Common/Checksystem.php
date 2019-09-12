@@ -9,6 +9,7 @@ class Checksystem
     public static function check()
     {
         self::checksystem();
+        self::checkbredis();
         self::checkphpversion();
         self::checkswooleversion();
         self::checkbcmath();
@@ -20,6 +21,13 @@ class Checksystem
             echolog('The current system is: Linux');
         } elseif (strpos(strtoupper(PHP_OS), 'WIN') != false) {
             echolog('The current system is: Windows');
+        }
+    }
+
+    public static function checkbredis()
+    {
+        if (!extension_loaded('redis')) {
+            echolog('This core needs to use php\'s redis extension for high-precision calculations.', 'error');die;
         }
     }
 

@@ -3,6 +3,7 @@ use core\Config;
 use core\filter\Filter;
 use core\lib\Cookie;
 use core\lib\Session;
+use core\lib\Cache;
 
 if (!function_exists('config')) {
     /**
@@ -153,7 +154,7 @@ if (!function_exists('echolog')) {
             fclose($log_file);
 
             if (count_line(RUNTIME_PATH . $filename) > env('LOG_LINE', 1000)) {
-                unlink(RUNTIME_PATH . $filename);
+                @unlink(RUNTIME_PATH . $filename);
             }
         }
     }

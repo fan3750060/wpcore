@@ -118,9 +118,9 @@ class Account
     public function get_realmlistuserinfo($param)
     {
         $where = [
-            'accountId' => $param['accountId']
+            'account' => $param['accountId']
         ];
-        return DB::table('account_data','characters')->where($where)->count();
+        return DB::table('characters','characters')->where($where)->count();
     }
 
     /**

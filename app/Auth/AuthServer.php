@@ -103,7 +103,7 @@ class AuthServer
             'debug_mode'               => 1,
             'task_worker_num'          => 2,
             'open_cpu_affinity'        => 1,
-            'heartbeat_check_interval' => 60 * 1, //每隔多少秒检测一次，单位秒，Swoole会轮询所有TCP连接，将超过心跳时间的连接关闭掉
+            'heartbeat_check_interval' => 60 * 60, //每隔多少秒检测一次，单位秒，Swoole会轮询所有TCP连接，将超过心跳时间的连接关闭掉
             // 'log_file'                 => RUNTIME_PATH . 'swoole.log',
             // 'open_eof_check' => true, //打开EOF检测
             'package_eof'              => "###", //设置EOF

@@ -8,7 +8,7 @@ return [
     ],
 
     // Gameversion
-    'Gameversion' => '3.3.5',
+    'Gameversion' => '2.4.3',
 
     //缓存配置
     'cache'       => [

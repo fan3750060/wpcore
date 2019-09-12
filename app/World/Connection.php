@@ -2,82 +2,19 @@
 namespace app\World;
 
 use app\Auth\Clientstate;
+use core\lib\Cache;
 
 class Connection
 {
-    private static $_connectorTable;
-    private static $_checkTable;
-
-    /**
-     * 创建连接池缓存table
-     */
-    public function createConnectorTable()
-    {
-        //创建表格 行数参数大小得为2的指数
-        self::$_connectorTable = new \swoole_table(1000);
-
-        // 表字段
-        self::$_connectorTable->column('state', \swoole_table::TYPE_INT, 0); // 1,2,4,8
-        self::$_connectorTable->column('createTime', \swoole_table::TYPE_STRING, 20);
-        self::$_connectorTable->column('username', \swoole_table::TYPE_STRING, 30);
-        self::$_connectorTable->column('serverseed', \swoole_table::TYPE_STRING, 100);
-        self::$_connectorTable->column('sessionkey', \swoole_table::TYPE_STRING, 100);
-
-        self::$_connectorTable->create();
-    }
-
-    /**
-     * 创建待检池缓存table
-     */
-    public function createCheckTable()
-    {
-        //创建表格 行数参数大小得为2的指数
-        self::$_checkTable = new \swoole_table(65536);
-
-        // 表字段
-        self::$_checkTable->column('createTime', \swoole_table::TYPE_STRING, 20);
-
-        self::$_checkTable->create();
-    }
-
     /**
      * 获取连接信息
      * @param int $fd
      * 连接id
      * @return array
      */
-    public function getConnector($fd)
+    public static function getConnector($fd)
     {
-        $result = self::$_connectorTable->get($fd);
-        if (!$result) {
-            $result = array();
-        }
-        return $result;
-    }
-
-    /**
-     * [getCache 获取fd的缓存]
-     * ------------------------------------------------------------------------------
-     * @author  by.fan <fan3750060@163.com>
-     * ------------------------------------------------------------------------------
-     * @version date:2019-07-16
-     * ------------------------------------------------------------------------------
-     * @param   [type]          $fd [description]
-     * @return  [type]              [description]
-     */
-    public function getCache($fd, $key = null)
-    {
-        $connector = $this->getConnector($fd);
-        if (!empty($connector)) {
-
-            if ($key) {
-                return $connector[$key];
-            }
-
-            return $connector;
-        }
-
-        return null;
+        return Cache::drive('redis')->get($fd . 'connector');
     }
 
     /**
@@ -86,52 +23,44 @@ class Connection
      * @param int
      * @param int $userId
      */
-    public function saveConnector($fd, $param)
+    public static function saveConnector($fd, $param)
     {
-        $arr = $this->getConnector($fd);
+        $arr = self::getConnector($fd);
 
-        if (!array_key_exists("createTime", $arr)) {
-            $arr["createTime"] = time();
-        }
-
-        if (!empty($param['state'])) {
-            $arr['state'] = $param['state'];
-        } else {
-            if (empty($arr['state'])) {
-                $arr['state'] = Clientstate::Init;
-            }
-        }
-
-        if (!empty($param['username'])) {
-            $arr['username'] = $param['username'];
-        }
-
-        if (!empty($param['serverseed'])) {
-            $arr['serverseed'] = $param['serverseed'];
-        }
-
-        if (!empty($param['sessionkey'])) {
-            $arr['sessionkey'] = $param['sessionkey'];
-        }
+        $arr['fd'] = $fd;
 
         // 保存连接
-        self::$_connectorTable->set($fd, $arr);
+        Cache::drive('redis')->set($fd . 'connector', $arr, 0);
     }
 
     //当客户端发送数据后删除待检池
-    public function update_checkTable($fd)
+    public static function update_checkTable($fd)
     {
-        self::$_checkTable->del($fd);
+        $checkconnector = Cache::drive('redis')->get('checkconnector');
+
+        if ($checkconnector && is_array($checkconnector)) {
+            $newcheckconnector = [];
+            foreach ($checkconnector as $k => $v) {
+                if ($v['fd'] != $fd) {
+                    $newcheckconnector[] = $v;
+                }
+            }
+
+            Cache::drive('redis')->set('checkconnector', $newcheckconnector);
+
+            //更新状态
+            WorldServer::$clientparam[$fd]['state'] = Clientstate::ClientLogonChallenge;
+        }
     }
 
     /**
      * 将连接从连接池中移除，并移除用户信息
      * @param int $fd
      */
-    public function removeConnector($fd)
+    public static function removeConnector($fd)
     {
         // 移除连接池
-        self::$_connectorTable->del($fd);
+        Cache::drive('redis')->delete($fd . 'connector');
     }
 
     /**
@@ -140,7 +69,7 @@ class Connection
      * 登录凭证
      * @return boolean
      */
-    public function validateConnector($token)
+    public static function validateConnector($token)
     {
         // TODO 根据实际情况对token进行验证，这里直接通过
         return true;
@@ -151,37 +80,40 @@ class Connection
      *
      * @param swoole_server $serv
      */
-    public function clearInvalidConnection($serv)
+    public static function clearInvalidConnection($serv)
     {
-        if (self::$_checkTable) {
-            // WORLD_LOG("check count0: ".count(self::$_checkTable));
-            foreach (self::$_checkTable as $key => $value) {
-                $connector = $this->getConnector($key);
-                if (empty($connector)) {
-                    WORLD_LOG("Remove and close : " . $key);
+        $checkconnector = Cache::drive('redis')->get('checkconnector');
+        if ($checkconnector && is_array($checkconnector)) {
+            $newcheckconnector = $checkconnector;
 
-                    //连接不在连接池，从待检池移除并关闭连接
-                    self::$_checkTable->del($key);
-                    $serv->close($key);
-                    continue;
-                } else if ($connector['state'] > Clientstate::Init || !$serv->exist($key)) {
-                    WORLD_LOG("Remove to be connected : " . $key);
+            foreach ($checkconnector as $k => $v) {
+
+                if ($GLOBALS['state'] > Clientstate::Init || !$serv->exist($v['fd'])) {
+
+                    WORLD_LOG("Remove to be connected : " . $v['fd']);
+
                     //已正常连接或者连接已不存在从待检池移除
-                    self::$_checkTable->del($key);
+                    unset($newcheckconnector[$k]);
+
                     continue;
                 }
 
-                $createTime = $connector["createTime"];
+                $createTime = $v["createTime"];
+
                 if ($createTime < strtotime("-5 seconds")) {
-                    WORLD_LOG("Expired! Remove and close : " . $key);
+
+                    WORLD_LOG("Expired! Remove and close : " . $v['fd']);
+
                     //过期，从待检池移除并关闭连接
-                    self::$_checkTable->del($key);
-                    $serv->close($key);
+                    unset($newcheckconnector[$k]);
+
+                    $serv->close($v['fd']);
+
                     continue;
                 }
-
             }
-            // WORLD_LOG("check count1: ".count(self::$_checkTable));
+
+            Cache::drive('redis')->set('checkconnector', $newcheckconnector);
         }
     }
 
@@ -189,11 +121,15 @@ class Connection
      * 保存连接到待检池
      * @param int $fd
      */
-    public function saveCheckConnector($fd)
+    public static function saveCheckConnector($fd)
     {
-        $arr = array(
-            "createTime" => time(),
-        );
-        self::$_checkTable->set($fd, $arr);
+        $data = [
+            [
+                'fd'         => $fd,
+                'createTime' => time(),
+            ],
+        ];
+
+        Cache::drive('redis')->set('checkconnector', $data, 60 * 2);
     }
 }

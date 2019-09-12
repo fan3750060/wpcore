@@ -121,6 +121,7 @@ class Redis
         if (is_null($expire)) {
             $expire = $this->options['expire'];
         }
+
         if ($expire instanceof \DateTime) {
             $expire = $expire->getTimestamp() - time();
         }
