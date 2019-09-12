@@ -105,13 +105,12 @@ class Authchallenge
             WORLD_LOG('Sent Auth Response (unknown account): ' . $account_name, 'error');
 
             // 用户不存在
-            $AUTH_UNKNOWN_ACCOUNT = $Srp6->BigInteger(OpCode::AUTH_UNKNOWN_ACCOUNT, 16)->toString();
-            $data                 = [(int) $AUTH_UNKNOWN_ACCOUNT];
-
+            $AUTH_UNKNOWN_ACCOUNT = $Srp6->BigInteger(OpCode::AUTH_UNKNOWN_ACCOUNT, 16)->toBytes();
+            $data = GetBytes($AUTH_UNKNOWN_ACCOUNT);
             $packdata = Worldpacket::encrypter(OpCode::SMSG_AUTH_RESPONSE, $data);
             $packdata = array_merge($packdata, $data);
 
-            return $packdata;
+            return ['code' => 4000,'msg' => 'unknown accoun','data' => $packdata];
         }
 
         //K
@@ -133,31 +132,15 @@ class Authchallenge
             WORLD_LOG('client_hash: ' . $packdata['client_hash'], 'error');
 
             // 鉴权失败
-            return [0, 0, 4];
+            return ['code' => 4000,'msg' => 'Verification failed','data' => [0, 0, 4]];
         }
 
+        // 鉴权成功
         WORLD_LOG('Unpack: ' . json_encode($packdata), 'info');
         WORLD_LOG('server_hash: ' . $Srp6->BigInteger($server_hash, 16)->toHex(), 'warning');
         WORLD_LOG('client_hash: ' . $packdata['client_hash'], 'warning');
         WORLD_LOG('AUTH_OK: Successful verification', 'success');
 
-        // 包体
-        $Srp6                 = new Srp6();
-        $AUTH_OK              = $Srp6->BigInteger(OpCode::AUTH_OK, 16)->toString();
-        $BillingTimeRemaining = PackInt(0, 32);
-        $BillingPlanFlags     = PackInt(0, 8);
-        $BillingTimeRested    = PackInt(0, 32);
-        $expansion            = [(int) $userinfo['expansion']];
-        $data                 = array_merge([(int) $AUTH_OK], $BillingTimeRemaining, $BillingPlanFlags, $BillingTimeRested, $expansion);
-
-        //加密
-        $encodeheader = Worldpacket::encrypter(OpCode::SMSG_AUTH_RESPONSE, $data, $sessionkey);
-        $packdata     = array_merge($encodeheader, $data);
-
-        // //解包
-        // $decode = Worldpacket::decrypter($packdata, $sessionkey);
-        // var_dump($decode);
-
-        return $packdata;
+        return ['code' => 2000,'msg' => 'Successful verification','data' => $userinfo];
     }
 }

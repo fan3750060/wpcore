@@ -45,7 +45,7 @@ class Message
     {
         switch ($state) {
             case Clientstate::Init:
-                // file_put_contents('runtime/1_auth_.log', ToStr($data));
+                file_put_contents('runtime/1_auth_.log', ToStr($data));
 
                 $Challenge      = new Challenge();
                 $userinfo       = $Challenge->getinfo_ClientLogonChallenge($data); //解析数据包
@@ -98,7 +98,7 @@ class Message
                 break;
 
             case Clientstate::ClientLogonChallenge:
-                // file_put_contents('runtime/2_auth_.log', ToStr($data));
+                file_put_contents('runtime/2_auth_.log', ToStr($data));
 
                 $Connection = new Connection();
                 $username   = $Connection->getCache($fd, 'username');
@@ -145,7 +145,7 @@ class Message
                 break;
 
             case Clientstate::Authenticated:
-                // file_put_contents('runtime/3_auth_Authenticated.log', $data);
+                file_put_contents('runtime/3_auth_Authenticated.log', $data);
 
                 AUTH_LOG('Get server domain list');
 

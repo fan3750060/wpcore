@@ -28,11 +28,11 @@ class Rc4
      * 
      * @return Object
      */
-    public static function getInstance($seed)
+    public static function getInstance($seed,$gono=null)
     {
         $token = $seed;
 
-        if(array_key_exists($token,self::$instance_token))
+        if(array_key_exists($token,self::$instance_token) && !$gono)
         {
             if (FALSE == (self::$instance_token[$token] instanceof self)) {
                 self::$_instance = new self($seed);

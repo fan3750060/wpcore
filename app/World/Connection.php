@@ -158,14 +158,14 @@ class Connection
             foreach (self::$_checkTable as $key => $value) {
                 $connector = $this->getConnector($key);
                 if (empty($connector)) {
-                    WORLD_LOG("Remove : " . $key);
+                    WORLD_LOG("Remove and close : " . $key);
 
                     //连接不在连接池，从待检池移除并关闭连接
                     self::$_checkTable->del($key);
                     $serv->close($key);
                     continue;
                 } else if ($connector['state'] > Clientstate::Init || !$serv->exist($key)) {
-                    WORLD_LOG("Remove : " . $key);
+                    WORLD_LOG("Remove to be connected : " . $key);
                     //已正常连接或者连接已不存在从待检池移除
                     self::$_checkTable->del($key);
                     continue;
@@ -173,7 +173,7 @@ class Connection
 
                 $createTime = $connector["createTime"];
                 if ($createTime < strtotime("-5 seconds")) {
-                    WORLD_LOG("Remove and close : " . $key);
+                    WORLD_LOG("Expired! Remove and close : " . $key);
                     //过期，从待检池移除并关闭连接
                     self::$_checkTable->del($key);
                     $serv->close($key);

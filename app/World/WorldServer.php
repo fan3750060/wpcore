@@ -34,26 +34,18 @@ class WorldServer
 
         $str = "
 
- PPPP    PPPP     PPP                    PPPPPPP
-  PPP    PPPPP    PPP                   PPPPPPPPP
-  PPPP   PPPPP   PPPP                  PPPP   PPPP
-  PPPP   PPPPP   PPPP                 PPPP     PPPP
-   PPP  PPPPPPP  PPP  PPPPPPPP        PPP       PPP   PPPPPP   PPPPPP   PPPPPP
-   PPP  PPP PPP  PPP  PPPPPPPPP      PPPP           PPPPPPPPP  PPPPPP PPPPPPPPP
-   PPPP PPP PPP PPPP  PPPP  PPPP     PPPP           PPPP  PPPP PPPP   PPP   PPPP
-   PPPP PPP PPP PPP   PPP   PPPP     PPPP          PPPP   PPPP PPP   PPPP    PPP
-    PPPPPP  PPPPPPP   PPP    PPP     PPPP          PPP     PPP PPP   PPPPPPPPPPP
-    PPPPPP   PPPPPP   PPP    PPP     PPPP          PPP     PPP PPP   PPPPPPPPPPP
-    PPPPPP   PPPPPP   PPP    PPP      PPP       PPPPPP     PPP PPP   PPP
-     PPPPP   PPPPP    PPP   PPPP      PPPP     PPPPPPPP   PPPP PPP   PPPP
-     PPPP    PPPPP    PPPP  PPPP       PPPP   PPPP  PPPP  PPPP PPP    PPPP  PPPP
-     PPPP     PPPP    PPPPPPPPP         PPPPPPPPPP  PPPPPPPPP  PPP    PPPPPPPPP
-     PPPP     PPPP    PPPPPPPP           PPPPPPP      PPPPPP   PPP      PPPPPP
-                      PPP
-                      PPP
-                      PPP
-                      PPP
-                      PPP
+ pppp          ppppppppppp         pppppp      pppppp    ppppppppp   ppppppppp  
+  ppp   ppp   ppp ppp   ppp       ppp  ppp    ppp  pppp  ppp   pppp  ppp        
+  ppp   pppp  ppp ppp    ppp     ppp    ppp  ppp    pppp ppp    ppp  ppp        
+  ppp  ppppp  ppp ppp    ppp    ppp     ppp ppp      ppp ppp    ppp  ppp        
+   ppp ppppp  ppp ppp    ppp    ppp         ppp      ppp ppp    ppp  ppp        
+   ppp pp pp ppp  ppp   ppp     ppp         ppp      ppp ppp   pppp  ppppppppp  
+   ppp pp pppppp  pppppppp      ppp         ppp      ppp pppppppp    ppp        
+   pppppp pppppp  ppp           ppp         ppp      ppp ppp  pppp   ppp        
+    ppppp  pppp   ppp           ppp     ppp ppp      ppp ppp   ppp   ppp        
+    pppp   pppp   ppp            ppp    ppp  ppp    pppp ppp    ppp  ppp        
+    pppp   pppp   ppp             ppp  pppp   ppp  pppp  ppp    ppp  ppp        
+    pppp   pppp   ppp              pppppp      pppppp    ppp    pppp pppppppppp 
         ";
         WORLD_LOG($str);
         WORLD_LOG('WorldServer version 1.0.1');

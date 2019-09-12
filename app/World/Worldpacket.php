@@ -109,7 +109,7 @@ class Worldpacket
      * @param   [type]          $data       [description]
      * @param   [type]          $sessionkey [description]
      */
-    public static function encrypter($OpCode, $data, $sessionkey = null)
+    public static function encrypter($OpCode, $data, $sessionkey = null,$gono = false)
     {
         // 包头
         $header = self::ServerPktHeader(HexToDecimal($OpCode), count($data) + 2);
@@ -120,7 +120,7 @@ class Worldpacket
 
             // $header = self::rc4_encode_decode($seed, ToStr($header)); //RC4(备用)
             
-            $header = Rc4::getInstance($seed)->rc4_endecode(ToStr($header));
+            $header = Rc4::getInstance($seed,$gono)->rc4_endecode(ToStr($header));
 
             $header = GetBytes($header);
         }
@@ -139,17 +139,17 @@ class Worldpacket
      * @param   [type]          $sessionkey [description]
      * @return  [type]                      [description]
      */
-    public static function decrypter($data, $sessionkey = null)
+    public static function decrypter($data, $sessionkey = null,$gono = false)
     {
         if ($sessionkey) {
-            $seed         = self::AuthCrypt_c_seed($sessionkey); //hash_hmac
+            $seed         = self::AuthCrypt_s_seed($sessionkey); //hash_hmac
 
-            // $decodeheader = self::rc4_encode_decode($seed, ToStr(array_slice($data, 0, 6))); //RC4
+            // $decodeheader = self::rc4_encode_decode($seed, ToStr(array_slice($data, 0, 4))); //RC4
 
-            $decodeheader = Rc4::getInstance($seed)->rc4_endecode(ToStr(array_slice($data, 0, 6)));
-
+            $decodeheader = Rc4::getInstance($seed,$gono)->rc4_endecode(ToStr(array_slice($data, 0, 6)));
+            
             $decodeheader = GetBytes($decodeheader);
-            $data         = array_merge($decodeheader, array_slice($data, 6));
+            $data         = array_merge($decodeheader, array_slice($data, 4));
         }
 
         $Srp6 = new Srp6();
@@ -157,7 +157,7 @@ class Worldpacket
 
         $opcode = $Srp6->Littleendian($Srp6->BigInteger(ToStr(array_slice($data, 2, 2)), 256)->toHex())->toHex();
 
-        $data = ['size' => $size, 'opcode' => $opcode, 'content' => array_slice($data, 4)];
+        $data = ['size' => $size, 'opcode' => $opcode, 'content' => array_slice($data, 6)];
 
         return $data;
     }
