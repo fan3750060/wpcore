@@ -15,12 +15,13 @@ class Packetmanager
         }
 
         $Worldpacket_encrypter = isset(WorldServer::$clientparam[$fd]['Worldpacket_encrypter']) ? WorldServer::$clientparam[$fd]['Worldpacket_encrypter'] : '';
+
         if($Worldpacket_encrypter)
         {
             Worldpacket::$send_i = $Worldpacket_encrypter['send_i'];
             Worldpacket::$send_j = $Worldpacket_encrypter['send_j'];
-            Worldpacket::$recv_i = $Worldpacket_encrypter['recv_i'];
-            Worldpacket::$recv_j = $Worldpacket_encrypter['recv_j'];
+            // Worldpacket::$recv_i = $Worldpacket_encrypter['recv_i'];
+            // Worldpacket::$recv_j = $Worldpacket_encrypter['recv_j'];
         }
 
         $encrypter = Worldpacket::encrypter($param[0], $param[1], $param[2],isset($param[3]) ? $param[3] : true);
@@ -28,8 +29,8 @@ class Packetmanager
         $Worldpacket_encrypter = [
             'send_i' => Worldpacket::$send_i,
             'send_j' => Worldpacket::$send_j,
-            'recv_i' => Worldpacket::$recv_i,
-            'recv_j' => Worldpacket::$recv_j,
+            // 'recv_i' => Worldpacket::$recv_i,
+            // 'recv_j' => Worldpacket::$recv_j,
         ]; 
 
         WorldServer::$clientparam[$fd]['Worldpacket_encrypter'] = $Worldpacket_encrypter;
@@ -46,8 +47,8 @@ class Packetmanager
         $Worldpacket_decrypter = isset(WorldServer::$clientparam[$fd]['Worldpacket_decrypter']) ? WorldServer::$clientparam[$fd]['Worldpacket_decrypter'] : '';
         if($Worldpacket_decrypter)
         {
-            Worldpacket::$send_i = $Worldpacket_decrypter['send_i'];
-            Worldpacket::$send_j = $Worldpacket_decrypter['send_j'];
+            // Worldpacket::$send_i = $Worldpacket_decrypter['send_i'];
+            // Worldpacket::$send_j = $Worldpacket_decrypter['send_j'];
             Worldpacket::$recv_i = $Worldpacket_decrypter['recv_i'];
             Worldpacket::$recv_j = $Worldpacket_decrypter['recv_j'];
         }
@@ -55,8 +56,8 @@ class Packetmanager
         $decrypter = Worldpacket::decrypter($param[0], $param[1],(isset($param[2]) ? $param[2] : true));
 
         $Worldpacket_decrypter = [
-            'send_i' => Worldpacket::$send_i,
-            'send_j' => Worldpacket::$send_j,
+            // 'send_i' => Worldpacket::$send_i,
+            // 'send_j' => Worldpacket::$send_j,
             'recv_i' => Worldpacket::$recv_i,
             'recv_j' => Worldpacket::$recv_j,
         ]; 

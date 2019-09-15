@@ -207,21 +207,17 @@ class WorldServer
     {
         WORLD_LOG("onWorkerStart");
 
-        // $serv->tick(5000, function ($id) {
-        //     $this->tickerEvent($this->serv);
-        // });
+        if ($worker_id == 0) {
+            if (!$serv->taskworker) {
+                $serv->tick(5000, function ($id) {
+                    $this->tickerEvent($this->serv);
+                });
+            } else {
+                $serv->addtimer(5000);
+            }
 
-        // if ($worker_id == 0) {
-        //     if (!$serv->taskworker) {
-        //         $serv->tick(5000, function ($id) {
-        //             $this->tickerEvent($this->serv);
-        //         });
-        //     } else {
-        //         $serv->addtimer(5000);
-        //     }
-
-        //     WORLD_LOG("start timer finished");
-        // }
+            WORLD_LOG("start timer finished");
+        }
     }
 
     /**
@@ -238,7 +234,7 @@ class WorldServer
     private function clearcache($fd)
     {
         WORLD_LOG("Clear Cache");
-
+        WorldServer::$clientparam[$fd] = [];
         unset(WorldServer::$clientparam[$fd]);
     }
 }

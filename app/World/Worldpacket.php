@@ -126,12 +126,14 @@ class Worldpacket
                 self::$send_j = 0;
             }
 
-            foreach (range(0, self::$ENCRYPT_HEADER_SIZE - 1) as $k => $v) {
+            for ($i=0; $i < self::$ENCRYPT_HEADER_SIZE; $i++) 
+            { 
                 self::$send_i %= $crypt_key_length;
-                $enc = ($data[$k] ^ $crypt_key[self::$send_i]) + self::$send_j;
-                // $enc %= 0x100;
-                self::$send_i += 1;
-                $encrypted_header[$k] = self::$send_j = $enc;
+                $enc = ($data[$i] ^ $crypt_key[self::$send_i]) + self::$send_j;
+                // $enc %= 256;
+                // self::$send_i += 1;
+                ++self::$send_i;
+                $encrypted_header[$i] = self::$send_j = $enc;
             }
 
             $header = $encrypted_header;
@@ -169,13 +171,14 @@ class Worldpacket
                 self::$recv_j = 0;
             }
 
-            foreach (range(0, self::$DECRYPT_HEADER_SIZE - 1) as $k => $v) {
+            for ($i=0; $i < self::$DECRYPT_HEADER_SIZE; $i++) { 
                 self::$recv_i %= $crypt_key_length;
-                $dec = ($data[$k] - self::$recv_j) ^ $crypt_key[self::$recv_i];
-                // $dec %= 0x100;
-                self::$recv_i += 1;
-                self::$recv_j         = $data[$k];
-                $decrypted_header[$k] = $dec;
+                $dec = ($data[$i] - self::$recv_j) ^ $crypt_key[self::$recv_i];
+                // $dec %= 256;
+                // self::$recv_i += 1;
+                ++self::$recv_i;
+                self::$recv_j         = $data[$i];
+                $decrypted_header[$i] = $dec;
             }
 
             $header = $decrypted_header;

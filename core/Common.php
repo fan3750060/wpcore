@@ -146,7 +146,7 @@ if (!function_exists('echolog')) {
 
         $save = $save === null ? env('LOG_SAVE', false) : $save;
 
-        if ($save) {
+        if ($save && ($type == 'error' || $type == 'success')) {
 
             $logstr   = "[" . date('Y-m-d H:i:s') . "]: " . $string . PHP_EOL;
             $log_file = fopen(RUNTIME_PATH . $filename, 'a');

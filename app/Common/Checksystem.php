@@ -47,7 +47,7 @@ class Checksystem
 
     public static function checkbcmath()
     {
-    	if (!extension_loaded('bcmath')) {
+        if (!extension_loaded('bcmath')) {
             echolog('This core needs to use php\'s bcmath extension for high-precision calculations.', 'error');die;
         }
     }

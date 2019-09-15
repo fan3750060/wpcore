@@ -60,7 +60,7 @@ class Message
                     $opcode_value = Worldpacket::Unpackdata($data);
                     $opcode       = Worldpacket::getopcode($opcode_value, $fd);
                 } else {
-                    for ($i = 0; $i < 30; $i++) {
+                    for ($i = 0; $i < 40; $i++) {
                         $unpackdata = Worldpacket::decrypter($data, $sessionkey);
                         $opcode     = Worldpacket::getopcode($unpackdata['opcode'], $fd);
                         if ($opcode) {
@@ -101,14 +101,17 @@ class Message
                     case 'CMSG_CHAR_ENUM':
                         WORLD_LOG('[SMSG_CHAR_ENUM] Client : ' . $fd, 'warning');
 
-                        $data = '027A03000000000000E69FA5E5A89C00050400040900080E0155000000000000005C2FD1448FD2CF44CD8C0A430000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001527000004000000000000000000000000000000000000000000001627000007000000001827000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002A1900000D000000000000000000000000000000000000000000000000000000000000000000000000000000008B030000000000006C6B6C6B000102010705080700010C00000000000000A45B13C6290DB04269C06342000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000C10C00000400000000000000000000000000000000000000000000D12600000700000000D22600000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000F22100001100000000000000000000000000000000000000000000000000000000000000000000000000000000';
-                        $data = $Srp6->BigInteger($data, 16)->toBytes();
-                        $data = GetBytes($data);
+                        $result = Character::CharacterCharEnum($fd, $unpackdata['content']);
+                        $this->serversend($serv, $fd, $result);
 
-                        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_ENUM, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
-                        $packdata     = array_merge($encodeheader, $data);
+                        // $data = '01C30300000000000074657374000A0500010202080701660D00001202000066B6214652AAC6C5439C0542000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000D82600000400000000E88100001400000000000000000000000000D92600000700000000DA2600000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000AE9100001500000000000000000000000000000000000000000000000000000000000000000000000000000000';
+                        // $data = $Srp6->BigInteger($data, 16)->toBytes();
+                        // $data = GetBytes($data);
 
-                        $this->serversend($serv, $fd, $packdata);
+                        // $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_ENUM, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
+                        // $packdata     = array_merge($encodeheader, $data);
+
+                        // $this->serversend($serv, $fd, $packdata);
 
                         break;
 
@@ -116,7 +119,6 @@ class Message
                         WORLD_LOG('[SMSG_PONG] Client : ' . $fd, 'warning');
 
                         $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_PONG, $unpackdata['content'], WorldServer::$clientparam[$fd]['sessionkey']]);
-                        // $encodeheader = Worldpacket::encrypter(OpCode::SMSG_PONG, $unpackdata['content'], WorldServer::$clientparam[$fd]['sessionkey']);
                         $packdata = array_merge($encodeheader, $unpackdata['content']);
                         $this->serversend($serv, $fd, $packdata);
                         break;
@@ -129,16 +131,15 @@ class Message
 
                         break;
 
+                    case 'CMSG_CHAR_DELETE':
+                        WORLD_LOG('[SMSG_CHAR_DELETE] Client : ' . $fd, 'warning');
+
+                        $result = Character::CharacterDelete($fd, $unpackdata['content']);
+                        $this->serversend($serv, $fd, $result);
+
+                        break;
+
                     case 'CMSG_PLAYER_LOGIN':
-                        WORLD_LOG('[CMSG_CHAR_ENUM] Client : ', 'warning');
-                        $data = '027A03000000000000E69FA5E5A89C00050400040900080E0155000000000000005C2FD1448FD2CF44CD8C0A430000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001527000004000000000000000000000000000000000000000000001627000007000000001827000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002A1900000D000000000000000000000000000000000000000000000000000000000000000000000000000000008B030000000000006C6B6C6B000102010705080700010C00000000000000A45B13C6290DB04269C06342000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000C10C00000400000000000000000000000000000000000000000000D12600000700000000D22600000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000F22100001100000000000000000000000000000000000000000000000000000000000000000000000000000000';
-                        $data = $Srp6->BigInteger($data, 16)->toBytes();
-                        $data = GetBytes($data);
-
-                        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_ENUM, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
-                        $packdata     = array_merge($encodeheader, $data);
-                        $this->serversend($serv, $fd, $packdata);
-
                         WORLD_LOG('[SMSG_MOTD] Client : ' . $fd, 'warning');
                         $data         = '0100000057656C636F6D6520746F20746865206964772D636F72652073657276657200';
                         $data         = $Srp6->BigInteger($data, 16)->toBytes();
@@ -228,8 +229,10 @@ class Message
                         break;
                     default:
                         WORLD_LOG('Unknown opcode: ' . $opcode . ' Client : ' . $fd, 'warning');
-                        // $data = [0x00, 0x00, 0x00, 0x00];
-                        // $this->serversend($serv, $fd, $data);
+
+                        // $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_PONG, [0x00, 0x00, 0x00, 0x00], WorldServer::$clientparam[$fd]['sessionkey']]);
+                        // $packdata = array_merge($encodeheader, [0x00, 0x00, 0x00, 0x00]);
+                        // $this->serversend($serv, $fd, $packdata);
                         break;
                 }
 

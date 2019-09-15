@@ -1,15 +1,17 @@
 <?php
 namespace app\World;
-use core\lib\Cache;
-use app\World\Packetmanager;
+
+use app\Common\CharacterHandler;
+use app\Common\Srp6;
 use app\World\OpCode;
+use app\World\Packetmanager;
 
 /**
  * 角色管理
  */
 class Character
 {
-	const CHAR_LIST_RETRIEVING                                   = '0x2B';
+    const CHAR_LIST_RETRIEVING                                   = '0x2B';
     const CHAR_LIST_RETRIEVED                                    = '0x2C';
     const CHAR_LIST_FAILED                                       = '0x2D';
     const CHAR_CREATE_IN_PROGRESS                                = '0x2E';
@@ -65,7 +67,7 @@ class Character
         $result['race'] = $data[$next_length];
         $next_length += 1;
 
-        $result['char_class'] = $data[$next_length];
+        $result['class'] = $data[$next_length];
         $next_length += 1;
 
         $result['gender'] = $data[$next_length];
@@ -77,20 +79,120 @@ class Character
         $result['face'] = $data[$next_length];
         $next_length += 1;
 
-        $result['hair_style'] = $data[$next_length];
+        $result['hairStyle'] = $data[$next_length];
         $next_length += 1;
 
-        $result['hair_color'] = $data[$next_length];
+        $result['hairColor'] = $data[$next_length];
         $next_length += 1;
 
-        $result['facial_hair'] = $data[$next_length];
+        $result['facialStyle'] = $data[$next_length];
         $next_length += 1;
 
-        WORLD_LOG('create '.$result['name'].' Client : ' . $fd, 'success');
+        
+        $result['account'] = WorldServer::$clientparam[$fd]['userinfo']['id'];
 
-        $packdata = PackInt(HexToDecimal(self::CHAR_CREATE_SUCCESS), 32);
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode::SMSG_CHAR_CREATE,$packdata,WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
+        $charcount = CharacterHandler::rolenum($result);
+        if ($charcount >= 10) {
+            $packdata     = PackInt(HexToDecimal(self::CHAR_CREATE_SERVER_LIMIT), 32);
+            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_CREATE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+            $packdata     = array_merge($encodeheader, $packdata);
+            return $packdata;
+        }
+
+        if (CharacterHandler::create($result)) {
+        	WORLD_LOG('create role name:"' . $result['name'] . '" Client : ' . $fd, 'success');
+
+            $packdata     = PackInt(HexToDecimal(self::CHAR_CREATE_SUCCESS), 32);
+            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_CREATE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+            $packdata     = array_merge($encodeheader, $packdata);
+        } else {
+        	WORLD_LOG('create role name:"' . $result['name'] . '" Client : ' . $fd, 'error');
+
+            $packdata     = PackInt(HexToDecimal(self::CHAR_CREATE_ERROR), 32);
+            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_CREATE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+            $packdata     = array_merge($encodeheader, $packdata);
+        }
+
         return $packdata;
+    }
+
+    public function CharacterDelete($fd, $data)
+    {
+        $Srp6 = new Srp6();
+        $guid = HexToDecimal($Srp6->Littleendian($Srp6->BigInteger(ToStr($data), 256)->toHex())->toHex());
+
+        if (CharacterHandler::delete($guid) !== false) {
+
+            WORLD_LOG('delete role guid:"' . $guid . '" Client : ' . $fd, 'success');
+
+            $packdata     = PackInt(HexToDecimal(self::CHAR_DELETE_SUCCESS), 32);
+            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_DELETE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+            $packdata     = array_merge($encodeheader, $packdata);
+        } else {
+            $packdata     = PackInt(HexToDecimal(self::CHAR_DELETE_FAILED), 32);
+            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_DELETE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+            $packdata     = array_merge($encodeheader, $packdata);
+        }
+
+        return $packdata;
+    }
+
+    public function CharacterCharEnum($fd, $data)
+    {
+    	$Srp6 = new Srp6();
+
+    	$param = [];
+    	$param['account'] = WorldServer::$clientparam[$fd]['userinfo']['id'];
+
+    	if($result = CharacterHandler::CharEnum($param))
+    	{
+    		$packdata = $Srp6->BigInteger(pack('c',count($result)), 256)->toHex();
+	        foreach ($result as $k => $v){
+	            $name = $v['name'];
+	            $name_len = strlen($v['name']);
+	            $info = pack("QZ*c9Vif3l2cl3",
+	                $v['guid'],
+	                $name,
+	                $v['race'],
+	                $v['class'],
+	                $v['gender'],
+	                $v['skin'],
+	                $v['face'],
+	                $v['hairStyle'],
+	                $v['hairColor'],
+	                $v['facialStyle'],
+	                $v['level'],
+	                $v['zone'],
+	                $v['map'],
+	                $v['position_x'],
+	                $v['position_y'],
+	                $v['position_z'],
+	                $v['guildid'],
+	                $v['playerFlags'],
+	                $v['at_login'],
+	                $v['entry'],
+	                $v['pet_level'],
+	                0
+	            );
+	            $info = $Srp6->BigInteger($info, 256)->toHex();
+
+	            //装备
+	            $info.='000000000000000000000000000000000000000000000000000000D82600000400000000E88100001400000000000000000000000000D92600000700000000DA2600000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000AE9100001500000000000000000000000000000000000000000000000000000000000000000000000000000000';
+
+	            $packdata.= $info;
+	        }
+
+        	$packdata = $Srp6->BigInteger($packdata, 16)->toBytes();
+	        $packdata = GetBytes($packdata);
+            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_ENUM, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+            $packdata     = array_merge($encodeheader, $packdata);
+
+    	}else{
+    		$packdata     = [0];
+            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_ENUM, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+            $packdata     = array_merge($encodeheader, $packdata);
+    	}
+
+    	return $packdata;
     }
 }

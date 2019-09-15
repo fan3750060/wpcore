@@ -6,9 +6,105 @@ use app\World\Worldpacket;
 use app\World\OpCode;
 use app\World\Packetmanager;
 use core\lib\Cache;
+use core\query\DB;
 
 class Testsrp
 {
+    public function charenum()
+    {
+        $Srp6       = new Srp6();
+        $sessionkey = 'C4C46F8D79EB751F16A7EB45111C1748279998EBC22401CDD48048335428D97C71465E810AB05A8E';
+        $sessionkey = $Srp6->BigInteger($sessionkey, 16)->toBytes();
+
+        $fd = 'test001';
+
+         /************** 加密包 ******************/
+        $data = [0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode::SMSG_ADDON_INFO,$data,$sessionkey]);
+        $packdata     = array_merge($encodeheader, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
+
+        WORLD_LOG('[SMSG_AUTH_RESPONSE] Client : ', 'warning');
+        $data     = [0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01];
+        $packdata = Packetmanager::Worldpacket_encrypter($fd,[OpCode::SMSG_AUTH_RESPONSE,$data,$sessionkey]);
+        $data     = $packdata     = array_merge($packdata, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
+
+        WORLD_LOG('[CMSG_CHAR_ENUM] Client : ', 'warning');
+        $result = [
+            [
+                'guid' => 963,
+                'name' => 'test',
+                'race' => 10,
+                'class'=> 5,
+                'gender'=>0,
+                'skin'=>1,
+                'face'=>2,
+                'hairStyle'=>2,
+                'hairColor'=>8,
+                'facialStyle'=>7,
+                'level'=>1,
+                'zone'=>65,
+                'map'=>530,
+                'position_x'=>10349.6,
+                'position_y'=>-6357.29,
+                'position_z'=>33.4026,
+                'guildid'=>0,
+                'playerFlags'=>0,
+                'entry'=>0,
+                'pet_level'=>0,
+            ]
+        ];
+
+
+
+        $data = $Srp6->BigInteger(pack('c',count($result)), 256)->toHex();
+        foreach ($result as $k => $v){
+            $name = $v['name'];
+            $name_len = strlen($v['name']);
+            $packdata = pack("QZ*c9Vif3l2cl3",
+                $v['guid'],
+                $name,
+                $v['race'],
+                $v['class'],
+                $v['gender'],
+                $v['skin'],
+                $v['face'],
+                $v['hairStyle'],
+                $v['hairColor'],
+                $v['facialStyle'],
+                $v['level'],
+                $v['zone'],
+                $v['map'],
+                $v['position_x'],
+                $v['position_y'],
+                $v['position_z'],
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            );
+            $packdata = $Srp6->BigInteger($packdata, 256)->toHex();
+            $packdata.='000000000000000000000000000000000000000000000000000000D82600000400000000E88100001400000000000000000000000000D92600000700000000DA2600000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000AE9100001500000000000000000000000000000000000000000000000000000000000000000000000000000000';
+
+            $data.= $packdata;
+        }
+        var_dump($data);die;
+        // $data = '01C30300000000000074657374000A0500010202080701660D00001202000066B6214652AAC6C5439C0542000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000D82600000400000000E88100001400000000000000000000000000D92600000700000000DA2600000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000AE9100001500000000000000000000000000000000000000000000000000000000000000000000000000000000';
+        // $data = $Srp6->BigInteger($data, 16)->toBytes();
+        // $data = GetBytes($data);
+
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd,[OpCode::SMSG_CHAR_ENUM,$data,$sessionkey]);
+        $packdata     = array_merge($encodeheader, $data);
+        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
+
+    }
+
     public function run()
     {
         $Srp6       = new Srp6();
@@ -16,11 +112,6 @@ class Testsrp
         $sessionkey = $Srp6->BigInteger($sessionkey, 16)->toBytes();
 
         $fd = 'test001';
-        $list = ['serverseed','sessionkey','Worldpacket_encrypter','Worldpacket_decrypter'];
-        foreach ($list as $k => $v) 
-        {
-            Cache::drive('redis')->delete($fd.$v);
-        }
 
         // 角色进入游戏
         // $mapid         = 1;
@@ -170,5 +261,30 @@ class Testsrp
 
         // $packdata = json_encode($packdata);
         // var_dump('Decode:'.$packdata);
+    }
+
+    public function sql()
+    {
+        $sql = 'SELECT RaceID as race,ClassID as class,Gender,Items_1,Items_2,Items_3,Items_4,Items_5,Items_6,Items_7,Items_8,Items_9,Items_10,Items_11 as gender from db_CharStartOutfit_8606';
+        $result = DB::table('db_CharStartOutfit_8606','characters')->select();
+        
+        $newdata = [];
+        foreach ($result as $k => $v) 
+        {
+            for ($i=1; $i <= 11; $i++) { 
+                if(isset($v['Items_'.$i]) && $v['Items_'.$i] > 0)
+                {
+                    $data = [
+                        'race' => $v['RaceID'],
+                        'class' => $v['ClassID'],
+                        'itemid' => $v['Items_'.$i],
+                    ];
+
+                    $newdata[] = $data;
+                }
+            }
+        }
+
+        DB::table('playercreateinfo_item','world')->insert($newdata);
     }
 }

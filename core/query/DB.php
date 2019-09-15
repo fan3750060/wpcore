@@ -152,7 +152,7 @@ class DB
 		}else{
 			if(is_string($where))
 			{
-				$this->strwhere = 'where '.$where;
+				$this->strwhere = ' where '.$where;
 			}elseif (is_array($where)) 
 			{
 				$wherearray = array();
@@ -161,13 +161,13 @@ class DB
 					if(is_array($value))
 					{
 						$value[2] = $this->field_replace($value[2]);
-						$wherearray[] = '(`'.$value[0].'` '.$value[1].' '.$value[2].')';
+						$wherearray[] = '('.$value[0].' '.$value[1].' '.$value[2].')';
 					}else{
 						$value = $this->field_replace($value);
-					    $wherearray[] = '`'.$key.'` = '.$value;
+					    $wherearray[] = $key.' = '.$value;
 					}  
 				}
-				$this->strwhere = 'where '.implode(' and ', $wherearray);
+				$this->strwhere = ' where '.implode(' and ', $wherearray);
 			}
 		}
 		return $this;

@@ -118,7 +118,8 @@ class Account
     public function get_realmlistuserinfo($param)
     {
         $where = [
-            'account' => $param['accountId']
+            'account' => $param['accountId'],
+            'isdel' => 1
         ];
         return DB::table('characters','characters')->where($where)->count();
     }

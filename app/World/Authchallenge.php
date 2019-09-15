@@ -98,14 +98,14 @@ class Authchallenge
             return ['code' => 4000, 'msg' => 'unknown accoun', 'data' => $packdata];
         }
 
-        $GLOBALS['userinfo'] = $userinfo;
+        WorldServer::$clientparam[$fd]['userinfo'] = $userinfo;
 
         //K
         WorldServer::$clientparam[$fd]['sessionkey'] = $Srp6->BigInteger($userinfo['sessionkey'], 16)->toBytes();
 
         //计算Hash
         $server_hash       = sha1($account_name . ToStr(PackInt(0, 32)) . $client_seed_Bytes . WorldServer::$clientparam[$fd]['serverseed'] . WorldServer::$clientparam[$fd]['sessionkey']);
-        $server_hash_Bytes = $Srp6->BigInteger($server_hash, 16)->toBytes();
+        // $server_hash_Bytes = $Srp6->BigInteger($server_hash, 16)->toBytes();
 
         //验证
         if ($Srp6->BigInteger($server_hash, 16)->toHex() != $packdata['client_hash']) {

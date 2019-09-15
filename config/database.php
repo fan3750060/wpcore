@@ -50,6 +50,30 @@ return [
         'charset'  => env('CHARACTERS_CHARSET', 'UTF8'),
     ],
 
+    /**************** 数据库配置 ****************/
+    'world' => [
+        // 数据库类型
+        'type'     => env('WORLD_CONNECTION', 'mysql'),
+
+        // 服务器地址
+        'hostname' => env('WORLD_HOST', '127.0.0.1'),
+
+        //数据库名称
+        'dbname'   => env('WORLD_DATABASE', 'test'),
+
+        //用户名
+        'username' => env('WORLD_USERNAME', 'root'),
+
+        //密码
+        'password' => env('WORLD_PASSWORD', ''),
+
+        //端口
+        'hostport' => env('WORLD_PORT', '3306'),
+
+        //字符编码
+        'charset'  => env('WORLD_CHARSET', 'UTF8'),
+    ],
+
     /**************** memcache配置 ****************/
     'memcache'   => [
         // 连接地址
