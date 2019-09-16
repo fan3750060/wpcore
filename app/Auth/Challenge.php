@@ -10,7 +10,6 @@ use app\Common\Srp6;
  */
 class Challenge
 {
-    public static $srpdata_my;
     public $srpdata;
     public $seesionkey;
 
@@ -57,7 +56,7 @@ class Challenge
      * ------------------------------------------------------------------------------
      * @return  [type]          [description]
      */
-    public function getAuthSrp($data = null)
+    public function getAuthSrp($fd,$data = null)
     {
         $cmd   = 0x00;
         $error = 0x00;
@@ -72,22 +71,18 @@ class Challenge
         $SRP->authSrp6($data['username'], $data['sha_pass_hash']);
         $this->srpdata = $SRP->data;
 
-        //协程写入数据库
-        go(function () use ($data) {
-            $param = [
-                'v'          => $this->srpdata['v'],
-                's'          => $this->srpdata['s'],
-                'sessionkey' => $this->srpdata['b'], //兼容数据库 暂时用sessionkey存储
-                'token_key'  => $this->srpdata['B_hex'],
-                'username'   => $data['username'],
-            ];
+        //写入数据库
+        $param = [
+            'v'          => $this->srpdata['v'],
+            's'          => $this->srpdata['s'],
+            'token_key'  => $this->srpdata['B_hex'],
+            'username'   => $data['username'],
+        ];
 
-            $Account = new Account();
-            $Account->updateinfo($param);
-        });
+        $Account = new Account();
+        $Account->updateinfo($param);
 
-        //储存缓存 mysql
-        // Cache::drive()->set($data['username'], $this->srpdata, 100);
+        AuthServer::$clientparam[$fd]['auth_info'] = $this->srpdata;
 
         $return_data   = [];
         $return_data[] = $cmd;
@@ -128,14 +123,8 @@ class Challenge
      * ------------------------------------------------------------------------------
      * @return  [type]          [description]
      */
-    public function AuthServerLogonChallenge($data, $username)
+    public function AuthServerLogonChallenge($fd,$data, $username)
     {
-        $Account  = new Account();
-        $userinfo = $Account->get_account($username);
-
-        //获取缓存 mysql
-        // $this->srpdata = Cache::drive()->get($username);
-
         $A  = array_slice($data, 1, 32);
         $M1 = array_slice($data, 33, 20);
 
@@ -146,10 +135,10 @@ class Challenge
         $A  = $A->toHex();
         $M1 = $M1->toHex();
 
-        $v = $userinfo['v'];
-        $s = $userinfo['s'];
-        $b = $userinfo['sessionkey'];
-        $B = $userinfo['token_key'];
+        $v = AuthServer::$clientparam[$fd]['auth_info']['v'];
+        $s = AuthServer::$clientparam[$fd]['auth_info']['s'];
+        $b = AuthServer::$clientparam[$fd]['auth_info']['b'];
+        $B = AuthServer::$clientparam[$fd]['auth_info']['B_hex'];
 
         $SRP = new Srp6();
         $SRP->configvs($v, $s, $b, $B, $username);
@@ -174,8 +163,7 @@ class Challenge
             $data[] = 0x00;
             $data[] = 0x00;
 
-            $this->seesionkey = $SRP->sessionkey->toHex();
-
+            AuthServer::$clientparam[$fd]['seesionkey'] = $SRP->sessionkey->toHex();
         } else {
             $data = [0x00, 0x00, 0x04];
         }
@@ -183,19 +171,5 @@ class Challenge
         AUTH_LOG('Verify: ' . json_encode($data), 'info');
 
         return $data;
-    }
-
-    /**
-     * [AuthServerSeesionKey 获取sessionkey]
-     * ------------------------------------------------------------------------------
-     * @author  by.fan <fan3750060@163.com>
-     * ------------------------------------------------------------------------------
-     * @version date:2019-07-03
-     * ------------------------------------------------------------------------------
-     * @param   [type]          $username [description]
-     */
-    public function AuthServerSeesionKey($username)
-    {
-        return $this->seesionkey;
     }
 }

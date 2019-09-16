@@ -3,7 +3,6 @@ namespace app\Auth;
 
 use app\Auth\Challenge;
 use app\Auth\Clientstate;
-use app\Auth\Connection;
 use app\Auth\Realmlist;
 use app\Common\Account;
 
@@ -19,16 +18,12 @@ class Message
     public function serverreceive($serv, $fd, $data)
     {
         if (!empty($data)) {
-            $connectionCls = new Connection();
-
-            // 验证逻辑
-            $state = $connectionCls->getCache($fd, 'state');
 
             $data = GetBytes($data);
 
             AUTH_LOG("Receive: " . json_encode($data), 'info');
 
-            $this->handlePacket($serv, $fd, $data, $state);
+            $this->handlePacket($serv, $fd, $data, AuthServer::$clientparam[$fd]['state']);
         }
     }
 
@@ -45,7 +40,7 @@ class Message
     {
         switch ($state) {
             case Clientstate::Init:
-                file_put_contents('runtime/1_auth_.log', ToStr($data));
+                // file_put_contents('runtime/1_auth_.log', ToStr($data));
 
                 $Challenge      = new Challenge();
                 $userinfo       = $Challenge->getinfo_ClientLogonChallenge($data); //解析数据包
@@ -86,52 +81,45 @@ class Message
                 }
 
                 //4)开始SRP6计算
-                $returndata = $Challenge->getAuthSrp($account_info); //开始验证
+                $returndata = $Challenge->getAuthSrp($fd,$account_info); //开始验证
                 $this->serversend($serv, $fd, $returndata);
 
                 //5) 缓存用户信息
                 $userinfo['id'] = $account_info['id'];
-                $Connection     = new Connection();
 
                 //初始化auth状态 1
-                $Connection->saveConnector($fd, ['state' => Clientstate::ClientLogonChallenge, 'username' => $userinfo['username'], 'userinfo' => json_encode($userinfo)]);
+                AuthServer::$clientparam[$fd]['state']    = Clientstate::ClientLogonChallenge;
+                AuthServer::$clientparam[$fd]['username'] = $userinfo['username'];
+                AuthServer::$clientparam[$fd]['userinfo'] = json_encode($userinfo);
+
                 break;
 
             case Clientstate::ClientLogonChallenge:
-                file_put_contents('runtime/2_auth_.log', ToStr($data));
+                // file_put_contents('runtime/2_auth_.log', ToStr($data));
 
-                $Connection = new Connection();
-                $username   = $Connection->getCache($fd, 'username');
+                $username = AuthServer::$clientparam[$fd]['username'];
 
                 $Challenge = new Challenge();
-                $data      = $Challenge->AuthServerLogonChallenge($data, $username); //校验
+                $data      = $Challenge->AuthServerLogonChallenge($fd,$data, $username); //校验
 
                 if (count($data) != 3) {
                     AUTH_LOG('Password verification succeeded', 'success');
 
                     // 验证成功
                     $this->serversend($serv, $fd, $data);
-                    $Connection->saveConnector($fd, ['state' => Clientstate::Authenticated]); //初始化auth状态 5
+
+                    //初始化auth状态 5
+                    AuthServer::$clientparam[$fd]['state'] = Clientstate::Authenticated;
 
                     //更新用户信息
-                    $userinfo = json_decode($Connection->getCache($fd, 'userinfo'), true);
+                    $userinfo = json_decode(AuthServer::$clientparam[$fd]['userinfo'], true);
+
                     if ($userinfo) {
-                        // //获取sessionkey
-                        // $sessionkey             = $Challenge->AuthServerSeesionKey($username);
-                        // $userinfo['sessionkey'] = $sessionkey;
+                        //获取sessionkey
+                        $userinfo['sessionkey'] = AuthServer::$clientparam[$fd]['seesionkey'];
 
-                        // $Account = new Account();
-                        // $Account->updateinfo($userinfo);
-
-                        //协程写入数据库
-                        go(function () use ($userinfo, $Challenge, $username) {
-                            //获取sessionkey
-                            $sessionkey             = $Challenge->AuthServerSeesionKey($username);
-                            $userinfo['sessionkey'] = $sessionkey;
-
-                            $Account = new Account();
-                            $Account->updateinfo($userinfo);
-                        });
+                        $Account = new Account();
+                        $Account->updateinfo($userinfo);
                     }
 
                 } else {
@@ -139,22 +127,24 @@ class Message
 
                     // 验证失败
                     $this->serversend($serv, $fd, [0, 0, HexToDecimal(Clientstate::WOW_FAIL_INCORRECT_PASSWORD)]);
-                    $Connection->saveConnector($fd, ['state' => Clientstate::Init]); //初始化auth状态 0
+
+                    //初始化auth状态 0
+                    AuthServer::$clientparam[$fd]['state'] = Clientstate::Init;
                 }
 
                 break;
 
             case Clientstate::Authenticated:
-                file_put_contents('runtime/3_auth_Authenticated.log', $data);
+                // file_put_contents('runtime/3_auth_Authenticated.log', $data);
 
                 AUTH_LOG('Get server domain list');
 
-                $Connection = new Connection();
-                $userinfo   = json_decode($Connection->getCache($fd, 'userinfo'), true);
+                $userinfo = json_decode(AuthServer::$clientparam[$fd]['userinfo'], true);
 
                 // 获取服务器列表
                 $Realmlist = new Realmlist();
                 $RealmInfo = $Realmlist->get_realmlist(['accountId' => $userinfo['id']]);
+
                 $this->serversend($serv, $fd, $RealmInfo);
                 break;
         }
@@ -172,6 +162,7 @@ class Message
     public function serversend($serv, $fd, $data = null)
     {
         AUTH_LOG("Send: " . json_encode($data), 'info');
+
         $serv->send($fd, ToStr($data));
     }
 }
