@@ -120,15 +120,15 @@ class CharacterHandler
 
                 $new_temp = [];
                 foreach ($playercreateinfo_item as $k => $v) {
-                	if (($item = DB::table('item_instance', 'characters')->insert($instance)) == false) {
-	                    $DBTransaction = false;
-	                }
-                
+                    if (($item = DB::table('item_instance', 'characters')->insert($instance)) == false) {
+                        $DBTransaction = false;
+                    }
+
                     $temp = [
                         'guid'          => $guid,
                         'bag'           => 0,
                         'slot'          => $v['InventoryType'],
-                        'item'			=> $item,
+                        'item'          => $item,
                         'item_template' => $v['itemid'],
                     ];
 
@@ -177,5 +177,40 @@ class CharacterHandler
         $sql                 = "SELECT characters.guid, characters.name, characters.race, characters.class, characters.gender,characters.skin,characters.face,characters.hairStyle,characters.hairColor,characters.facialStyle, characters.playerBytes, characters.playerBytes2, characters.level,characters.zone, characters.map, characters.position_x, characters.position_y, characters.position_z, guild_member.guildid, characters.playerFlags,characters.at_login, character_pet.entry, character_pet.modelid, character_pet.level as pet_level, characters.equipmentCache FROM characters LEFT JOIN character_pet ON characters.guid=character_pet.owner AND character_pet.slot= $PET_SAVE_AS_CURRENT  LEFT JOIN guild_member ON characters.guid = guild_member.guid WHERE characters.account = {$param['account']} and characters.isdel = 1 ORDER BY characters.guid";
 
         return DB::table('characters', 'characters')->query($sql);
+    }
+
+    public static function CharEnumItem($guids)
+    {
+        $where = 'guid in (' . implode(',', $guids) . ')';
+
+        $character_inventory     = DB::table('character_inventory', 'characters')->where($where)->select();
+        $new_character_inventory = [];
+        if ($character_inventory) {
+            foreach ($character_inventory as $k => $v) {
+                $new_character_inventory[$v['guid']][$v['slot']] = $v;
+            }
+
+            //获取物品属性
+            $item_entry = array_column($character_inventory, 'item_template');
+            $item_entry = array_unique($item_entry);
+
+            $where             = 'entry in (' . implode(',', $item_entry) . ')';
+            $item_template     = DB::table('item_template', 'world')->field(['entry', 'displayid', 'InventoryType'])->where($where)->select();
+            $new_item_template = [];
+            if ($item_template) {
+                foreach ($item_template as $k => $v) {
+                    $new_item_template[$v['entry']] = $v;
+                }
+            }
+
+            foreach ($new_character_inventory as $k => $v) {
+                foreach ($v as $k1 => $v1) {
+                    $new_character_inventory[$k][$k1]['displayid']     = $new_item_template[$v1['item_template']]['displayid'];
+                    $new_character_inventory[$k][$k1]['InventoryType'] = $new_item_template[$v1['item_template']]['InventoryType'];
+                }
+            }
+        }
+
+        return $new_character_inventory;
     }
 }

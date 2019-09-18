@@ -106,7 +106,7 @@ class Worldpacket
      * @param   [type]          $data       [description]
      * @param   [type]          $sessionkey [description]
      */
-    public static function encrypter($OpCode, $data, $sessionkey = null, $gono = true)
+    public static function encrypter($OpCode, $data, $sessionkey = null, $goon = true)
     {
         // 包头
         $header = self::ServerPktHeader(HexToDecimal($OpCode), count($data) + 2);
@@ -120,7 +120,7 @@ class Worldpacket
             $encrypted_header = PackInt(0, self::$ENCRYPT_HEADER_SIZE * 8);
             $crypt_key_length = count($crypt_key);
 
-            if(!$gono)
+            if(!$goon)
             {
                 self::$send_i = 0;
                 self::$send_j = 0;
@@ -153,7 +153,7 @@ class Worldpacket
      * @param   [type]          $sessionkey [description]
      * @return  [type]                      [description]
      */
-    public static function decrypter($data, $sessionkey = null, $gono = true)
+    public static function decrypter($data, $sessionkey = null, $goon = true)
     {
         $header = array_slice($data, 0, 6);
 
@@ -165,7 +165,7 @@ class Worldpacket
             $decrypted_header = PackInt(0, self::$DECRYPT_HEADER_SIZE * 8);
             $crypt_key_length = count($crypt_key);
 
-            if(!$gono)
+            if(!$goon)
             {
                 self::$recv_i = 0;
                 self::$recv_j = 0;

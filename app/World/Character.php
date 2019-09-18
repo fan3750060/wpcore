@@ -50,6 +50,29 @@ class Character
     const CHAR_NAME_RUSSIAN_SILENT_CHARACTER_AT_BEGINNING_OR_END = '0x59';
     const CHAR_NAME_DECLENSION_DOESNT_MATCH_BASE_NAME            = '0x5A';
 
+    public static $equipment = [
+        'HEAD'      => 0,
+        'NECK'      => 1,
+        'SHOULDERS' => 2,
+        'BODY'      => 3,
+        'CHEST'     => 4,
+        'WAIST'     => 5,
+        'LEGS'      => 6,
+        'FEET'      => 7,
+        'WRISTS'    => 8,
+        'HANDS'     => 9,
+        'FINGER1'   => 10,
+        'FINGER2'   => 11,
+        'TRINKET1'  => 12,
+        'TRINKET2'  => 13,
+        'BACK'      => 14,
+        'MAINHAND'  => 15,
+        'OFFHAND'   => 16,
+        'RANGED'    => 17,
+        'TABARD'    => 18,
+        'BAG1'      => 19,
+    ];
+
     public static function CharacterCreate($fd, $data)
     {
         $result = [];
@@ -88,11 +111,9 @@ class Character
         $result['facialStyle'] = $data[$next_length];
         $next_length += 1;
 
-        
         $result['account'] = WorldServer::$clientparam[$fd]['userinfo']['id'];
 
-        $charcount = CharacterHandler::rolenum($result);
-        if ($charcount >= 10) {
+        if (CharacterHandler::rolenum($result) >= 10) {
             $packdata     = PackInt(HexToDecimal(self::CHAR_CREATE_SERVER_LIMIT), 32);
             $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_CREATE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
             $packdata     = array_merge($encodeheader, $packdata);
@@ -100,13 +121,13 @@ class Character
         }
 
         if (CharacterHandler::create($result)) {
-        	WORLD_LOG('create role name:"' . $result['name'] . '" Client : ' . $fd, 'success');
+            WORLD_LOG('create role name:"' . $result['name'] . '" Client : ' . $fd, 'success');
 
             $packdata     = PackInt(HexToDecimal(self::CHAR_CREATE_SUCCESS), 32);
             $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_CREATE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
             $packdata     = array_merge($encodeheader, $packdata);
         } else {
-        	WORLD_LOG('create role name:"' . $result['name'] . '" Client : ' . $fd, 'error');
+            WORLD_LOG('create role name:"' . $result['name'] . '" Client : ' . $fd, 'error');
 
             $packdata     = PackInt(HexToDecimal(self::CHAR_CREATE_ERROR), 32);
             $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_CREATE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
@@ -139,60 +160,98 @@ class Character
 
     public function CharacterCharEnum($fd, $data)
     {
-    	$Srp6 = new Srp6();
+        $Srp6 = new Srp6();
 
-    	$param = [];
-    	$param['account'] = WorldServer::$clientparam[$fd]['userinfo']['id'];
+        $param            = [];
+        $param['account'] = WorldServer::$clientparam[$fd]['userinfo']['id'];
 
-    	if($result = CharacterHandler::CharEnum($param))
-    	{
-    		$packdata = $Srp6->BigInteger(pack('c',count($result)), 256)->toHex();
-	        foreach ($result as $k => $v){
-	            $name = $v['name'];
-	            $name_len = strlen($v['name']);
-	            $info = pack("QZ*c9Vif3l2cl3",
-	                $v['guid'],
-	                $name,
-	                $v['race'],
-	                $v['class'],
-	                $v['gender'],
-	                $v['skin'],
-	                $v['face'],
-	                $v['hairStyle'],
-	                $v['hairColor'],
-	                $v['facialStyle'],
-	                $v['level'],
-	                $v['zone'],
-	                $v['map'],
-	                $v['position_x'],
-	                $v['position_y'],
-	                $v['position_z'],
-	                $v['guildid'],
-	                $v['playerFlags'],
-	                $v['at_login'],
-	                $v['entry'],
-	                $v['pet_level'],
-	                0
-	            );
-	            $info = $Srp6->BigInteger($info, 256)->toHex();
+        if ($result = CharacterHandler::CharEnum($param)) {
+            $packdata = pack('c', count($result));
+            
+            //获取角色物品信息
+            $guids = array_column($result, 'guid');
 
-	            //装备
-	            $info.='000000000000000000000000000000000000000000000000000000D82600000400000000E88100001400000000000000000000000000D92600000700000000DA2600000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000AE9100001500000000000000000000000000000000000000000000000000000000000000000000000000000000';
+            $character_inventory = CharacterHandler::CharEnumItem($guids);
 
-	            $packdata.= $info;
-	        }
+            foreach ($result as $k => $v) {
+                $name     = $v['name'];
+                $name_len = strlen($v['name']);
+                $info     = pack("QZ*c9Vif3l2cl3",
+                    $v['guid'],
+                    $name,
+                    $v['race'],
+                    $v['class'],
+                    $v['gender'],
+                    $v['skin'],
+                    $v['face'],
+                    $v['hairStyle'],
+                    $v['hairColor'],
+                    $v['facialStyle'],
+                    $v['level'],
+                    $v['zone'],
+                    $v['map'],
+                    $v['position_x'],
+                    $v['position_y'],
+                    $v['position_z'],
+                    $v['guildid'],
+                    $v['playerFlags'],
+                    $v['at_login'],
+                    $v['entry'],
+                    $v['pet_level'],
+                    0
+                );
+                //装备信息: 物品显示id(displayid)-物品部位(slot)-附魔id(暂时为0)
+                if (isset($character_inventory[$v['guid']])) {
 
-        	$packdata = $Srp6->BigInteger($packdata, 16)->toBytes();
-	        $packdata = GetBytes($packdata);
+                    $item_info = '';
+                    foreach (self::$equipment as $k1 => $v1) {
+                        $displayid     = isset($character_inventory[$v['guid']][$v1]['displayid']) ? $character_inventory[$v['guid']][$v1]['displayid'] : 0;
+                        $InventoryType = isset($character_inventory[$v['guid']][$v1]['InventoryType']) ? $character_inventory[$v['guid']][$v1]['InventoryType'] : 0;
+
+                        $item_info_tmp = pack("VcV", $displayid, $InventoryType, 0);
+
+                        $item_info .= $item_info_tmp;
+                    }
+
+                    $info .= $item_info;
+                } else {
+                    //默认显示装备
+                    $item_info = '';
+                    foreach (self::$equipment as $k1 => $v1) {
+                        if($k1 == 'CHEST')
+                        {
+                            $displayid = 12683;
+                            $InventoryType = 20;
+                        }elseif($k1 == 'MAINHAND')
+                        {
+                            $displayid = 40371;
+                            $InventoryType = 17;
+                        }else{
+                            $displayid = 0;
+                            $InventoryType = 0;
+                        }
+
+                        $item_info_tmp = pack("VcV", $displayid, $InventoryType, 0);
+
+                        $item_info .= $item_info_tmp;
+                    }
+                    
+                    $info .= $item_info;
+                }
+                
+                $packdata .= $info;
+            }
+
+            $packdata     = GetBytes($packdata);
             $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_ENUM, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
             $packdata     = array_merge($encodeheader, $packdata);
 
-    	}else{
-    		$packdata     = [0];
+        } else {
+            $packdata     = [0];
             $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_ENUM, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
             $packdata     = array_merge($encodeheader, $packdata);
-    	}
+        }
 
-    	return $packdata;
+        return $packdata;
     }
 }

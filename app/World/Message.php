@@ -76,7 +76,12 @@ class Message
                         if ($checkauth['code'] == 2000) {
                             WORLD_LOG('[SMSG_ADDON_INFO] Client : ' . $fd, 'warning');
 
-                            $data         = [0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+                            $data = '';
+                            for ($i=0; $i < 16; $i++) { 
+                                $data.=pack('V2',258,0);
+                            }
+                            $data = GetBytes($data);
+        
                             $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_ADDON_INFO, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
                             $packdata     = array_merge($encodeheader, $data);
                             $this->serversend($serv, $fd, $packdata);
@@ -103,15 +108,6 @@ class Message
 
                         $result = Character::CharacterCharEnum($fd, $unpackdata['content']);
                         $this->serversend($serv, $fd, $result);
-
-                        // $data = '01C30300000000000074657374000A0500010202080701660D00001202000066B6214652AAC6C5439C0542000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000D82600000400000000E88100001400000000000000000000000000D92600000700000000DA2600000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000AE9100001500000000000000000000000000000000000000000000000000000000000000000000000000000000';
-                        // $data = $Srp6->BigInteger($data, 16)->toBytes();
-                        // $data = GetBytes($data);
-
-                        // $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_ENUM, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
-                        // $packdata     = array_merge($encodeheader, $data);
-
-                        // $this->serversend($serv, $fd, $packdata);
 
                         break;
 
