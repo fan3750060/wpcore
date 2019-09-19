@@ -14,11 +14,12 @@ class Message
     {
         if (!empty($data)) {
 
-            WORLD_LOG("Receive: " . (new Srp6)->BigInteger($data, 256)->toHex(), 'info');
-
+            if(env('MSG_DEBUG',false))
+            {
+                WORLD_LOG("Receive: " . (new Srp6)->BigInteger($data, 256)->toHex(), 'info');
+            }
+            
             $data = GetBytes($data);
-
-            // WORLD_LOG("Receive: " . json_encode($data), 'info');
 
             $this->handlePacket($serv, $fd, $data, WorldServer::$clientparam[$fd]['state']);
         }
@@ -108,7 +109,6 @@ class Message
 
                         $result = Character::CharacterCharEnum($fd, $unpackdata['content']);
                         $this->serversend($serv, $fd, $result);
-
                         break;
 
                     case 'CMSG_PING':
@@ -124,7 +124,6 @@ class Message
 
                         $result = Character::CharacterCreate($fd, $unpackdata['content']);
                         $this->serversend($serv, $fd, $result);
-
                         break;
 
                     case 'CMSG_CHAR_DELETE':
@@ -132,7 +131,6 @@ class Message
 
                         $result = Character::CharacterDelete($fd, $unpackdata['content']);
                         $this->serversend($serv, $fd, $result);
-
                         break;
 
                     case 'CMSG_PLAYER_LOGIN':
@@ -201,7 +199,6 @@ class Message
                         $this->serversend($serv, $fd, $packdata);
                         break;
 
-
                     case 'CMSG_NAME_QUERY':
                         WORLD_LOG('[SMSG_NAME_QUERY_RESPONSE] Client : ' . $fd, 'warning');
                         $data         = '7A03000000000000E69FA5E5A89C000005000000000000000400000000';
@@ -210,7 +207,6 @@ class Message
                         $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_NAME_QUERY_RESPONSE, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
                         $packdata     = array_merge($encodeheader, $data);
                         $this->serversend($serv, $fd, $packdata);
-
                         break;
 
                     case 'CMSG_QUERY_TIME':
@@ -223,6 +219,7 @@ class Message
                         $packdata     = array_merge($encodeheader, $data);
                         $this->serversend($serv, $fd, $packdata);
                         break;
+                        
                     default:
                         WORLD_LOG('Unknown opcode: ' . $opcode . ' Client : ' . $fd, 'warning');
 
@@ -238,8 +235,11 @@ class Message
 
     public function serversend($serv, $fd, $data = null)
     {
-        // WORLD_LOG("Send: " . json_encode($data), 'info');
-        WORLD_LOG("Send: " . (new Srp6)->BigInteger(ToStr($data), 256)->toHex(), 'info');
+        if(env('MSG_DEBUG',false))
+        {
+            WORLD_LOG("Send: " . (new Srp6)->BigInteger(ToStr($data), 256)->toHex(), 'info');
+        }
+        
         $serv->send($fd, ToStr($data));
     }
 }

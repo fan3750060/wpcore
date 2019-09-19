@@ -4,7 +4,7 @@ return [
     //Login configuration
     'LogonServer' => [
         'Address' => env('LOGON_ADDRESS','127.0.0.1'),
-        'Port'    => env('LOGON_Port',3724),
+        'Port'    => env('LOGON_PORT',3724),
     ],
 
     // Gameversion

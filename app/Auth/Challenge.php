@@ -42,8 +42,7 @@ class Challenge
         $info['user_lenth'] = $data[33]; //用户名长度
         $info['username']   = array_slice($data, 34, $info['user_lenth']); //截取用户名
         $info['username']   = ToStr($info['username']);
-
-        AUTH_LOG('Unpack: ' . json_encode($info), 'info');
+        
         return $info;
     }
 
@@ -167,8 +166,6 @@ class Challenge
         } else {
             $data = [0x00, 0x00, 0x04];
         }
-
-        AUTH_LOG('Verify: ' . json_encode($data), 'info');
 
         return $data;
     }

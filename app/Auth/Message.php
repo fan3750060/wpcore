@@ -21,7 +21,10 @@ class Message
 
             $data = GetBytes($data);
 
-            AUTH_LOG("Receive: " . json_encode($data), 'info');
+            if(env('MSG_DEBUG',false))
+            {
+                AUTH_LOG("Receive: " . json_encode($data), 'info');
+            }
 
             $this->handlePacket($serv, $fd, $data, AuthServer::$clientparam[$fd]['state']);
         }
@@ -123,7 +126,7 @@ class Message
                     }
 
                 } else {
-                    AUTH_LOG('Password verification failed', 'warning');
+                    AUTH_LOG('Password verification failed', 'error');
 
                     // 验证失败
                     $this->serversend($serv, $fd, [0, 0, HexToDecimal(Clientstate::WOW_FAIL_INCORRECT_PASSWORD)]);
@@ -161,8 +164,11 @@ class Message
      */
     public function serversend($serv, $fd, $data = null)
     {
-        AUTH_LOG("Send: " . json_encode($data), 'info');
-
+        if(env('MSG_DEBUG',false))
+        {
+            AUTH_LOG("Send: " . json_encode($data), 'info');
+        }
+        
         $serv->send($fd, ToStr($data));
     }
 }

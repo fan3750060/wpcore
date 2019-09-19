@@ -1,5 +1,6 @@
 <?php
 namespace app\World;
+
 use app\Common\Srp6;
 
 /**
@@ -17,9 +18,13 @@ class Authchallenge
      */
     public function Authchallenge($fd)
     {
-        $Srp6     = new Srp6();
-        $seed     = $Srp6->Littleendian($Srp6->_random_number_helper(4)->toHex())->toBytes();
-        $data     = GetBytes($seed);
+        $Srp6  = new Srp6();
+        $seed  = $Srp6->Littleendian($Srp6->_random_number_helper(4)->toHex())->toBytes();
+        $seed1 = $Srp6->Littleendian($Srp6->_random_number_helper(16)->toHex())->toBytes();
+        $seed2 = $Srp6->Littleendian($Srp6->_random_number_helper(16)->toHex())->toBytes();
+
+        $data     = $seed . $seed1 . $seed2;
+        $data     = GetBytes($data);
         $packdata = Worldpacket::encrypter(OpCode::SMSG_AUTH_CHALLENGE, $data);
         $data     = array_merge($packdata, $data);
 
@@ -104,8 +109,7 @@ class Authchallenge
         WorldServer::$clientparam[$fd]['sessionkey'] = $Srp6->BigInteger($userinfo['sessionkey'], 16)->toBytes();
 
         //计算Hash
-        $server_hash       = sha1($account_name . ToStr(PackInt(0, 32)) . $client_seed_Bytes . WorldServer::$clientparam[$fd]['serverseed'] . WorldServer::$clientparam[$fd]['sessionkey']);
-        // $server_hash_Bytes = $Srp6->BigInteger($server_hash, 16)->toBytes();
+        $server_hash = sha1($account_name . ToStr(PackInt(0, 32)) . $client_seed_Bytes . WorldServer::$clientparam[$fd]['serverseed'] . WorldServer::$clientparam[$fd]['sessionkey']);
 
         //验证
         if ($Srp6->BigInteger($server_hash, 16)->toHex() != $packdata['client_hash']) {
@@ -118,7 +122,7 @@ class Authchallenge
         }
 
         // 鉴权成功
-        WORLD_LOG('Unpack: ' . json_encode($packdata), 'info');
+        WORLD_LOG('account : ' . $packdata['account_name'], 'warning');
         WORLD_LOG('server_hash: ' . $Srp6->BigInteger($server_hash, 16)->toHex(), 'warning');
         WORLD_LOG('client_hash: ' . $packdata['client_hash'], 'warning');
         WORLD_LOG('AUTH_OK: Successful verification', 'success');

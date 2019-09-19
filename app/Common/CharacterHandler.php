@@ -18,7 +18,7 @@ class CharacterHandler
             'class'       => $param['class'],
             'gender'      => $param['gender'],
             'level'       => isset($param['level']) ? $param['level'] : 1,
-            'money'       => env('Money', 1000),
+            'money'       => env('MONEY', 0),
             'skin'        => $param['skin'],
             'face'        => $param['face'],
             'hairStyle'   => $param['hairStyle'],
