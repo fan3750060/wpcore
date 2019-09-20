@@ -182,6 +182,54 @@ class Testsrp
 
     public function run()
     {
+        $field = ['character_spell.*'];
+
+        $where = [
+            'characters.guid' => 62,
+        ];
+
+        $join = [
+            ['character_spell','character_spell.guid = characters.guid','inner'],
+        ];
+
+        $character_spell   = DB::table('characters', 'characters')->field($field)->join($join)->where($where)->select();
+
+        $packdata  = '';
+        $spall_len = count($character_spell);
+        $packdata .= pack('cv', 0, $spall_len);
+
+        $spellCount = 0;
+
+        foreach ($character_spell as $k => $v) {
+            if(!$v['active'] || $v['disabled'])
+            {
+                continue;
+            }
+
+            $packdata .= pack('v2', $v['spell'], 0);
+
+            $spellCount += 1;
+        }
+
+        $packdata .= pack('v2',$spellCount,0);         
+
+        $Srp6       = new Srp6();
+        $packdata = $Srp6->BigInteger($packdata, 256)->toHex();
+
+        var_dump($packdata);die;
+
+
+
+
+
+
+
+        $data = '';
+        for ($i = 0; $i < 128; $i++) {
+            $data .= pack('c', 0);
+        }
+        $data = GetBytes($data);
+        var_dump($data);die;
         $Srp6       = new Srp6();
         $sessionkey = 'F5AFC49E1798090EAD1BB1BAE68B8BFDD38BA36B8DB0803B2DEE094FC3D235501D4FB99289D7586D';
         $sessionkey = $Srp6->BigInteger($sessionkey, 16)->toBytes();

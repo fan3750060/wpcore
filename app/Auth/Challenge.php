@@ -42,7 +42,7 @@ class Challenge
         $info['user_lenth'] = $data[33]; //用户名长度
         $info['username']   = array_slice($data, 34, $info['user_lenth']); //截取用户名
         $info['username']   = ToStr($info['username']);
-        
+
         return $info;
     }
 

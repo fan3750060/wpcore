@@ -3,6 +3,7 @@ namespace app\World;
 
 use app\Common\Account;
 use app\Common\Checksystem;
+use app\Socket\SwooleTcp;
 use app\World\Message;
 use core\lib\Cache;
 
@@ -35,18 +36,18 @@ class WorldServer
 
         $str = "
 
- pppp          ppppppppppp         pppppp      pppppp    ppppppppp   ppppppppp  
-  ppp   ppp   ppp ppp   ppp       ppp  ppp    ppp  pppp  ppp   pppp  ppp        
-  ppp   pppp  ppp ppp    ppp     ppp    ppp  ppp    pppp ppp    ppp  ppp        
-  ppp  ppppp  ppp ppp    ppp    ppp     ppp ppp      ppp ppp    ppp  ppp        
-   ppp ppppp  ppp ppp    ppp    ppp         ppp      ppp ppp    ppp  ppp        
-   ppp pp pp ppp  ppp   ppp     ppp         ppp      ppp ppp   pppp  ppppppppp  
-   ppp pp pppppp  pppppppp      ppp         ppp      ppp pppppppp    ppp        
-   pppppp pppppp  ppp           ppp         ppp      ppp ppp  pppp   ppp        
-    ppppp  pppp   ppp           ppp     ppp ppp      ppp ppp   ppp   ppp        
-    pppp   pppp   ppp            ppp    ppp  ppp    pppp ppp    ppp  ppp        
-    pppp   pppp   ppp             ppp  pppp   ppp  pppp  ppp    ppp  ppp        
-    pppp   pppp   ppp              pppppp      pppppp    ppp    pppp pppppppppp 
+ pppp          ppppppppppp         pppppp      pppppp    ppppppppp   ppppppppp
+  ppp   ppp   ppp ppp   ppp       ppp  ppp    ppp  pppp  ppp   pppp  ppp
+  ppp   pppp  ppp ppp    ppp     ppp    ppp  ppp    pppp ppp    ppp  ppp
+  ppp  ppppp  ppp ppp    ppp    ppp     ppp ppp      ppp ppp    ppp  ppp
+   ppp ppppp  ppp ppp    ppp    ppp         ppp      ppp ppp    ppp  ppp
+   ppp pp pp ppp  ppp   ppp     ppp         ppp      ppp ppp   pppp  ppppppppp
+   ppp pp pppppp  pppppppp      ppp         ppp      ppp pppppppp    ppp
+   pppppp pppppp  ppp           ppp         ppp      ppp ppp  pppp   ppp
+    ppppp  pppp   ppp           ppp     ppp ppp      ppp ppp   ppp   ppp
+    pppp   pppp   ppp            ppp    ppp  ppp    pppp ppp    ppp  ppp
+    pppp   pppp   ppp             ppp  pppp   ppp  pppp  ppp    ppp  ppp
+    pppp   pppp   ppp              pppppp      pppppp    ppp    pppp pppppppppp
         ";
         WORLD_LOG($str);
         WORLD_LOG('WorldServer version 1.0.1');
@@ -72,57 +73,13 @@ class WorldServer
     public function runAuthServer()
     {
         if ($this->active) {
-            $this->listen('WorldServer'); //开启监听
+
+            $this->serv = SwooleTcp::Listen('0.0.0.0', $this->ServerConfig['port'], new self());
+
+            Cache::drive('redis')->delete('checkconnector');
         } else {
             WORLD_LOG('Error: Did not start the service according to the process...');
         }
-    }
-
-    /**
-     * [listen 开启服务]
-     * ------------------------------------------------------------------------------
-     * @author  by.fan <fan3750060@163.com>
-     * ------------------------------------------------------------------------------
-     * @version date:2019-04-19
-     * ------------------------------------------------------------------------------
-     * @return  [type]          [description]
-     */
-    public function listen($config = null)
-    {
-        $this->serv = new \swoole_server("0.0.0.0", $this->ServerConfig['port'], SWOOLE_BASE, SWOOLE_SOCK_TCP);
-
-        $this->serv->set(array(
-            'worker_num'               => 4,
-//                 'daemonize' => true, // 是否作为守护进程
-            'max_request'              => 10000,
-            'heartbeat_check_interval' => 60 * 60, //每隔多少秒检测一次，单位秒，Swoole会轮询所有TCP连接，将超过心跳时间的连接关闭掉
-            // 'log_file'                 => RUNTIME_PATH . 'swoole.log',
-            // 'open_eof_check' => true, //打开EOF检测
-            'package_eof'              => "###", //设置EOF
-            // 'open_eof_split'=>true, //是否分包
-            'package_max_length'       => 4096,
-        ));
-
-        $this->serv->on('Start', array(
-            $this, 'onStart',
-        ));
-        $this->serv->on('WorkerStart', array(
-            $this, 'onWorkerStart',
-        ));
-        $this->serv->on('Connect', array(
-            $this, 'onConnect',
-        ));
-        $this->serv->on('Receive', array(
-            $this, 'onReceive',
-        ));
-        $this->serv->on('Close', array(
-            $this, 'onClose',
-        ));
-
-        //清空待连接池
-        Cache::drive('redis')->delete('checkconnector');
-        
-        $this->serv->start();
     }
 
     /**
@@ -133,7 +90,7 @@ class WorldServer
     public function onStart($serv)
     {
         // 设置进程名称
-        @cli_set_process_title("swoole_im_master");
+        @cli_set_process_title("wow_world_master");
         WORLD_LOG("Start");
     }
 
@@ -196,7 +153,6 @@ class WorldServer
         WORLD_LOG("Client {$fd} close connection\n");
     }
 
-
     /**
      * 此事件在worker进程/task进程启动时发生
      *
@@ -209,8 +165,8 @@ class WorldServer
 
         if ($worker_id == 0) {
             if (!$serv->taskworker) {
-                $serv->tick(5000, function ($id) {
-                    $this->tickerEvent($this->serv);
+                $serv->tick(5000, function ($id) use ($serv) {
+                    $this->tickerEvent($serv);
                 });
             } else {
                 $serv->addtimer(5000);

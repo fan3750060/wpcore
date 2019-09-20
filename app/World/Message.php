@@ -2,11 +2,15 @@
 namespace app\World;
 
 use app\Common\Srp6;
-use app\World\Authchallenge;
-use app\World\Character;
+use app\World\Addon\AddonHandler;
+use app\World\Challenge\Authchallenge;
+use app\World\Challenge\AuthResponse;
+use app\World\Character\Character;
+use app\World\Login\PlayerLogin;
 use app\World\OpCode;
-use app\World\Packetmanager;
-use app\World\Worldpacket;
+use app\World\Packet\Packetmanager;
+use app\World\Packet\Worldpacket;
+use app\World\Ping\PongHandler;
 
 class Message
 {
@@ -14,11 +18,10 @@ class Message
     {
         if (!empty($data)) {
 
-            if(env('MSG_DEBUG',false))
-            {
+            if (env('MSG_DEBUG', false)) {
                 WORLD_LOG("Receive: " . (new Srp6)->BigInteger($data, 256)->toHex(), 'info');
             }
-            
+
             $data = GetBytes($data);
 
             $this->handlePacket($serv, $fd, $data, WorldServer::$clientparam[$fd]['state']);
@@ -27,26 +30,12 @@ class Message
 
     public function newConnect($serv, $fd)
     {
-        $Authchallenge = new Authchallenge();
-
-        $data = $Authchallenge->Authchallenge($fd);
-
-        $this->serversend($serv, $fd, $data);
-    }
-
-    public function checkauth($fd, $data)
-    {
-        $Authchallenge = new Authchallenge();
-
-        return $Authchallenge->AuthSession($fd, $data);
+        $this->serversend($serv, $fd, Authchallenge::Challenge($fd));
     }
 
     public function Offline($fd)
     {
-        // $username      = Connection::getCache($fd, 'username');
 
-        // $Account = new \app\Common\Account();
-        // $Account->Offline($username);
     }
 
     public function handlePacket($serv, $fd, $data, $state)
@@ -72,32 +61,11 @@ class Message
 
                 switch ($opcode) {
                     case 'CMSG_AUTH_SESSION':
-                        $checkauth = $this->checkauth($fd, $data);
+                        $checkauth = Authchallenge::AuthSession($fd, $data);
 
                         if ($checkauth['code'] == 2000) {
-                            WORLD_LOG('[SMSG_ADDON_INFO] Client : ' . $fd, 'warning');
-
-                            $data = '';
-                            for ($i=0; $i < 16; $i++) { 
-                                $data.=pack('V2',258,0);
-                            }
-                            $data = GetBytes($data);
-        
-                            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_ADDON_INFO, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
-                            $packdata     = array_merge($encodeheader, $data);
-                            $this->serversend($serv, $fd, $packdata);
-
-                            WORLD_LOG('[SMSG_AUTH_RESPONSE] Client : ' . $fd, 'warning');
-                            $AUTH_OK              = $Srp6->BigInteger(OpCode::AUTH_OK, 16)->toString();
-                            $BillingTimeRemaining = PackInt(0, 32);
-                            $BillingPlanFlags     = PackInt(0, 8);
-                            $BillingTimeRested    = PackInt(0, 32);
-                            $expansion            = [(int) $checkauth['data']['expansion']];
-                            $data                 = array_merge([(int) $AUTH_OK], $BillingTimeRemaining, $BillingPlanFlags, $BillingTimeRested, $expansion);
-                            $encodeheader         = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_AUTH_RESPONSE, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
-                            $packdata             = array_merge($encodeheader, $data);
-                            $this->serversend($serv, $fd, $packdata);
-
+                            $this->serversend($serv, $fd, AddonHandler::LoadAddonHandler($serv, $fd));
+                            $this->serversend($serv, $fd, AuthResponse::LoadAuthResponse($serv, $fd, $checkauth));
                         } else {
                             $this->serversend($serv, $fd, $checkauth['data']);
                         }
@@ -105,74 +73,47 @@ class Message
                         break;
 
                     case 'CMSG_CHAR_ENUM':
-                        WORLD_LOG('[SMSG_CHAR_ENUM] Client : ' . $fd, 'warning');
-
-                        $result = Character::CharacterCharEnum($fd, $unpackdata['content']);
-                        $this->serversend($serv, $fd, $result);
+                        $this->serversend($serv, $fd, Character::CharacterCharEnum($fd, $unpackdata['content']));
                         break;
 
                     case 'CMSG_PING':
-                        WORLD_LOG('[SMSG_PONG] Client : ' . $fd, 'warning');
-
-                        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_PONG, $unpackdata['content'], WorldServer::$clientparam[$fd]['sessionkey']]);
-                        $packdata = array_merge($encodeheader, $unpackdata['content']);
-                        $this->serversend($serv, $fd, $packdata);
+                        $this->serversend($serv, $fd, PongHandler::LoadPongHandler($serv, $fd, $unpackdata['content']));
                         break;
 
                     case 'CMSG_CHAR_CREATE':
-                        WORLD_LOG('[SMSG_CHAR_CREATE] Client : ' . $fd, 'warning');
-
-                        $result = Character::CharacterCreate($fd, $unpackdata['content']);
-                        $this->serversend($serv, $fd, $result);
+                        $this->serversend($serv, $fd, Character::CharacterCreate($fd, $unpackdata['content']));
                         break;
 
                     case 'CMSG_CHAR_DELETE':
-                        WORLD_LOG('[SMSG_CHAR_DELETE] Client : ' . $fd, 'warning');
+                        $this->serversend($serv, $fd, Character::CharacterDelete($fd, $unpackdata['content']));
+                        break;
 
-                        $result = Character::CharacterDelete($fd, $unpackdata['content']);
-                        $this->serversend($serv, $fd, $result);
+                    case 'CMSG_REALM_SPLIT':
+                        $this->serversend($serv, $fd, PlayerLogin::loadPelamSplit($serv, $fd, $unpackdata['content']));
+                        break;
+
+                    case 'CMSG_SET_ACTIVE_VOICE_CHANNEL':
+                        $this->serversend($serv, $fd, PlayerLogin::loadFeatureSystemStatus($serv, $fd));
+                        break;
+
+                    case 'CMSG_VOICE_SESSION_ENABLE':
+                        $this->serversend($serv, $fd, PlayerLogin::loadFeatureSystemStatus($serv, $fd));
                         break;
 
                     case 'CMSG_PLAYER_LOGIN':
-                        WORLD_LOG('[SMSG_MOTD] Client : ' . $fd, 'warning');
-                        $data         = '0100000057656C636F6D6520746F20746865206964772D636F72652073657276657200';
-                        $data         = $Srp6->BigInteger($data, 16)->toBytes();
-                        $data         = GetBytes($data);
-                        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_MOTD, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
-                        $packdata     = array_merge($encodeheader, $data);
-                        $this->serversend($serv, $fd, $packdata);
+                        PlayerLogin::PlayerInit($serv, $fd, $unpackdata['content']);
 
-                        WORLD_LOG('[SMSG_TUTORIAL_FLAGS] Client : ' . $fd, 'warning');
-                        $data         = 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
-                        $data         = $Srp6->BigInteger($data, 16)->toBytes();
-                        $data         = GetBytes($data);
-                        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_TUTORIAL_FLAGS, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
-                        $packdata     = array_merge($encodeheader, $data);
-                        $this->serversend($serv, $fd, $packdata);
+                        $this->serversend($serv, $fd, PlayerLogin::LoadLoginVerifyWorld($serv, $fd));
 
-                        WORLD_LOG('[SMSG_LOGIN_VERIFY_WORLD] Client : ' . $fd, 'warning');
-                        $data         = '000000005C2FD1448FD2CF44CD8C0A435131B740';
-                        $data         = $Srp6->BigInteger($data, 16)->toBytes();
-                        $data         = GetBytes($data);
-                        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_LOGIN_VERIFY_WORLD, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
-                        $packdata     = array_merge($encodeheader, $data);
-                        $this->serversend($serv, $fd, $packdata);
+                        $this->serversend($serv, $fd, PlayerLogin::LoadAccountDataTimes($serv, $fd));
 
-                        WORLD_LOG('[SMSG_ACCOUNT_DATA_TIMES] Client : ' . $fd, 'warning');
-                        $data         = '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
-                        $data         = $Srp6->BigInteger($data, 16)->toBytes();
-                        $data         = GetBytes($data);
-                        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_ACCOUNT_DATA_TIMES, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
-                        $packdata     = array_merge($encodeheader, $data);
-                        $this->serversend($serv, $fd, $packdata);
+                        $this->serversend($serv, $fd, PlayerLogin::loadFeatureSystemStatus($serv, $fd));
 
-                        WORLD_LOG('[SMSG_INITIAL_SPELLS] Client : ' . $fd, 'warning');
-                        $data         = '000C009D0200004945000061500000635000006B140000401E00009D0200004945000061500000635000006B140000401E00000C000000';
-                        $data         = $Srp6->BigInteger($data, 16)->toBytes();
-                        $data         = GetBytes($data);
-                        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_INITIAL_SPELLS, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
-                        $packdata     = array_merge($encodeheader, $data);
-                        $this->serversend($serv, $fd, $packdata);
+                        $this->serversend($serv, $fd, PlayerLogin::LoadMotd($serv, $fd));
+
+                        $this->serversend($serv, $fd, PlayerLogin::LoadTutorialFlags($serv, $fd));
+
+                        $this->serversend($serv, $fd, PlayerLogin::LoadInitialSpells($serv, $fd));
 
                         WORLD_LOG('[SMSG_UPDATE_OBJECT] Client : ' . $fd, 'warning');
                         $data         = '010000000003037A03047100000000003216795D5C2FD1448FD2CF44CD8C0A435131B74000000000000020400000E04000009040711C9740000020400000E04000009040E00F49400000000031170040141D40000000000000000000000000C00300F80004000001000090010000000000000000000000000400040004000400040004000400040004000400040004000400040004000400040000000000FCFFFFFFFF0000000000000000000000000000000000000000000000000000000000C0BD000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003001800000000000000000000000000000020001040000000800000000000407A03000000000000190000000000803F0C000000000000000C0000000000000001000000050000000504000300000000022BC73E0000C03F39000000390000000F0000000F0000000C0000000700000002000000000000000C00000000000000040900080E0000020000000000000000000000003908000000000000000000007800000079000000000000000000000000000000000000000000000000000000000000002C080000000000000000000000000000000000000000000000000000000000007C03003908000040000000000000000000000000000000007D030078000000407E0300790000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007B03002C080000400000000000000000000000000000000000000000000000000000000000000000A10200002C010000DC0000002C010000010000000100000000000000000000000000000000000000102700000100000000000000FFFFFFFF46000000';
@@ -219,7 +160,7 @@ class Message
                         $packdata     = array_merge($encodeheader, $data);
                         $this->serversend($serv, $fd, $packdata);
                         break;
-                        
+
                     default:
                         WORLD_LOG('Unknown opcode: ' . $opcode . ' Client : ' . $fd, 'warning');
 
@@ -235,11 +176,10 @@ class Message
 
     public function serversend($serv, $fd, $data = null)
     {
-        if(env('MSG_DEBUG',false))
-        {
+        if (env('MSG_DEBUG', false)) {
             WORLD_LOG("Send: " . (new Srp6)->BigInteger(ToStr($data), 256)->toHex(), 'info');
         }
-        
+
         $serv->send($fd, ToStr($data));
     }
 }
