@@ -6,6 +6,7 @@ use app\Common\Srp6;
 use app\World\OpCode;
 use app\World\Packetmanager;
 use core\query\DB;
+use app\World\Ping;
 
 class Testsrp
 {
@@ -182,6 +183,8 @@ class Testsrp
 
     public function run()
     {
+        Ping\PongHandler::LoadPongHandler($serv, $fd, 1);
+        die;
         $field = ['character_spell.*'];
 
         $where = [
