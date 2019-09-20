@@ -183,7 +183,7 @@ class Testsrp
 
     public function run()
     {
-        Ping\PongHandler::LoadPongHandler($serv, $fd, 1);
+        Ping\PongHandler::LoadPongHandler($serv, $fd, [123,2]);
         die;
         $field = ['character_spell.*'];
 
