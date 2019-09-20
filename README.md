@@ -118,6 +118,15 @@ Win:
 	The database configuration file is in .env
 	please copy .env.example to .env and change the configuration.
 
+## 链接 Links
+
+* [PHP](https://www.php.net/)
+* [Swoole](https://www.swoole.com/)
+
+感谢Mangos，TrinityCore，CNLMCore-BFA等开源游戏框架
+
+Thanks to mangos, TrinityCore, CNLMCore-BFA and other open source game frameworks
+
 ## Demonstration 演示
 
 ![image](https://pictureblog.oss-cn-beijing.aliyuncs.com/1.png)
