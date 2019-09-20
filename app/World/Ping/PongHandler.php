@@ -14,9 +14,9 @@ class PongHandler
     public static function LoadPongHandler($serv, $fd, $data = null)
     {
         WORLD_LOG('[SMSG_PONG] Client : ' . $fd, 'warning');
-
+        
         $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_PONG, $data, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $unpackdata['content']);
+        $packdata     = array_merge($encodeheader, $data);
 
         return $packdata;
     }
