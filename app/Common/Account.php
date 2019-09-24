@@ -203,7 +203,7 @@ class Account
                 'username'      => $param['username'],
                 'sha_pass_hash' => strtoupper(sha1($param['username'] . ':' . $param['password'])),
                 'joindate'      => date('Y-m-d H:i:s'),
-                'expansion'     => 2,
+                'expansion'     => env('EXPANSION',1),
             ];
 
             if ($id = DB::table('account')->insert($data)) {

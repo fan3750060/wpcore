@@ -8,7 +8,7 @@ class SwooleTcp
 {
     public static function Listen($addr, $port, $object)
     {
-        $serv = new \Swoole\Server($addr, $port, SWOOLE_BASE, SWOOLE_SOCK_TCP);
+        $serv = new \swoole_server($addr, $port);
 
         $serv->set([
             'worker_num'               => 4,

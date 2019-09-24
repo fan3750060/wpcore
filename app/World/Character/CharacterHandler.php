@@ -42,6 +42,7 @@ class CharacterHandler
         $DBTransaction = true;
 
         if ($guid = DB::table('characters', 'characters')->insert($data)) {
+            
             //人物的出生地
             $character_homebind = [
                 'guid'       => $guid,

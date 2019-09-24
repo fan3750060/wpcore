@@ -4,7 +4,7 @@ namespace app;
 use app\Common\CharacterHandler;
 use app\Common\Srp6;
 use app\World\OpCode;
-use app\World\Packetmanager;
+use app\World\Packet\Packetmanager;
 use core\query\DB;
 use app\World\Ping;
 
@@ -183,56 +183,9 @@ class Testsrp
 
     public function run()
     {
-        Ping\PongHandler::LoadPongHandler($serv, $fd, [123,2]);
-        die;
-        $field = ['character_spell.*'];
+        $update_flags = (32 | 64 | 16 | 1);
+        var_dump($update_flags);die;
 
-        $where = [
-            'characters.guid' => 62,
-        ];
-
-        $join = [
-            ['character_spell','character_spell.guid = characters.guid','inner'],
-        ];
-
-        $character_spell   = DB::table('characters', 'characters')->field($field)->join($join)->where($where)->select();
-
-        $packdata  = '';
-        $spall_len = count($character_spell);
-        $packdata .= pack('cv', 0, $spall_len);
-
-        $spellCount = 0;
-
-        foreach ($character_spell as $k => $v) {
-            if(!$v['active'] || $v['disabled'])
-            {
-                continue;
-            }
-
-            $packdata .= pack('v2', $v['spell'], 0);
-
-            $spellCount += 1;
-        }
-
-        $packdata .= pack('v2',$spellCount,0);         
-
-        $Srp6       = new Srp6();
-        $packdata = $Srp6->BigInteger($packdata, 256)->toHex();
-
-        var_dump($packdata);die;
-
-
-
-
-
-
-
-        $data = '';
-        for ($i = 0; $i < 128; $i++) {
-            $data .= pack('c', 0);
-        }
-        $data = GetBytes($data);
-        var_dump($data);die;
         $Srp6       = new Srp6();
         $sessionkey = 'F5AFC49E1798090EAD1BB1BAE68B8BFDD38BA36B8DB0803B2DEE094FC3D235501D4FB99289D7586D';
         $sessionkey = $Srp6->BigInteger($sessionkey, 16)->toBytes();
@@ -240,22 +193,24 @@ class Testsrp
         $fd = 'test001';
 
         // 角色进入游戏
-        // $mapid         = 1;
-        // $x = -618.0;
-        // $y = -4251.0;
-        // $z = 38.774200439453125;
-        // $orientation = 0.0;
-        // $data = pack('Iffff',$mapid,$x,$y,$z,$orientation);
-        // $data = GetBytes($data);
-        // $encodeheader = Worldpacket::encrypter(OpCode::SMSG_LOGIN_VERIFY_WORLD, $data, $sessionkey);
-        // $packdata     = array_merge($encodeheader, $data);
-        // var_dump('Encode:'.$packdata);die;
-        //
+        $mapid         = 1;
+        $x = -618.0;
+        $y = -4251.0;
+        $z = 38.774200439453125;
+        $orientation = 0.0;
+        // $packdata = pack('Iffff',$mapid,$x,$y,$z,$orientation);
+        $packdata     = pack('If4', $mapid,$x,$y,$z,$orientation);
+
+        $packdata = GetBytes($packdata);
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_LOGIN_VERIFY_WORLD, $packdata, $sessionkey]);
+        $packdata     = array_merge($encodeheader, $packdata);
+        $packdata     = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
+        var_dump('Encode:'.$packdata);
 
         /************** 加密包 ******************/
         $data = '';
         for ($i=0; $i < 16; $i++) { 
-            $data.=pack('V2',258,0);
+            $data.=pack('I2',258,0);
         }
         $data = GetBytes($data);
 
@@ -352,46 +307,6 @@ class Testsrp
         $packdata     = array_merge($encodeheader, $data);
         $packdata     = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
         var_dump('Encode:' . $packdata);
-
-        // /************** 解密包 ******************/
-        // $data = '76EFB19E223C5936114FCB46FFFFFFFF';
-        // $data = $Srp6->BigInteger($data, 16)->toBytes();
-        // $data = GetBytes($data);
-        // $packdata = Packetmanager::Worldpacket_decrypter($fd,[$data,$sessionkey]);
-        // $packdata = json_encode($packdata);
-        // var_dump('Decode:'.$packdata);
-
-        // $data = '50CA447F80366B6C7571697100030101020601010000';
-        // $data = $Srp6->BigInteger($data, 16)->toBytes();
-        // $data = GetBytes($data);
-
-        // for ($i=0; $i < 20; $i++) {
-        //     $packdata = Packetmanager::Worldpacket_decrypter($fd,[$data,$sessionkey]);
-        //     $opcode = Worldpacket::getopcode($packdata['opcode'], $fd);
-        //     if($opcode){
-        //         break;
-        //     }
-        // }
-
-        // // $packdata = Packetmanager::Worldpacket_decrypter($fd,[$data,$sessionkey]);
-        // $packdata = json_encode($packdata);
-        // var_dump('Decode:'.$packdata);
-
-        // $data = '252E6FECE1CE5264F5CB225FFFFFFFFF';
-        // $data = $Srp6->BigInteger($data, 16)->toBytes();
-        // $data = GetBytes($data);
-        // // $packdata = Packetmanager::Worldpacket_decrypter($fd,[$data,$sessionkey]);
-
-        // for ($i=0; $i < 20; $i++) {
-        //     $packdata = Packetmanager::Worldpacket_decrypter($fd,[$data,$sessionkey]);
-        //     $opcode = Worldpacket::getopcode($packdata['opcode'], $fd);
-        //     if($opcode){
-        //         break;
-        //     }
-        // }
-
-        // $packdata = json_encode($packdata);
-        // var_dump('Decode:'.$packdata);
     }
 
     public function sql()

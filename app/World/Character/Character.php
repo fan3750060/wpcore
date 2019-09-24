@@ -73,7 +73,7 @@ class Character
         'BAG1'      => 19,
     ];
 
-    public static function CharacterCreate($fd, $data)
+    public static function CharacterCreate($serv, $fd, $data)
     {
         $result = [];
         $name   = [];
@@ -137,7 +137,7 @@ class Character
         return $packdata;
     }
 
-    public function CharacterDelete($fd, $data)
+    public static function CharacterDelete($serv, $fd, $data)
     {
         $Srp6 = new Srp6();
         $guid = HexToDecimal($Srp6->Littleendian($Srp6->BigInteger(ToStr($data), 256)->toHex())->toHex());
@@ -158,7 +158,7 @@ class Character
         return $packdata;
     }
 
-    public function CharacterCharEnum($fd, $data)
+    public  function CharacterCharEnum($serv, $fd, $data)
     {
         $Srp6 = new Srp6();
 

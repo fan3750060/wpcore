@@ -10,6 +10,8 @@ return [
     // Gameversion
     'Gameversion' => '2.4.3',
 
+    'EXPANSION' => env('EXPANSION',1),
+
     //缓存配置
     'cache'       => [
         //缓存路径

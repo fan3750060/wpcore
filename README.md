@@ -82,28 +82,44 @@ https://github.com/fan3750060/wpcore
 
 git clone https://github.com/fan3750060/wpcore.git
 
-Php version >= 7.0
-Swoole version >= 2.0
-redis version >= 2.2
+    Php version >= 7.0
+
+    Swoole version >= 2.0
+
+    redis version >= 2.2
 
 ## 运行 Run
-运行登录模拟器(Run Authserver): php script Server/start auth
+运行登录模拟器(Run Authserver): 
+        
+    php script Server/start auth
 
-运行世界模拟器(Run Worldserver): php script Server/start world
+运行世界模拟器(Run Worldserver): 
+
+    php script Server/start world
 
 Linux:
 
-运行登录模拟器(Run Authserver): php script Server/start auth OR ./start_auth.sh
+运行登录模拟器(Run Authserver): 
 
-运行世界模拟器(Run Worldserver): php script Server/start world OR ./start_world.sh
+    php script Server/start auth OR ./start_auth.sh
 
-关闭模拟器( Stop Server): ctrl+C OR ./stop.sh 
+运行世界模拟器(Run Worldserver): 
 
-Win:
+    php script Server/start world OR ./start_world.sh
 
-运行登录模拟器(Run Authserver): php script Server/start auth OR win_start_auth.bat
+关闭模拟器( Stop Server): 
 
-运行世界模拟器(Run Worldserver): php script Server/start world OR win_start_world.bat
+    ctrl+C OR ./stop.sh 
+
+Win(暂时有问题):
+
+运行登录模拟器(Run Authserver): 
+
+    php script Server/start auth OR win_start_auth.bat
+
+运行世界模拟器(Run Worldserver): 
+
+    php script Server/start world OR win_start_world.bat
 
 注: 测试账户(test user) fan 密码 fan  (数据库密码哈希值加密为: sha1("FAN:FAN") )
 
@@ -117,6 +133,15 @@ Win:
 
 	The database configuration file is in .env
 	please copy .env.example to .env and change the configuration.
+
+## 操作指南
+安装数据库
+    新建三个数据库分别是: tbcrealmd-tbc,tbccharacters-tbc,tbcmangos-tbc,将根目录中sql/sql.7z解压后分别倒入各自的库中
+    修改tbcrealmd-tbc库中realmlist表的address字段,将其设置为服务器外网IP
+
+下载wow客户端
+    修改根目录下登陆器 - 本机.bat,realmlist.wtf和WTF\Config.wtf的ip,将127.0.0.1 改成服务器外网ip
+    运行 登陆器 - 本机.bat 打开客户端登录器
 
 ## 链接 Links
 
