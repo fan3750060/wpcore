@@ -72,7 +72,7 @@ WOWCORE是一款网络游戏对象服务器,随着时间的推移而进行大量
 在改进游戏内的同时改进和清理代码库机制和功能。
 
 它是完全开源的; 非常鼓励社区参与。
-	
+  
 如果您想提供想法或代码，请访问我们下面链接的网站或
 向我们的[Github存储库]发出拉取请求
 
@@ -123,24 +123,28 @@ Win(暂时有问题):
 
 注: 测试账户(test user) fan 密码 fan  (数据库密码哈希值加密为: sha1("FAN:FAN") )
 
-	创建账户(create user): account create username password
+  创建账户(create user): account create username password
 
-	GM权限(set gmlevel): account set gmlevel username 3 1
+  GM权限(set gmlevel): account set gmlevel username 3 1
 
-	当前核心在linux下运行正常,windows下swoole出现异常(正在排查中...)
+  当前核心在linux下运行正常,windows下swoole出现异常(正在排查中...)
 
-	数据库配置文件是.env，请将.env.example复制到.env并更改配置。
+  数据库配置文件是.env，请将.env.example复制到.env并更改配置。
 
-	The database configuration file is in .env
-	please copy .env.example to .env and change the configuration.
+  The database configuration file is in .env
+  please copy .env.example to .env and change the configuration.
 
 ## 操作指南
-安装数据库
-    新建三个数据库分别是: tbcrealmd-tbc,tbccharacters-tbc,tbcmangos-tbc,将根目录中sql/sql.7z解压后分别倒入各自的库中
+    安装数据库
+    新建三个数据库分别是: tbcrealmd-tbc,tbccharacters-tbc,tbcmangos-tbc
+
+    将根目录中sql/sql.7z解压后分别导入各自的库中
+
     修改tbcrealmd-tbc库中realmlist表的address字段,将其设置为服务器外网IP
 
-下载wow客户端
+    下载wow客户端
     修改根目录下登陆器 - 本机.bat,realmlist.wtf和WTF\Config.wtf的ip,将127.0.0.1 改成服务器外网ip
+    
     运行 登陆器 - 本机.bat 打开客户端登录器
 
 ## 链接 Links
@@ -168,7 +172,7 @@ Thanks to mangos, TrinityCore, CNLMCore-BFA and other open source game framework
 
 
 
-	
+  
 
 
 
