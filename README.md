@@ -89,37 +89,49 @@ git clone https://github.com/fan3750060/wpcore.git
     redis version >= 2.2
 
 ## 运行 Run
-运行登录模拟器(Run Authserver): 
-        
-    php script Server/start auth
-
-运行世界模拟器(Run Worldserver): 
-
-    php script Server/start world
-
 Linux:
 
 运行登录模拟器(Run Authserver): 
 
-    php script Server/start auth OR ./start_auth.sh
+    php script Server/start auth 
+
+    Or
+
+     ./start_auth.sh
 
 运行世界模拟器(Run Worldserver): 
 
-    php script Server/start world OR ./start_world.sh
+    php script Server/start world 
+
+    Or
+
+     ./start_world.sh
 
 关闭模拟器( Stop Server): 
 
-    ctrl+C OR ./stop.sh 
+    ctrl+C 
+
+    Or
+
+     ./stop.sh 
 
 Win(暂时有问题):
 
 运行登录模拟器(Run Authserver): 
 
-    php script Server/start auth OR win_start_auth.bat
+    php script Server/start auth 
+
+    Or
+
+    win_start_auth.bat
 
 运行世界模拟器(Run Worldserver): 
 
-    php script Server/start world OR win_start_world.bat
+    php script Server/start world 
+
+    Or
+
+    win_start_world.bat
 
 注: 测试账户(test user) fan 密码 fan  (数据库密码哈希值加密为: sha1("FAN:FAN") )
 
