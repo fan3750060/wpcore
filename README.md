@@ -97,7 +97,7 @@ Linux:
 
     Or
 
-     ./start_auth.sh
+    ./start_auth.sh
 
 运行世界模拟器(Run Worldserver): 
 
@@ -105,7 +105,7 @@ Linux:
 
     Or
 
-     ./start_world.sh
+    ./start_world.sh
 
 关闭模拟器( Stop Server): 
 
@@ -113,7 +113,7 @@ Linux:
 
     Or
 
-     ./stop.sh 
+    ./stop.sh 
 
 Win(暂时有问题):
 

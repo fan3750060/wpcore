@@ -3,7 +3,6 @@ namespace app\World\Packet;
 
 use app\Common\Srp6;
 use app\World\OpCode;
-use core\lib\Cache;
 
 /**
  * 包
@@ -120,14 +119,12 @@ class Worldpacket
             $encrypted_header = PackInt(0, self::$ENCRYPT_HEADER_SIZE * 8);
             $crypt_key_length = count($crypt_key);
 
-            if(!$goon)
-            {
+            if (!$goon) {
                 self::$send_i = 0;
                 self::$send_j = 0;
             }
 
-            for ($i=0; $i < self::$ENCRYPT_HEADER_SIZE; $i++) 
-            { 
+            for ($i = 0; $i < self::$ENCRYPT_HEADER_SIZE; $i++) {
                 self::$send_i %= $crypt_key_length;
                 $enc = ($data[$i] ^ $crypt_key[self::$send_i]) + self::$send_j;
                 // $enc %= 256;
@@ -160,18 +157,17 @@ class Worldpacket
         if ($sessionkey) {
 
             // 加密
-            $crypt_key = self::AuthCrypt_c_seed($sessionkey); //hash_hmac
-            $crypt_key = GetBytes($crypt_key);
+            $crypt_key        = self::AuthCrypt_c_seed($sessionkey); //hash_hmac
+            $crypt_key        = GetBytes($crypt_key);
             $decrypted_header = PackInt(0, self::$DECRYPT_HEADER_SIZE * 8);
             $crypt_key_length = count($crypt_key);
 
-            if(!$goon)
-            {
+            if (!$goon) {
                 self::$recv_i = 0;
                 self::$recv_j = 0;
             }
 
-            for ($i=0; $i < self::$DECRYPT_HEADER_SIZE; $i++) { 
+            for ($i = 0; $i < self::$DECRYPT_HEADER_SIZE; $i++) {
                 self::$recv_i %= $crypt_key_length;
                 $dec = ($data[$i] - self::$recv_j) ^ $crypt_key[self::$recv_i];
                 // $dec %= 256;

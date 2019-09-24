@@ -36,25 +36,24 @@ class Reflection
         if (isset(self::$mapOpcode[$opcode]) && $mapinfo = self::$mapOpcode[$opcode]) {
             if (is_array($mapinfo[0])) {
                 foreach ($mapinfo as $k => $v) {
-                    self::LoadFunc($v[0],$v[1],$serv, $fd, $data);
+                    self::LoadFunc($v[0], $v[1], $serv, $fd, $data);
                 }
             } else {
-                self::LoadFunc($mapinfo[0],$mapinfo[1],$serv, $fd, $data);
+                self::LoadFunc($mapinfo[0], $mapinfo[1], $serv, $fd, $data);
             }
         } else {
             WORLD_LOG('Unknown opcode: ' . $opcode . ' Client : ' . $fd, 'warning');
         }
     }
 
-    public static function LoadFunc($class,$func,$serv, $fd, $data)
+    public static function LoadFunc($class, $func, $serv, $fd, $data)
     {
         $classObject = new \ReflectionMethod($class, $func);
-        if($classObject->isStatic())
-        {
-            $packdata = $classObject->invokeArgs(null,[$serv, $fd, $data]);
+        if ($classObject->isStatic()) {
+            $packdata = $classObject->invokeArgs(null, [$serv, $fd, $data]);
             Message::serversend($serv, $fd, $packdata);
-        }else{
-            $packdata = $classObject->invokeArgs(new $class,[$serv, $fd, $data]);
+        } else {
+            $packdata = $classObject->invokeArgs(new $class, [$serv, $fd, $data]);
             Message::serversend($serv, $fd, $packdata);
         }
     }

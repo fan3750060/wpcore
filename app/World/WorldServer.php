@@ -5,6 +5,7 @@ use app\Common\Account;
 use app\Common\Checksystem;
 use app\Socket\SwooleTcp;
 use app\World\Message;
+use app\World\Packet\Worldpacket;
 use core\lib\Cache;
 
 /**
@@ -192,5 +193,11 @@ class WorldServer
         WORLD_LOG("Clear Cache");
         WorldServer::$clientparam[$fd] = [];
         unset(WorldServer::$clientparam[$fd]);
+
+        //清空
+        Worldpacket::$send_i = 0;
+        Worldpacket::$send_j = 0;
+        Worldpacket::$recv_i = 0;
+        Worldpacket::$recv_j = 0;
     }
 }

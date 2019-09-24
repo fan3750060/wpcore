@@ -25,7 +25,7 @@ class PlayerLogin
     //人物地图
     public static function LoadLoginVerifyWorld($serv, $fd, $data = null)
     {
-    	self::PlayerInit($serv, $fd, $data);//初始化
+        self::PlayerInit($serv, $fd, $data); //初始化
 
         WORLD_LOG('[SMSG_LOGIN_VERIFY_WORLD] Client : ' . $fd, 'warning');
 

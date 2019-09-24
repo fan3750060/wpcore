@@ -1,7 +1,6 @@
 <?php
 namespace app\World\Query;
 
-use app\Common\Srp6;
 use app\World\OpCode;
 use app\World\Packet\Packetmanager;
 use app\World\WorldServer;
@@ -22,9 +21,9 @@ class QueryResponse
         // var_dump($guid);
 
         $characters = DB::table('characters', 'characters')->where(['guid' => WorldServer::$clientparam[$fd]['player']['guid']])->find();
-        $name     = $characters['name'];
-        $name_len = strlen($characters['name']);
-        $packdata = pack("QZ*cI3c",
+        $name       = $characters['name'];
+        $name_len   = strlen($characters['name']);
+        $packdata   = pack("QZ*cI3c",
             $characters['guid'],
             $name,
             0,

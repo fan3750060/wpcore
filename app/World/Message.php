@@ -5,10 +5,11 @@ use app\Common\Srp6;
 use app\World\Addon\AddonHandler;
 use app\World\Challenge\Authchallenge;
 use app\World\Challenge\AuthResponse;
+use app\World\Clientstate;
+use app\World\Packet\Packetmanager;
+use app\World\Packet\Worldpacket;
 use app\World\Reflection;
 use app\World\WorldServer;
-use app\World\Packet\Worldpacket;
-use app\World\Clientstate;
 
 class Message
 {
@@ -45,11 +46,11 @@ class Message
                 $opcode_value = Worldpacket::Unpackdata($data);
                 $opcode       = Worldpacket::getopcode($opcode_value, $fd);
 
-                if($opcode == 'CMSG_AUTH_SESSION')
-                {
+                if ($opcode == 'CMSG_AUTH_SESSION') {
                     $checkauth = Authchallenge::AuthSession($fd, $data);
 
                     if ($checkauth['code'] == 2000) {
+
                         $this->serversend($serv, $fd, AddonHandler::LoadAddonHandler($serv, $fd));
                         $this->serversend($serv, $fd, AuthResponse::LoadAuthResponse($serv, $fd, $checkauth));
 
@@ -57,18 +58,19 @@ class Message
                     } else {
                         $this->serversend($serv, $fd, $checkauth['data']);
                     }
-                }else{
+                } else {
                     WorldServer::$clientparam[$fd]['state'] = Clientstate::Init;
-                    WORLD_LOG('Unknown Clientstate and opcode: ' . $state.'_'.$opcode . ' Client : ' . $fd, 'warning');
+                    WORLD_LOG('Unknown Clientstate and opcode: ' . $state . '_' . $opcode . ' Client : ' . $fd, 'warning');
                 }
 
                 break;
-            
+
             case Clientstate::Authenticated:
                 $sessionkey = WorldServer::$clientparam[$fd]['sessionkey'];
 
                 for ($i = 0; $i < 40; $i++) {
-                    $unpackdata = Worldpacket::decrypter($data, $sessionkey);
+                    // $unpackdata = Worldpacket::decrypter($data, $sessionkey);
+                    $unpackdata = Packetmanager::Worldpacket_decrypter($fd, [$data, $sessionkey]);
                     $opcode     = Worldpacket::getopcode($unpackdata['opcode'], $fd);
                     if ($opcode) {
                         break;
