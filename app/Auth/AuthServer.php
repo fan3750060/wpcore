@@ -48,12 +48,6 @@ class AuthServer
         // 初始状态
         $this->active = true;
 
-        //开启命令进程(windows不进行线程操作)
-        if (strpos(strtoupper(PHP_OS), 'WIN') == false) {
-            $param[] = ['controller' => 'Command', 'action' => 'run', 'param' => []];
-            Work::run($param);
-        }
-
         $this->runAuthServer();
     }
 
@@ -78,6 +72,12 @@ class AuthServer
         @cli_set_process_title("wow_auth_master");
 
         AUTH_LOG("Start");
+
+        //开启命令进程(windows不进行线程操作)
+        if (strpos(strtoupper(PHP_OS), 'WIN') == false) {
+            $param[] = ['controller' => 'Command', 'action' => 'run', 'param' => []];
+            Work::run($param);
+        }
     }
 
     public function onConnect($serv, $fd, $from_id)

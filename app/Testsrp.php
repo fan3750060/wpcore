@@ -183,6 +183,52 @@ class Testsrp
 
     public function run()
     {
+        $name = 'wpcore'; #服务器名称
+        $address = '127.0.0.1:8085'; #服务器ip
+        $flags = 0; #服务器状态
+        $population = 0.5; #服务器拥挤程度
+        $num_chars = 1; #角色数量
+        $RealmTimezone = 16; #时区
+        $type = 0;
+
+        $num_chars = 1;
+
+        $packet = pack(
+            'c2Z*Z*fc4',
+            $type,
+            $flags,
+            $name,
+            $address,
+            $population,
+            $num_chars,
+            $RealmTimezone,
+            0x2c,   # unknown
+            0x0010  # ?
+        );
+
+        $Srp6       = new Srp6();
+        $size_bytes = $Srp6->Littleendian($Srp6->BigInteger(strlen($packet),10)->toHex())->toBytes() ;
+        $realm_packet = $size_bytes . $packet;
+
+        $REALMLIST = 10;
+        $MIN_RESPONSE_SIZE = 7;
+        $num_realms = 1;
+
+        $header = pack('cvIv',
+            $REALMLIST,
+            $MIN_RESPONSE_SIZE + strlen($realm_packet),
+            0x00,
+            $num_realms
+        );
+
+        $footer = pack('c', 0);
+        $response = $header.$realm_packet.$footer;
+
+
+        $Srp6       = new Srp6();
+        $response = $Srp6->BigInteger($response, 256)->toHex();
+        var_dump($response);die;
+
         $update_flags = (32 | 64 | 16 | 1);
         var_dump($update_flags);die;
 

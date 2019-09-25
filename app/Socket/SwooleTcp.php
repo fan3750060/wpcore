@@ -8,32 +8,47 @@ class SwooleTcp
 {
     public static function Listen($addr, $port, $object)
     {
-        $serv = new \swoole_server($addr, $port);
+        try {
+            $serv = new \swoole_server($addr, $port);
 
-        $serv->set([
-            'worker_num'               => 4,
-            //'daemonize' => true, // 是否作为守护进程
-            'max_request'              => 10000,
-            'heartbeat_check_interval' => 60 * 60, //每隔多少秒检测一次，单位秒，Swoole会轮询所有TCP连接，将超过心跳时间的连接关闭掉
-            // 'log_file'                 => RUNTIME_PATH . 'swoole.log',
-            // 'open_eof_check' => true, //打开EOF检测
-            // 'package_eof'              => "###", //设置EOF
-            // 'open_eof_split'=>true, //是否分包
-            'package_max_length'       => 4096,
-        ]);
+            $serv->set([
+                'worker_num'               => 4,
+                //'daemonize' => true, // 是否作为守护进程
+                'max_request'              => 10000,
+                'heartbeat_check_interval' => 60 * 60, //每隔多少秒检测一次，单位秒，Swoole会轮询所有TCP连接，将超过心跳时间的连接关闭掉
+                // 'log_file'                 => RUNTIME_PATH . 'swoole.log',
+                // 'open_eof_check' => true, //打开EOF检测
+                // 'package_eof'              => "###", //设置EOF
+                // 'open_eof_split'=>true, //是否分包
+                'package_max_length'       => 4096,
+            ]);
 
-        $serv->on('Start', [$object, 'onStart']);
+            $serv->on('Start', [$object, 'onStart']);
 
-        $serv->on('Connect', [$object, 'onConnect']);
+            $serv->on('Connect', [$object, 'onConnect']);
 
-        $serv->on('Receive', [$object, 'onReceive']);
+            $serv->on('Receive', [$object, 'onReceive']);
 
-        $serv->on('Close', [$object, 'onClose']);
+            $serv->on('Close', [$object, 'onClose']);
 
-        $serv->on('WorkerStart', [$object, 'onWorkerStart']);
+            $serv->on('WorkerStart', [$object, 'onWorkerStart']);
 
-        $serv->start();
+            $serv->start();
 
-        return $serv;
+            return $serv;
+        } catch (\Swoole\Exception $e) {
+            self::outputError($e->getMessage());
+        }
+    }
+
+    /**
+     * 输出错误信息
+     *
+     * @param String $strErrMsg
+     */
+    private static function outputError($strErrMsg)
+    {
+        echolog("Swoole Error: " . $strErrMsg, 'error');
+        die;
     }
 }

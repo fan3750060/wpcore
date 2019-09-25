@@ -5,6 +5,7 @@ use app\World\OpCode;
 use app\World\Packet\Packetmanager;
 use app\World\WorldServer;
 use core\query\DB;
+use app\Common\Srp6;
 
 /**
  *  查询
@@ -16,11 +17,10 @@ class QueryResponse
     {
         WORLD_LOG('[SMSG_NAME_QUERY_RESPONSE] Client : ' . $fd, 'warning');
 
-        // $Srp6 = new Srp6();
-        // $guid = HexToDecimal($Srp6->Littleendian($Srp6->BigInteger(ToStr($data), 256)->toHex())->toHex());
-        // var_dump($guid);
+        $Srp6 = new Srp6();
+        $guid = HexToDecimal($Srp6->Littleendian($Srp6->BigInteger(ToStr($data), 256)->toHex())->toHex());
 
-        $characters = DB::table('characters', 'characters')->where(['guid' => WorldServer::$clientparam[$fd]['player']['guid']])->find();
+        $characters = DB::table('characters', 'characters')->where(['guid' => $guid])->find();
         $name       = $characters['name'];
         $name_len   = strlen($characters['name']);
         $packdata   = pack("QZ*cI3c",
