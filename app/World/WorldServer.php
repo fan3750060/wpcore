@@ -6,6 +6,7 @@ use app\Common\Checksystem;
 use app\Socket\SwooleTcp;
 use app\World\Message;
 use core\lib\Cache;
+use app\World\Packet\Worldpacket;
 
 /**
  * world server
@@ -13,6 +14,7 @@ use core\lib\Cache;
 class WorldServer
 {
     public static $clientparam = [];
+    public static $opcodeMap = [];
 
     public $active;
     public $ServerConfig;
@@ -92,6 +94,8 @@ class WorldServer
         // 设置进程名称
         @cli_set_process_title("wow_world_master");
         WORLD_LOG("Start");
+
+        
     }
 
     /**
@@ -107,7 +111,12 @@ class WorldServer
 
         WORLD_LOG("Client {$fd} connect");
 
-        WorldServer::$clientparam[$fd]['state'] = Clientstate::Init;
+        if(!WorldServer::$opcodeMap)
+        {
+            WorldServer::$opcodeMap = Worldpacket::LoadOpcode();//载入操作码
+        }
+
+        WorldServer::$clientparam[$fd]['state'] = Clientstate::Init; //初始化状态
 
         Connection::saveCheckConnector($fd); //保存连接到待检池
 

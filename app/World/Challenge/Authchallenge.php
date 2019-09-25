@@ -11,6 +11,29 @@ use app\World\WorldServer;
  */
 class Authchallenge
 {
+    const AUTH_OK                     = '0x0C';
+    const AUTH_FAILED                 = '0x0D';
+    const AUTH_REJECT                 = '0x0E';
+    const AUTH_BAD_SERVER_PROOF       = '0x0F';
+    const AUTH_UNAVAILABLE            = '0x10';
+    const AUTH_SYSTEM_ERROR           = '0x11';
+    const AUTH_BILLING_ERROR          = '0x12';
+    const AUTH_BILLING_EXPIRED        = '0x13';
+    const AUTH_VERSION_MISMATCH       = '0x14';
+    const AUTH_UNKNOWN_ACCOUNT        = '0x15';
+    const AUTH_INCORRECT_PASSWORD     = '0x16';
+    const AUTH_SESSION_EXPIRED        = '0x17';
+    const AUTH_SERVER_SHUTTING_DOWN   = '0x18';
+    const AUTH_ALREADY_LOGGING_IN     = '0x19';
+    const AUTH_LOGIN_SERVER_NOT_FOUND = '0x1A';
+    const AUTH_WAIT_QUEUE             = '0x1B';
+    const AUTH_BANNED                 = '0x1C';
+    const AUTH_ALREADY_ONLINE         = '0x1D';
+    const AUTH_NO_TIME                = '0x1E';
+    const AUTH_DB_BUSY                = '0x1F';
+    const AUTH_SUSPENDED              = '0x20';
+    const AUTH_PARENTAL_CONTROL       = '0x21';
+
     //发起验证 SMSG_AUTH_CHALLENGE
     public static function Challenge($fd)
     {
@@ -83,7 +106,7 @@ class Authchallenge
             WORLD_LOG('Sent Auth Response (unknown account): ' . $account_name, 'error');
 
             // 用户不存在
-            $AUTH_UNKNOWN_ACCOUNT = $Srp6->BigInteger(OpCode::AUTH_UNKNOWN_ACCOUNT, 16)->toBytes();
+            $AUTH_UNKNOWN_ACCOUNT = $Srp6->BigInteger(self::AUTH_UNKNOWN_ACCOUNT, 16)->toBytes();
             $data                 = GetBytes($AUTH_UNKNOWN_ACCOUNT);
             $packdata             = Worldpacket::encrypter(OpCode::SMSG_AUTH_RESPONSE, $data);
             $packdata             = array_merge($packdata, $data);

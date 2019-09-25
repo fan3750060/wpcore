@@ -20,36 +20,21 @@ class Worldpacket
     public static $ServerEncryPtionKey = [0x38, 0xA7, 0x83, 0x15, 0xF8, 0x92, 0x25, 0x30, 0x71, 0x98, 0x67, 0xB1, 0x8C, 0x04, 0xE2, 0xAA];
     public static $ServerDecryPtionKey = [0x38, 0xA7, 0x83, 0x15, 0xF8, 0x92, 0x25, 0x30, 0x71, 0x98, 0x67, 0xB1, 0x8C, 0x04, 0xE2, 0xAA];
 
-    /**
-     * [getopcode 获取操作码]
-     * ------------------------------------------------------------------------------
-     * @author  by.fan <fan3750060@163.com>
-     * ------------------------------------------------------------------------------
-     * @version date:2019-07-20
-     * ------------------------------------------------------------------------------
-     * @param   [type]          $data [description]
-     * @param   [type]          $fd   [description]
-     * @return  [type]                [description]
-     */
-    public static function getopcode($OpCode, $fd)
+    //加载操作码
+    public static function LoadOpcode()
     {
         //获取类的所有常量
         $objClass = new \ReflectionClass(new OpCode());
         $arrConst = $objClass->getConstants();
 
-        $OpCode_name = '';
+        $opcodelist = [];
         foreach ($arrConst as $k => $v) {
-            if (HexToDecimal($v) == HexToDecimal($OpCode)) {
-                $OpCode_name = $k;
-                continue;
-            }
+            $opcodelist[HexToDecimal($v)] = $k;
         }
 
-        if ($OpCode_name) {
-            WORLD_LOG('[' . $OpCode_name . '] Client : ' . $fd, 'warning');
-        }
+        WORLD_LOG('Load Opcode Success , The total number: ' . count($opcodelist), 'success');
 
-        return $OpCode_name;
+        return $opcodelist;
     }
 
     /**

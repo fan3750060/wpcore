@@ -1,10 +1,11 @@
 <?php
 namespace app\World\Character;
-use app\World\WorldServer;
+
 use app\Common\Srp6;
 use app\World\Character\CharacterHandler;
-use app\World\Packet\Packetmanager;
 use app\World\OpCode;
+use app\World\Packet\Packetmanager;
+use app\World\WorldServer;
 
 /**
  * 角色管理
@@ -158,7 +159,7 @@ class Character
         return $packdata;
     }
 
-    public  function CharacterCharEnum($serv, $fd, $data)
+    public function CharacterCharEnum($serv, $fd, $data)
     {
         $Srp6 = new Srp6();
 

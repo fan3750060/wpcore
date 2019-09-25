@@ -37,6 +37,18 @@ class Message
 
     }
 
+    //获取操作码
+    public static function getopcode($OpCode, $fd)
+    {
+        $OpCode_name = isset(WorldServer::$opcodeMap[HexToDecimal($OpCode)]) ? WorldServer::$opcodeMap[HexToDecimal($OpCode)] : false;
+
+        if ($OpCode_name) {
+            WORLD_LOG('[' . $OpCode_name . '] Client : ' . $fd, 'warning');
+        }
+
+        return $OpCode_name;
+    }
+
     public function handlePacket($serv, $fd, $data, $state)
     {
         $Srp6 = new Srp6();
@@ -44,7 +56,7 @@ class Message
         switch ($state) {
             case Clientstate::ClientLogonChallenge:
                 $opcode_value = Worldpacket::Unpackdata($data);
-                $opcode       = Worldpacket::getopcode($opcode_value, $fd);
+                $opcode       = Message::getopcode($opcode_value, $fd);
 
                 if ($opcode == 'CMSG_AUTH_SESSION') {
                     $checkauth = Authchallenge::AuthSession($fd, $data);
@@ -71,7 +83,7 @@ class Message
                 for ($i = 0; $i < 40; $i++) {
                     // $unpackdata = Worldpacket::decrypter($data, $sessionkey);
                     $unpackdata = Packetmanager::Worldpacket_decrypter($fd, [$data, $sessionkey]);
-                    $opcode     = Worldpacket::getopcode($unpackdata['opcode'], $fd);
+                    $opcode     = Message::getopcode($unpackdata['opcode'], $fd);
                     if ($opcode) {
                         break;
                     }

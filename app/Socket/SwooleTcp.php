@@ -12,7 +12,7 @@ class SwooleTcp
             $serv = new \swoole_server($addr, $port);
 
             $serv->set([
-                'worker_num'               => 4,
+                'worker_num'               => 8,
                 //'daemonize' => true, // 是否作为守护进程
                 'max_request'              => 10000,
                 'heartbeat_check_interval' => 60 * 60, //每隔多少秒检测一次，单位秒，Swoole会轮询所有TCP连接，将超过心跳时间的连接关闭掉

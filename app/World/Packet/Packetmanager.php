@@ -8,7 +8,6 @@ use app\World\WorldServer;
  */
 class Packetmanager
 {
-
     public static function Worldpacket_encrypter($fd, $param = [])
     {
         if (!$param) {
@@ -20,7 +19,7 @@ class Packetmanager
         if ($Worldpacket_encrypter) {
             Worldpacket::$send_i = $Worldpacket_encrypter['send_i'];
             Worldpacket::$send_j = $Worldpacket_encrypter['send_j'];
-        }else{
+        } else {
             //初始化
             Worldpacket::$send_i = 0;
             Worldpacket::$send_j = 0;
@@ -43,12 +42,12 @@ class Packetmanager
         if (!$param) {
             return false;
         }
-        
+
         $Worldpacket_decrypter = isset(WorldServer::$clientparam[$fd]['Worldpacket_decrypter']) ? WorldServer::$clientparam[$fd]['Worldpacket_decrypter'] : '';
         if ($Worldpacket_decrypter) {
             Worldpacket::$recv_i = $Worldpacket_decrypter['recv_i'];
             Worldpacket::$recv_j = $Worldpacket_decrypter['recv_j'];
-        }else{
+        } else {
             //初始化
             Worldpacket::$recv_i = 0;
             Worldpacket::$recv_j = 0;
