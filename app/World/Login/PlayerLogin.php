@@ -2,6 +2,7 @@
 namespace app\World\Login;
 
 use app\Common\Srp6;
+use app\World\Object\PlayerObject;
 use app\World\OpCode;
 use app\World\Packet\Packetmanager;
 use app\World\WorldServer;
@@ -191,6 +192,29 @@ class PlayerLogin
         $TimeSyncNextCounter++;
         WorldServer::$clientparam[$fd]['player']['TimeSyncNextCounter'] = $TimeSyncNextCounter;
 
+        return $packdata;
+    }
+
+    //加载玩家对象
+    public static function LoginObject($serv, $fd, $data = null)
+    {
+        WORLD_LOG('[SMSG_UPDATE_OBJECT] Client : ' . $fd, 'warning');
+
+        $where = [
+            'guid' => WorldServer::$clientparam[$fd]['player']['guid'],
+        ];
+
+        $characters = DB::table('characters', 'characters')->where($where)->find();
+        // var_dump(json_encode($characters));
+        if ($characters) 
+        {
+            $packdata     = (new PlayerObject)->LoadPlayerObject($characters);
+            $packdata     = GetBytes($packdata);
+            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_UPDATE_OBJECT, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+            $packdata     = array_merge($encodeheader, $packdata);
+        }else{
+            $packdata = [0,0,0,0];
+        }
         return $packdata;
     }
 }

@@ -2,8 +2,8 @@
 namespace app\World\Challenge;
 
 use app\Common\Srp6;
-use app\World\Packet\Worldpacket;
 use app\World\OpCode;
+use app\World\Packet\Worldpacket;
 use app\World\WorldServer;
 
 /**
@@ -141,5 +141,4 @@ class Authchallenge
         return ['code' => 2000, 'msg' => 'Successful verification', 'data' => $userinfo];
     }
 
-    
 }

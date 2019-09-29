@@ -1,9 +1,9 @@
 <?php
+use app\Common\Srp6;
 use core\Config;
 use core\filter\Filter;
 use core\lib\Cookie;
 use core\lib\Session;
-use core\lib\Cache;
 
 if (!function_exists('config')) {
     /**
@@ -444,17 +444,17 @@ if (!function_exists('getIP')) {
 
 if (!function_exists('PackInt')) {
     //PackInt
-    function PackInt($int,$type=8)
+    function PackInt($int, $type = 8)
     {
-        return \app\Common\int_helper::PackInt($int,$type);
+        return \app\Common\int_helper::PackInt($int, $type);
     }
 }
 
 if (!function_exists('UnPackInt')) {
     //UnPackInt
-    function UnPackInt($int,$type=8)
+    function UnPackInt($int, $type = 8)
     {
-        return \app\Common\int_helper::UnPackInt($int,$type);
+        return \app\Common\int_helper::UnPackInt($int, $type);
     }
 }
 
@@ -482,10 +482,71 @@ if (!function_exists('HexToDecimal')) {
     }
 }
 
-function String2Hex($string){
-    $hex='';
-    for ($i=0; $i < strlen($string); $i++){
+function String2Hex($string)
+{
+    $hex = '';
+    for ($i = 0; $i < strlen($string); $i++) {
         $hex .= dechex(ord($string[$i]));
     }
     return $hex;
+}
+
+function strtohex($data)
+{
+    $Srp6 = new Srp6();
+    $data = $Srp6->BigInteger($data, 256)->toHex();
+    return $data;
+}
+
+function multidimensional_search($parents, $searched)
+{
+    if (empty($searched) || empty($parents)) {
+        return false;
+    }
+
+    foreach ($parents as $key => $value) {
+        $exists = true;
+        foreach ($searched as $skey => $svalue) {
+            $exists = ($exists && isset($parents[$key][$skey]) && $parents[$key][$skey] == $svalue);
+        }
+
+        if ($exists) {
+            return $key;
+        }
+    }
+
+    return false;
+}
+
+function deep_in_array($value, $array)
+{
+    foreach ($array as $item) {
+        if (!is_array($item)) {
+            if ($item == $value) {
+                return true;
+            } else {
+                continue;
+            }
+        }
+
+        if (in_array($value, $item)) {
+            return true;
+        } else if (deep_in_array($value, $item)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function msectime()
+{
+    list($msec, $sec) = explode(' ', microtime());
+    $msectime         = (float) sprintf('%.0f', (floatval($msec) + floatval($sec)) * 1000);
+}
+
+//16进制小端字节序
+function Littleendian($str)
+{
+    $Srp6 = new Srp6();
+    return $Srp6->BigInteger(strrev($Srp6->BigInteger(pack('h*', $str), 256)->toHex()), 16);
 }

@@ -23,7 +23,7 @@ class Reflection
             ['app\World\Login\PlayerLogin', 'LoadMotd'],
             ['app\World\Login\PlayerLogin', 'LoadTutorialFlags'],
             ['app\World\Login\PlayerLogin', 'LoadInitialSpells'],
-            ['app\World\Object\WorldObject', 'LoginObject'],
+            ['app\World\Login\PlayerLogin', 'LoginObject'],
             ['app\World\Login\PlayerLogin', 'SetTimeSpeed'],
             ['app\World\Login\PlayerLogin', 'LoadTimeSyncReq'],
         ],
