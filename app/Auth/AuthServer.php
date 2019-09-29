@@ -134,17 +134,27 @@ class AuthServer
         }
     }
 
-    private function tickerEvent($serv)
+    public function tickerEvent($serv)
     {
         Connection::clearInvalidConnection($serv);
     }
 
-    private function clearcache($fd)
+    public function clearcache($fd)
     {
         AUTH_LOG("Clear Cache");
 
         AuthServer::$clientparam[$fd] = [];
 
         unset(AuthServer::$clientparam[$fd]);
+    }
+
+    public function onTask(swoole_server $serv, $task_id, $from_id, $data)
+    {
+        return $task_id;
+    }
+
+    public function onFinish(swoole_server $serv, $task_id, $data)
+    {
+        return $task_id;
     }
 }

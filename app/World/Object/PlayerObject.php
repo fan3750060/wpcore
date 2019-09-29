@@ -157,31 +157,33 @@ class PlayerObject extends ObjectManager
 
         ];
 
-        $bytes_0 = ($characters['race'] | $characters['class'] << 8 | $characters['gender'] << 16 | $power_type << 24);
+        $bytes_0 = ($characters['race'] | $characters['class'] << 8 | (int)$characters['gender'] << 16 | $power_type << 24);
 
         $bytes_1 = ($characters['skin'] | $characters['face'] << 8 | $characters['hairStyle'] << 16 | $characters['hairColor'] << 24);
 
         $bytes_2 = ($characters['facialStyle'] | 0x00 << 8 | 0x00 << 16 | 0x02 << 24);
 
-        $bytes_3 = $characters['gender'];
+        $bytes_3 = (int)$characters['gender'];
 
         $this->set_object_update_type(ObjectPublic::ObjectUpdateType['CREATE_OBJECT2']);
         $this->set($param)->prepare()->set_update_flags($update_flags);
 
         //加载生物属性
         $this->set_object_field('UnitField.HEALTH', 12); //血值
-        $this->set_object_field('UnitField.POWER1', 0);
-        $this->set_object_field('UnitField.POWER2', 0);
+        $this->set_object_field('UnitField.MAXHEALTH', 120); //最大血值
+
+        $this->set_object_field('UnitField.POWER1', 100); //魔法
+        $this->set_object_field('UnitField.POWER2', 0); //怒气
         $this->set_object_field('UnitField.POWER3', 0);
-        $this->set_object_field('UnitField.POWER4', 0);
+        $this->set_object_field('UnitField.POWER4', 0); //能量
         $this->set_object_field('UnitField.POWER5', 0);
-        $this->set_object_field('UnitField.MAXHEALTH', 12); //最大血值
-        $this->set_object_field('UnitField.MAXPOWER1', 119);
-        $this->set_object_field('UnitField.MAXPOWER2', 0);
+
+        $this->set_object_field('UnitField.MAXPOWER1', 119); //最大魔法值
+        $this->set_object_field('UnitField.MAXPOWER2', 0); //最大怒气
         $this->set_object_field('UnitField.MAXPOWER3', 0);
-        $this->set_object_field('UnitField.MAXPOWER4', 0);
+        $this->set_object_field('UnitField.MAXPOWER4', 0); //最大能量
         $this->set_object_field('UnitField.MAXPOWER5', 0);
-        
+
         $this->set_object_field('UnitField.BYTES_0', $bytes_0);
         $this->set_object_field('UnitField.LEVEL', 1);
         $this->set_object_field('UnitField.FACTIONTEMPLATE', 1610);
@@ -316,8 +318,8 @@ class PlayerObject extends ObjectManager
 
             array_push($this->SPAWN_FIELDS, 'UnitField.POWER4', 'UnitField.MAXPOWER4');
             return ObjectPublic::UnitPower['ENERGY'];
-        }else{
-        	return ObjectPublic::UnitPower['MANA'];
+        } else {
+            return ObjectPublic::UnitPower['MANA'];
         }
     }
 

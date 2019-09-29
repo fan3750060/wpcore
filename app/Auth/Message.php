@@ -117,6 +117,12 @@ class Message
                     //更新用户信息
                     $userinfo = json_decode(AuthServer::$clientparam[$fd]['userinfo'], true);
 
+                    // 获取服务器列表
+                    AUTH_LOG('Get server domain list');
+                    $Realmlist = new Realmlist();
+                    $RealmInfo = $Realmlist->get_realmlist(['accountId' => $userinfo['id']]);
+                    $this->serversend($serv, $fd, $RealmInfo);
+
                     if ($userinfo) {
                         //获取sessionkey
                         $userinfo['sessionkey'] = AuthServer::$clientparam[$fd]['seesionkey'];
@@ -149,6 +155,10 @@ class Message
                 $RealmInfo = $Realmlist->get_realmlist(['accountId' => $userinfo['id']]);
 
                 $this->serversend($serv, $fd, $RealmInfo);
+                break;
+
+            default:
+                AUTH_LOG('Unknown Clientstate: ' . $state . ' Client : ' . $fd, 'warning');
                 break;
         }
     }

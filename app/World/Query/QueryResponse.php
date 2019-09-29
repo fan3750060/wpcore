@@ -1,11 +1,11 @@
 <?php
 namespace app\World\Query;
 
+use app\Common\Srp6;
 use app\World\OpCode;
 use app\World\Packet\Packetmanager;
 use app\World\WorldServer;
 use core\query\DB;
-use app\Common\Srp6;
 
 /**
  *  查询
@@ -47,6 +47,69 @@ class QueryResponse
         $packdata     = pack('I2', time(), 0);
         $packdata     = GetBytes($packdata);
         $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_QUERY_TIME_RESPONSE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+        $packdata     = array_merge($encodeheader, $packdata);
+        return $packdata;
+    }
+
+    //退出到角色
+    public static function LogOut($serv, $fd, $data = null)
+    {
+        WORLD_LOG('[SMSG_LOGOUT_RESPONSE] Client : ' . $fd, 'warning');
+
+        //TODO 判断处于无法坐下的状态,跳跃
+        if (false) {
+            $packdata = pack('cIc', 0xC, 0, 0);
+        } else {
+            //正常退出
+            $packdata = pack('Ic', 0, 0);
+
+            //投递退出任务
+            $param = [
+                'opcode' => 'LogOutTimer', 'callback' => 'LogOutComplete', 'data' => ['time' => config('LOGOUTCOMPLETETIME'), 'fd' => $fd],
+            ];
+            $serv->task_id = $serv->task($param);
+
+            WorldServer::$clientparam[$fd]['goonlogout'] = true;
+        }
+
+        $packdata     = GetBytes($packdata);
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_LOGOUT_RESPONSE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+        $packdata     = array_merge($encodeheader, $packdata);
+        return $packdata;
+    }
+
+    //退出计时器
+    public static function LogOutTimer($serv, $fd, $data = null)
+    {
+        sleep($data['time']);
+
+        return false;
+    }
+
+    //退出完成
+    public static function LogOutComplete($serv, $fd, $data = null)
+    {
+        if (WorldServer::$clientparam[$fd]['goonlogout']) {
+            WORLD_LOG('[SMSG_LOGOUT_COMPLETE] Client : ' . $fd, 'warning');
+            $packdata     = pack('c', 0);
+            $packdata     = GetBytes($packdata);
+            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_LOGOUT_COMPLETE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+            $packdata     = array_merge($encodeheader, $packdata);
+            return $packdata;
+        }
+    }
+
+    //取消退出
+    public static function LogOutCancel($serv, $fd, $data = null)
+    {
+        WORLD_LOG('[SMSG_LOGOUT_CANCEL_ACK] Client : ' . $fd, 'warning');
+
+        WorldServer::$clientparam[$fd]['goonlogout'] = false;
+
+        $packdata = pack('c', 0);
+
+        $packdata     = GetBytes($packdata);
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_LOGOUT_CANCEL_ACK, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
         $packdata     = array_merge($encodeheader, $packdata);
         return $packdata;
     }

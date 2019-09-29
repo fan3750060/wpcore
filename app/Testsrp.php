@@ -1,13 +1,11 @@
 <?php
 namespace app;
 
-use app\Common\CharacterHandler;
 use app\Common\Srp6;
-use app\World\OpCode;
+use app\World\Login\PlayerLogin;
+use app\World\Movement\MovementHandler;
 use app\World\Packet\Packetmanager;
 use core\query\DB;
-use app\World\Object\PlayerObject;
-use app\World\Login\PlayerLogin;
 
 class Testsrp
 {
@@ -36,253 +34,21 @@ class Testsrp
 
     public function player()
     {
-        $a = (new PlayerLogin)->LoginObject(1,2,3);
+        $a = (new PlayerLogin)->LoginObject(1, 2, 3);
 
         var_dump(strtohex($a));die;
     }
 
-    public function charenum()
-    {
-        $Srp6       = new Srp6();
-        $sessionkey = 'C4C46F8D79EB751F16A7EB45111C1748279998EBC22401CDD48048335428D97C71465E810AB05A8E';
-        $sessionkey = $Srp6->BigInteger($sessionkey, 16)->toBytes();
-
-        $fd = 'test001';
-
-        /************** 加密包 ******************/
-        $data = '';
-        for ($i = 0; $i < 16; $i++) {
-            $data .= pack('V2', 258, 0);
-        }
-        $data = GetBytes($data);
-
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_ADDON_INFO, $data, $sessionkey]);
-        $packdata     = array_merge($encodeheader, $data);
-        $packdata     = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
-        var_dump('Encode:' . $packdata);
-
-        WORLD_LOG('[SMSG_AUTH_RESPONSE] Client : ', 'warning');
-        $data     = [0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01];
-        $packdata = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_AUTH_RESPONSE, $data, $sessionkey]);
-        $data     = $packdata     = array_merge($packdata, $data);
-        $packdata = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
-        var_dump('Encode:' . $packdata);
-
-        WORLD_LOG('[CMSG_CHAR_ENUM] Client : ', 'warning');
-        $Srp6 = new Srp6();
-
-        $param            = [];
-        $param['account'] = 9;
-
-        if ($result = CharacterHandler::CharEnum($param)) {
-            $result = [
-                [
-                    'name'        => 'test',
-                    'guid'        => 963,
-                    'race'        => 10,
-                    'class'       => 5,
-                    'gender'      => 0,
-                    'skin'        => 1,
-                    'face'        => 2,
-                    'hairStyle'   => 2,
-                    'hairColor'   => 8,
-                    'facialStyle' => 7,
-                    'level'       => 1,
-                    'zone'        => 65,
-                    'map'         => 530,
-                    'position_x'  => 10349.6,
-                    'position_y'  => -6357.29,
-                    'position_z'  => 33.4026,
-                    'guildid'     => 0,
-                    'playerFlags' => 0,
-                    'at_login'    => 0,
-                    'entry'       => 0,
-                    'pet_level'   => 0,
-                ],
-            ];
-
-            // $packdata = $Srp6->BigInteger(pack('c', count($result)), 256)->toHex();
-            $packdata = pack('c', count($result));
-
-            //获取角色物品信息
-            $guids               = array_column($result, 'guid');
-            $character_inventory = CharacterHandler::CharEnumItem($guids);
-
-            foreach ($result as $k => $v) {
-                $name     = $v['name'];
-                $name_len = strlen($v['name']);
-                $info     = pack("QZ*c9Vif3l2cl3",
-                    $v['guid'],
-                    $name,
-                    $v['race'],
-                    $v['class'],
-                    $v['gender'],
-                    $v['skin'],
-                    $v['face'],
-                    $v['hairStyle'],
-                    $v['hairColor'],
-                    $v['facialStyle'],
-                    $v['level'],
-                    $v['zone'],
-                    $v['map'],
-                    $v['position_x'],
-                    $v['position_y'],
-                    $v['position_z'],
-                    $v['guildid'],
-                    $v['playerFlags'],
-                    $v['at_login'],
-                    $v['entry'],
-                    $v['pet_level'],
-                    0
-                );
-
-                //装备信息: 物品显示id(displayid)-物品部位(slot)-附魔id(暂时为0)
-                if (isset($character_inventory[$v['guid']])) {
-
-                    $item_info = '';
-                    foreach (self::$equipment as $k1 => $v1) {
-                        $displayid     = isset($character_inventory[$v['guid']][$v1]['displayid']) ? $character_inventory[$v['guid']][$v1]['displayid'] : 0;
-                        $InventoryType = isset($character_inventory[$v['guid']][$v1]['InventoryType']) ? $character_inventory[$v['guid']][$v1]['InventoryType'] : 0;
-
-                        $item_info_tmp = pack("VcV", $displayid, $InventoryType, 0);
-
-                        $item_info .= $item_info_tmp;
-                    }
-                    $info .= $item_info;
-                } else {
-                    //默认显示装备
-                    $item_info = '';
-                    foreach (self::$equipment as $k1 => $v1) {
-                        if ($k1 == 'CHEST') {
-                            $displayid     = 12683;
-                            $InventoryType = 20;
-                        } elseif ($k1 == 'MAINHAND') {
-                            $displayid     = 40371;
-                            $InventoryType = 17;
-                        } else {
-                            $displayid     = 0;
-                            $InventoryType = 0;
-                        }
-
-                        $item_info_tmp = pack("VcV", $displayid, $InventoryType, 0);
-
-                        $item_info .= $item_info_tmp;
-                    }
-
-                    $info .= $item_info;
-                }
-
-                // $info = $Srp6->BigInteger($info, 256)->toHex();
-                $packdata .= $info;
-            }
-        }
-
-        // $data = $Srp6->BigInteger($packdata, 16)->toBytes();
-        $data = GetBytes($packdata);
-
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_CHAR_ENUM, $data, $sessionkey]);
-        $packdata     = array_merge($encodeheader, $data);
-        $packdata     = $Srp6->BigInteger(ToStr($packdata), 256)->toHex();
-        var_dump('Encode:' . $packdata);
-
-    }
-
     public function run()
     {
-        $a = pack('cQc',3,10005,0);
-        $Srp6   = new Srp6();
-        $a = $Srp6->BigInteger($a, 256)->toHex();
-        var_dump($a);die;
+        $Srp6 = new Srp6();
 
-        $UpdateObjectFlags = [
-            'UPDATEFLAG_NONE'                 => 0x0000,
-            'UPDATEFLAG_SELF'                 => 0x0001,
-            'UPDATEFLAG_TRANSPORT'            => 0x0002,
-            'UPDATEFLAG_HAS_ATTACKING_TARGET' => 0x0004,
-            'UPDATEFLAG_LOWGUID'              => 0x0008,
-            'UPDATEFLAG_HIGHGUID'             => 0x0010,
-            'UPDATEFLAG_LIVING'               => 0x0020,
-            'UPDATEFLAG_HAS_POSITION'         => 0x0040,
-        ];
-
-        $update_flags = (
-            $UpdateObjectFlags['UPDATEFLAG_LIVING'] |
-            $UpdateObjectFlags['UPDATEFLAG_HAS_POSITION'] |
-            $UpdateObjectFlags['UPDATEFLAG_HIGHGUID'] |
-            $UpdateObjectFlags['UPDATEFLAG_SELF']
-        );
-
-        $guid              = 963; #角色ID
-        $update_type       = 3; #update_type 3:适用于在空间中具有位置的实体：游戏对象，尸体，生物，玩家等
-        $object_type_num   = 4; #object_type 4:角色
-        $movement_flags    = 0;
-        $movement_flags2   = 0;
-        $time              = time(); #时间戳
-        $time              = 1569475717;
-        $x                 = 10349.6;
-        $y                 = -6357.29;
-        $z                 = 33.4026;
-        $orientation       = 0.0;
-        $speed_walk        = 2.5;
-        $speed_run         = 7.0;
-        $speed_run_back    = 4.5;
-        $speed_swim        = 4.722222;
-        $speed_swim_back   = 2.5;
-        $speed_flight      = 7.0;
-        $speed_flight_back = 4.5;
-        $speed_turn        = 3.141594;
-        $char_class = 1; #种族
-
-
-        $pack_guid = array_merge(packInt(0, 64), [0]);
-        $size      = 1;
-        $index     = 0;
-
-        while ($guid) {
-            if ($guid & 0xff > 0) {
-                $pack_guid[0] |= (1 << $index);
-                $pack_guid[$size] = $guid & 0xff;
-                $size += 1;
-            }
-
-            $index += 1;
-            $guid >>= 8;
-        }
-
-        $pack_guid = ToStr(array_slice($pack_guid, 0, $size));
-        
-        $header = pack('c', $update_type);
-
-        $guid = pack('V', $guid);
-
-        $header .= $pack_guid;
-
-        $object_type = pack('c', $object_type_num);
-
-        $object_movement = pack('c', $update_flags);
-        $object_movement .= pack('IcI', $movement_flags, $movement_flags2, $time);
-        $object_movement .= pack('f4', $x, $y, $z, $orientation);
-        $object_movement .= pack('I', 0);
-        $object_movement .= pack(
-            'f8',
-            $speed_walk,
-            $speed_run,
-            $speed_run_back,
-            $speed_swim,
-            $speed_swim_back,
-            $speed_flight,
-            $speed_flight_back,
-            $speed_turn
-        );
-
-        $object_movement .= pack('I', 0x00000000); #单位或玩家的高引导
-
-        $packet = $header . $object_type . $object_movement;
-
-        $Srp6   = new Srp6();
-        $packet = $Srp6->BigInteger($packet, 256)->toHex();
-        var_dump($packet);
-        die;
+        WORLD_LOG('[SMSG_LOGIN_SETTIMESPEED] Client : ' . $fd, 'warning');
+        $data         = 'bbc0d9940be40000000000ca14ce2b338bd14466aed1440a57f342d66c344000000000';
+        $data         = $Srp6->BigInteger($data, 16)->toBytes();
+        $data         = GetBytes($data);
+        $encodeheader = Packetmanager::Worldpacket_decrypter(2, [$data, 1]);
+        MovementHandler::MSG_MOVE_SET_FACING(1,2,$encodeheader['content']);
 
         // $name          = 'wpcore'; #服务器名称
         // $address       = '127.0.0.1:8085'; #服务器ip

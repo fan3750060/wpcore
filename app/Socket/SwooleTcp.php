@@ -21,6 +21,7 @@ class SwooleTcp
                 // 'package_eof'              => "###", //设置EOF
                 // 'open_eof_split'=>true, //是否分包
                 'package_max_length'       => 4096,
+                'task_worker_num' => 2, // 设置启动2个task进程
             ]);
 
             $serv->on('Start', [$object, 'onStart']);
@@ -32,6 +33,10 @@ class SwooleTcp
             $serv->on('Close', [$object, 'onClose']);
 
             $serv->on('WorkerStart', [$object, 'onWorkerStart']);
+
+            $serv->on('Task', [$object, 'onTask']);
+
+            $serv->on('Finish',[$object, 'onFinish']);
 
             $serv->start();
 

@@ -10,7 +10,11 @@ return [
     // Gameversion
     'Gameversion' => '2.4.3',
 
-    'EXPANSION' => env('EXPANSION',1),
+    'EXPANSION' => env('EXPANSION',1), //版本
+
+    'LOGOUTCOMPLETETIME' =>env('LOGOUTCOMPLETETIME',20), //退出角色时间
+
+    'MOVETIME'  => env('MOVETIME',5), //移动记录频率时间
 
     //缓存配置
     'cache'       => [

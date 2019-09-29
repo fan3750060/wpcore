@@ -5,8 +5,9 @@ use app\Common\Account;
 use app\Common\Checksystem;
 use app\Socket\SwooleTcp;
 use app\World\Message;
-use core\lib\Cache;
 use app\World\Packet\Worldpacket;
+use app\World\Reflection;
+use core\lib\Cache;
 
 /**
  * world server
@@ -14,7 +15,7 @@ use app\World\Packet\Worldpacket;
 class WorldServer
 {
     public static $clientparam = [];
-    public static $opcodeMap = [];
+    public static $opcodeMap   = [];
 
     public $active;
     public $ServerConfig;
@@ -95,7 +96,6 @@ class WorldServer
         @cli_set_process_title("wow_world_master");
         WORLD_LOG("Start");
 
-        
     }
 
     /**
@@ -111,9 +111,8 @@ class WorldServer
 
         WORLD_LOG("Client {$fd} connect");
 
-        if(!WorldServer::$opcodeMap)
-        {
-            WorldServer::$opcodeMap = Worldpacket::LoadOpcode();//载入操作码
+        if (!WorldServer::$opcodeMap) {
+            WorldServer::$opcodeMap = Worldpacket::LoadOpcode(); //载入操作码
         }
 
         WorldServer::$clientparam[$fd]['state'] = Clientstate::Init; //初始化状态
@@ -190,16 +189,34 @@ class WorldServer
      *
      * @param swoole_server $serv
      */
-    private function tickerEvent($serv)
+    public function tickerEvent($serv)
     {
         Connection::clearInvalidConnection($serv);
     }
 
     //清空redis
-    private function clearcache($fd)
+    public function clearcache($fd)
     {
         WORLD_LOG("Clear Cache");
         WorldServer::$clientparam[$fd] = [];
         unset(WorldServer::$clientparam[$fd]);
+    }
+
+    public function onTask($serv, $task_id, $workd_id, $data)
+    {
+        WORLD_LOG("Task working... worker_id: " . $workd_id . " task_id: " . $task_id);
+
+        Reflection::LoadClass($data['opcode'], $serv, $data['data']['fd'], $data['data']);
+
+        return $data;
+    }
+
+    public function onFinish($serv, $task_id, $data)
+    {
+        WORLD_LOG('Task Finished task_id: ' . $task_id);
+
+        if (!empty($data['callback'])) {
+            Reflection::LoadClass($data['callback'], $serv, $data['data']['fd'], $data['data']);
+        }
     }
 }

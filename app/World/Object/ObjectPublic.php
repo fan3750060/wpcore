@@ -6,7 +6,7 @@ namespace app\World\Object;
  */
 class ObjectPublic
 {
-	const UpdateObjectFlags = [
+    const UpdateObjectFlags = [
         'UPDATEFLAG_NONE'                 => 0x0000, #没有更新标志
         'UPDATEFLAG_SELF'                 => 0x0001, #自我更新标志
         'UPDATEFLAG_TRANSPORT'            => 0x0002, #更新运动标志
@@ -91,11 +91,10 @@ class ObjectPublic
     ];
 
     const UnitPower = [
-        'MANA'   => 0,
-        'RAGE'   => 1,
-        'FOCUS'   => 2,     # tonus ?
-        'ENERGY'   => 3,
-        'HAPPINESS'   => 4,
+        'MANA'      => 0,
+        'RAGE'      => 1,
+        'FOCUS'     => 2, # tonus ?
+        'ENERGY'    => 3,
+        'HAPPINESS' => 4,
     ];
-
 }
