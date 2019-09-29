@@ -2,6 +2,7 @@
 namespace app\World\Query;
 
 use app\Common\Srp6;
+use app\World\Movement\MovementHandler;
 use app\World\OpCode;
 use app\World\Packet\Packetmanager;
 use app\World\WorldServer;
@@ -70,6 +71,9 @@ class QueryResponse
             $serv->task_id = $serv->task($param);
 
             WorldServer::$clientparam[$fd]['goonlogout'] = true;
+
+            //保持最后位置
+            MovementHandler::UpdateSetMove($serv, $fd, WorldServer::$clientparam[$fd]['player']['GetMovementInfo']);
         }
 
         $packdata     = GetBytes($packdata);

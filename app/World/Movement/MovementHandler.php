@@ -149,6 +149,8 @@ class MovementHandler
     {
         $GetMovementInfo = MovementHandler::GetMovementInfo($data);
 
+        WorldServer::$clientparam[$fd]['player']['GetMovementInfo'] = $GetMovementInfo; //实时记录移动数据(退出角色和退出游戏保持一致性)
+
         //N秒内只记录最后一次数据(禁止频繁操作数据库)
         if (!empty(WorldServer::$clientparam[$fd]['player']['movetime'])) {
             if (time() - WorldServer::$clientparam[$fd]['player']['movetime'] > config('MOVETIME')) {
