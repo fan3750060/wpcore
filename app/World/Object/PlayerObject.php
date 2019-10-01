@@ -51,6 +51,7 @@ class PlayerObject extends ObjectManager
         'PlayerField.FLAGS',
         'PlayerField.BYTES_1',
         'PlayerField.BYTES_2',
+        // 'PlayerField.BYTES_3',
 
         'PlayerField.VISIBLE_ITEM_1_0',
         'PlayerField.VISIBLE_ITEM_2_0',
@@ -163,7 +164,7 @@ class PlayerObject extends ObjectManager
 
         $bytes_2 = ($characters['facialStyle'] | 0x00 << 8 | 0x00 << 16 | 0x02 << 24);
 
-        // $bytes_3 = $characters['gender'];
+        $bytes_3 = $characters['gender'];
 
         $this->set_object_update_type(ObjectPublic::ObjectUpdateType['CREATE_OBJECT2']);
         $this->set($param)->prepare()->set_update_flags($update_flags);
@@ -173,18 +174,18 @@ class PlayerObject extends ObjectManager
         $this->set_object_field('UnitField.HEALTH', 10); //血值
         $this->set_object_field('UnitField.MAXHEALTH', 120); //最大血值
         $this->set_object_field('UnitField.LEVEL', $characters['level']);
-        $this->set_object_field('UnitField.FACTIONTEMPLATE', 1610);
+        $this->set_object_field('UnitField.FACTIONTEMPLATE', ObjectPublic::CHARACTER_DISPLAY_ID[$characters['race']]['faction_template']);
         $this->set_object_field('UnitField.BYTES_0', $bytes_0);
         $this->set_object_field('UnitField.FLAGS', 0);
         $this->set_object_field('UnitField.BOUNDINGRADIUS', config('BOUNDINGRADIUS'));
         $this->set_object_field('UnitField.COMBATREACH', config('COMBATREACH'));
-        $this->set_object_field('UnitField.DISPLAYID', 15476);
-        $this->set_object_field('UnitField.NATIVEDISPLAYID', 15476);
-        $this->set_object_field('UnitField.STAT0', 8);
-        $this->set_object_field('UnitField.STAT1', 12);
+        $this->set_object_field('UnitField.DISPLAYID', ObjectPublic::CHARACTER_DISPLAY_ID[$characters['race']][$characters['gender']]);
+        $this->set_object_field('UnitField.NATIVEDISPLAYID', ObjectPublic::CHARACTER_DISPLAY_ID[$characters['race']][$characters['gender']]);
+        $this->set_object_field('UnitField.STAT0', 4);
+        $this->set_object_field('UnitField.STAT1', 13);
         $this->set_object_field('UnitField.STAT2', 12);
-        $this->set_object_field('UnitField.STAT3', 10);
-        $this->set_object_field('UnitField.STAT4', 8);
+        $this->set_object_field('UnitField.STAT3', 13);
+        $this->set_object_field('UnitField.STAT4', 10);
         $this->set_object_field('UnitField.RESISTANCE_NORMAL', 0);
         $this->set_object_field('UnitField.BASE_HEALTH', 12);
 
@@ -204,7 +205,6 @@ class PlayerObject extends ObjectManager
         $this->set_object_field('PlayerField.FLAGS', $characters['playerFlags']);
         $this->set_object_field('PlayerField.BYTES_1', $bytes_1);
         $this->set_object_field('PlayerField.BYTES_2', $bytes_2);
-        // $this->set_object_field('PlayerField.BYTES_3', $bytes_3);
 
         $this->set_object_field('PlayerField.XP', $characters['xp']);
         $this->set_object_field('PlayerField.NEXT_LEVEL_XP', 0);
@@ -212,7 +212,6 @@ class PlayerObject extends ObjectManager
         $this->set_object_field('PlayerField.CHARACTER_POINTS2', 0);
         $this->set_object_field('PlayerField.SHIELD_BLOCK', 0);
         $this->set_object_field('PlayerField.EXPLORED_ZONES_1', 0);
-        $this->set_object_field('PlayerField.MOD_DAMAGE_NORMAL_DONE_PCT', 1);
         $this->set_object_field('PlayerField.BYTES', 0);
         $this->set_object_field('PlayerField.WATCHED_FACTION_INDEX', -1);
         $this->set_object_field('PlayerField.MAX_LEVEL', 70);
@@ -225,7 +224,7 @@ class PlayerObject extends ObjectManager
             if ($item) {
                 $visible_item_index = 'PlayerField.VISIBLE_ITEM_' . ($v + 1) . '_0';
                 $this->set_object_field($visible_item_index, $item['item_template']);
-                $this->set_object_field('PlayerField.' . $k, $item['displayid']);
+                $this->set_object_field('PlayerField.INV_SLOT_' . $k, $item['displayid']);
                 $this->set_object_field('PlayerField.MOD_DAMAGE_NORMAL_DONE_PCT', 1);
             }
         }

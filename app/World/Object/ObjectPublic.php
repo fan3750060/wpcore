@@ -124,4 +124,93 @@ class ObjectPublic
         'BAG4'      => 22, #700-701
     ];
 
+    const CharacterRace = [
+        'HUMAN'     => 1,
+        'ORC'       => 2,
+        'DWARF'     => 3,
+        'NIGHT_ELF' => 4,
+        'UNDEAD'    => 5,
+        'TAUREN'    => 6,
+        'GNOME'     => 7,
+        'TROLL'     => 8,
+        'BLOOD_ELF' => 10,
+        'DRAENEI'   => 11,
+    ];
+
+    const CharacterGender = [
+        'MALE'   => 0,
+        'FEMALE' => 1,
+    ];
+
+    const CHARACTER_DISPLAY_ID = [
+        ObjectPublic::CharacterRace['HUMAN']     => [
+
+            ObjectPublic::CharacterGender['MALE']   => 49,
+            ObjectPublic::CharacterGender['FEMALE'] => 50,
+            'faction_template'                      => 1,
+        ],
+
+        ObjectPublic::CharacterRace['ORC']       => [
+
+            ObjectPublic::CharacterGender['MALE']   => 51,
+            ObjectPublic::CharacterGender['FEMALE'] => 52,
+            'faction_template'                      => 2,
+        ],
+
+        ObjectPublic::CharacterRace['DWARF']     => [
+
+            ObjectPublic::CharacterGender['MALE']   => 53,
+            ObjectPublic::CharacterGender['FEMALE'] => 54,
+            'faction_template'                      => 3,
+        ],
+
+        ObjectPublic::CharacterRace['NIGHT_ELF'] => [
+
+            ObjectPublic::CharacterGender['MALE']   => 55,
+            ObjectPublic::CharacterGender['FEMALE'] => 56,
+            'faction_template'                      => 4,
+        ],
+
+        ObjectPublic::CharacterRace['UNDEAD']    => [
+
+            ObjectPublic::CharacterGender['MALE']   => 57,
+            ObjectPublic::CharacterGender['FEMALE'] => 58,
+            'faction_template'                      => 5,
+        ],
+
+        ObjectPublic::CharacterRace['TAUREN']    => [
+
+            ObjectPublic::CharacterGender['MALE']   => 59,
+            ObjectPublic::CharacterGender['FEMALE'] => 60,
+            'faction_template'                      => 6,
+        ],
+
+        ObjectPublic::CharacterRace['GNOME']     => [
+
+            ObjectPublic::CharacterGender['MALE']   => 1563,
+            ObjectPublic::CharacterGender['FEMALE'] => 1564,
+            'faction_template'                      => 115,
+        ],
+
+        ObjectPublic::CharacterRace['TROLL']     => [
+
+            ObjectPublic::CharacterGender['MALE']   => 1478,
+            ObjectPublic::CharacterGender['FEMALE'] => 1479,
+            'faction_template'                      => 116,
+        ],
+
+        ObjectPublic::CharacterRace['BLOOD_ELF'] => [
+
+            ObjectPublic::CharacterGender['MALE']   => 15476,
+            ObjectPublic::CharacterGender['FEMALE'] => 15475,
+            'faction_template'                      => 1610,
+        ],
+
+        ObjectPublic::CharacterRace['DRAENEI']   => [
+
+            ObjectPublic::CharacterGender['MALE']   => 16125,
+            ObjectPublic::CharacterGender['FEMALE'] => 16126,
+            'faction_template'                      => 1629,
+        ],
+    ];
 }
