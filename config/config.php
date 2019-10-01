@@ -16,6 +16,14 @@ return [
 
     'MOVETIME'  => env('MOVETIME',5), //移动记录频率时间
 
+    'BASE_BLOCK' => env('BASE_BLOCK',5.0),
+
+    'BASE_PARRY' => env('BASE_PARRY',5.0),
+
+    'BOUNDINGRADIUS' => env('BOUNDINGRADIUS',0.388999998569489), //边界
+
+    'COMBATREACH' => env('COMBATREACH',1.5), //战斗范围
+
     //缓存配置
     'cache'       => [
         //缓存路径

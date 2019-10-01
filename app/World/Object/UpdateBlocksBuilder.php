@@ -90,6 +90,7 @@ class UpdateBlocksBuilder
 
     public function to_bytes()
     {
+        // var_dump(json_encode($this->mask_blocks));
     	$num_mask_blocks_bytes = pack('c',count($this->mask_blocks));
 
     	$mask_blocks = '';
@@ -108,7 +109,7 @@ class UpdateBlocksBuilder
     	}
 
     	$builder_data = $num_mask_blocks_bytes . $mask_blocks . $sorted_blocks;
-
+        
  		return $builder_data;
     }
 }

@@ -94,6 +94,7 @@ class Message
                 break;
 
             default:
+                WorldServer::$clientparam[$fd]['state'] = Clientstate::Init;
                 WORLD_LOG('Unknown Clientstate: ' . $state . ' Client : ' . $fd, 'warning');
                 break;
         }

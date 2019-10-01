@@ -39,16 +39,70 @@ class Testsrp
         var_dump(strtohex($a));die;
     }
 
+    public function GetPackGuid($guid = null)
+    {
+        $pack_guid = array_merge(packInt(0, 64), [0]);
+        $size      = 1;
+        $index     = 0;
+
+        while ($guid) {
+
+            if (($guid & 0xff) > 0) {
+                $pack_guid[0] |= (1 << $index);
+                // var_dump($pack_guid);
+                $pack_guid[$size] = $guid & 0xff;
+                $size += 1;
+            }
+
+            $index += 1;
+            $guid >>= 8;
+        }
+
+        $pack_guid = ToStr(array_slice($pack_guid, 0, $size));
+
+        return $pack_guid;
+    }
+
     public function run()
     {
-        $Srp6 = new Srp6();
+        $guid = 73;
+        $pack_guid = $this->GetPackGuid($guid);
+        $guid = pack('Q', $guid);
+        $mask = '';
+        if (true) {
+            $guid = $pack_guid;
+        } else {
+            $mask = pack('c', 0xff);
+        }
+        $header = pack('c', 3);
+        $header .= $mask . $guid;
+        var_dump(strtohex($header));
 
-        WORLD_LOG('[SMSG_LOGIN_SETTIMESPEED] Client : ' . $fd, 'warning');
-        $data         = 'bbc0d9940be40000000000ca14ce2b338bd14466aed1440a57f342d66c344000000000';
-        $data         = $Srp6->BigInteger($data, 16)->toBytes();
-        $data         = GetBytes($data);
-        $encodeheader = Packetmanager::Worldpacket_decrypter(2, [$data, 1]);
-        MovementHandler::MSG_MOVE_SET_FACING(1,2,$encodeheader['content']);
+        $guid = 74;
+        $pack_guid = $this->GetPackGuid($guid);
+        $guid = pack('Q', $guid);
+        $mask = '';
+        if (true) {
+            $guid = $pack_guid;
+        } else {
+            $mask = pack('c', 0xff);
+        }
+        $header = pack('c', 3);
+        $header .= $mask . $guid;
+        var_dump(strtohex($header));
+
+
+        // $Srp6 = new Srp6();
+
+        // $bytes_0 = (1 | 2 << 8 | 3 << 16 | 4 << 24);
+        // var_dump($bytes_0);die;
+
+        // WORLD_LOG('[SMSG_LOGIN_SETTIMESPEED] Client : ' . $fd, 'warning');
+        // $data         = 'bbc0d9940be40000000000ca14ce2b338bd14466aed1440a57f342d66c344000000000';
+        // $data         = $Srp6->BigInteger($data, 16)->toBytes();
+        // $data         = GetBytes($data);
+        // $encodeheader = Packetmanager::Worldpacket_decrypter(2, [$data, 1]);
+        // MovementHandler::MSG_MOVE_SET_FACING(1,2,$encodeheader['content']);
 
         // $name          = 'wpcore'; #服务器名称
         // $address       = '127.0.0.1:8085'; #服务器ip

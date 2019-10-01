@@ -43,7 +43,7 @@ class UpdatePacketBuilder
 
     public function __construct()
     {
-    	$this->update_flags = null;
+        $this->update_flags          = null;
         $this->update_blocks_builder = new UpdateBlocksBuilder;
 
         $this->movement_flags  = ObjectPublic::MovementFlags['NONE'];
@@ -99,7 +99,7 @@ class UpdatePacketBuilder
 
         $packet = $header . $object_type . $object_movement . $builder_data;
 
-       	return $packet;
+        return $packet;
     }
 
     //获取运动信息
@@ -204,38 +204,28 @@ class UpdatePacketBuilder
 
     public function add_batch($batch)
     {
-    	$this->batches[] = $batch;
+        $this->batches[] = $batch;
     }
 
     public function build()
     {
-    	$has_transport = intval(false);
+        $has_transport      = intval(false);
+        $count              = count($this->batches);
+        $head_update_packet = '';
 
-    	while ($this->batches)
-    	{ 
-    		$head_update_packet = array_shift($this->batches);
+        for ($i = 0; $i < $count; $i++) {
+            if ($i <= $this->MAX_UPDATE_PACKETS_AS_ONE) {
+                $head_update_packet .= $this->batches[$i];
+            }
+        }
 
-    		$count = 1;
+        $header = pack('Ic', $count, $has_transport);
 
-    		for ($j=0; $j < $this->MAX_UPDATE_PACKETS_AS_ONE; $j++) { 
-    			if(empty($this->batches))
-    			{
-    				break;
-    			}
-
-    			$batch = array_shift($this->batches);
-    			$head_update_packet.= $batch;
-    			$count++;
-    		}
-
-    		$header = pack('Ic',$count,$has_transport);
-
-    		$this->packets[] = $header.$head_update_packet;
-    	}
+        $this->packets[] = $header . $head_update_packet;
     }
 
     public function get_packets()
     {
-    	return $this->packets;
+        return $this->packets;
     }
 }

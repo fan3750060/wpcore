@@ -2,6 +2,7 @@
 namespace app\World\Login;
 
 use app\Common\Srp6;
+use app\World\Character\CharacterHandler;
 use app\World\Object\PlayerObject;
 use app\World\OpCode;
 use app\World\Packet\Packetmanager;
@@ -205,16 +206,23 @@ class PlayerLogin
         ];
 
         $characters = DB::table('characters', 'characters')->where($where)->find();
-        // var_dump(json_encode($characters));
-        if ($characters) 
-        {
-            $packdata     = (new PlayerObject)->LoadPlayerObject($characters);
-            $packdata     = GetBytes($packdata);
-            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_UPDATE_OBJECT, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-            $packdata     = array_merge($encodeheader, $packdata);
-        }else{
-            $packdata = [0,0,0,0];
+
+        if ($characters) {
+            //装备
+            $character_inventory = CharacterHandler::CharEnumItem([$characters['guid']]);
+            if(!empty($character_inventory[$characters['guid']]))
+            {
+                $characters['character_inventory'] = $character_inventory[$characters['guid']];
+            }
+
+            $packdata = (new PlayerObject)->LoadPlayerObject($characters);
+            $packdata = GetBytes($packdata);
+        } else {
+            $packdata = [0, 0, 0, 0];
         }
+
+        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_UPDATE_OBJECT, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+        $packdata     = array_merge($encodeheader, $packdata);
         return $packdata;
     }
 }

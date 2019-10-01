@@ -157,26 +157,42 @@ class PlayerObject extends ObjectManager
 
         ];
 
-        $bytes_0 = ($characters['race'] | $characters['class'] << 8 | (int)$characters['gender'] << 16 | $power_type << 24);
+        $bytes_0 = ($characters['race'] | $characters['class'] << 8 | $characters['gender'] << 16 | $power_type << 24);
 
         $bytes_1 = ($characters['skin'] | $characters['face'] << 8 | $characters['hairStyle'] << 16 | $characters['hairColor'] << 24);
 
         $bytes_2 = ($characters['facialStyle'] | 0x00 << 8 | 0x00 << 16 | 0x02 << 24);
 
-        $bytes_3 = (int)$characters['gender'];
+        // $bytes_3 = $characters['gender'];
 
         $this->set_object_update_type(ObjectPublic::ObjectUpdateType['CREATE_OBJECT2']);
         $this->set($param)->prepare()->set_update_flags($update_flags);
 
         //加载生物属性
-        $this->set_object_field('UnitField.HEALTH', 12); //血值
+        // $this->set_object_field('UnitField.HEALTH', $characters['health']); //血值
+        $this->set_object_field('UnitField.HEALTH', 10); //血值
         $this->set_object_field('UnitField.MAXHEALTH', 120); //最大血值
+        $this->set_object_field('UnitField.LEVEL', $characters['level']);
+        $this->set_object_field('UnitField.FACTIONTEMPLATE', 1610);
+        $this->set_object_field('UnitField.BYTES_0', $bytes_0);
+        $this->set_object_field('UnitField.FLAGS', 0);
+        $this->set_object_field('UnitField.BOUNDINGRADIUS', config('BOUNDINGRADIUS'));
+        $this->set_object_field('UnitField.COMBATREACH', config('COMBATREACH'));
+        $this->set_object_field('UnitField.DISPLAYID', 15476);
+        $this->set_object_field('UnitField.NATIVEDISPLAYID', 15476);
+        $this->set_object_field('UnitField.STAT0', 8);
+        $this->set_object_field('UnitField.STAT1', 12);
+        $this->set_object_field('UnitField.STAT2', 12);
+        $this->set_object_field('UnitField.STAT3', 10);
+        $this->set_object_field('UnitField.STAT4', 8);
+        $this->set_object_field('UnitField.RESISTANCE_NORMAL', 0);
+        $this->set_object_field('UnitField.BASE_HEALTH', 12);
 
-        $this->set_object_field('UnitField.POWER1', 100); //魔法
-        $this->set_object_field('UnitField.POWER2', 0); //怒气
-        $this->set_object_field('UnitField.POWER3', 0);
-        $this->set_object_field('UnitField.POWER4', 0); //能量
-        $this->set_object_field('UnitField.POWER5', 0);
+        $this->set_object_field('UnitField.POWER1', $characters['power1']); //魔法
+        $this->set_object_field('UnitField.POWER2', $characters['power2']); //怒气
+        $this->set_object_field('UnitField.POWER3', $characters['power3']);
+        $this->set_object_field('UnitField.POWER4', $characters['power4']); //能量
+        $this->set_object_field('UnitField.POWER5', $characters['power5']);
 
         $this->set_object_field('UnitField.MAXPOWER1', 119); //最大魔法值
         $this->set_object_field('UnitField.MAXPOWER2', 0); //最大怒气
@@ -184,73 +200,35 @@ class PlayerObject extends ObjectManager
         $this->set_object_field('UnitField.MAXPOWER4', 0); //最大能量
         $this->set_object_field('UnitField.MAXPOWER5', 0);
 
-        $this->set_object_field('UnitField.BYTES_0', $bytes_0);
-        $this->set_object_field('UnitField.LEVEL', 1);
-        $this->set_object_field('UnitField.FACTIONTEMPLATE', 1610);
-        $this->set_object_field('UnitField.FLAGS', 0);
-        $this->set_object_field('UnitField.BASEATTACKTIME', 0);
-        $this->set_object_field('UnitField.OFFHANDATTACKTIME', 0);
-        $this->set_object_field('UnitField.BOUNDINGRADIUS', 0.388999998569489);
-        $this->set_object_field('UnitField.COMBATREACH', 1.5);
-        $this->set_object_field('UnitField.DISPLAYID', 15476);
-        $this->set_object_field('UnitField.NATIVEDISPLAYID', 15476);
-        $this->set_object_field('UnitField.MINDAMAGE', 0);
-        $this->set_object_field('UnitField.MAXDAMAGE', 0);
-        $this->set_object_field('UnitField.MINOFFHANDDAMAGE', 0);
-        $this->set_object_field('UnitField.MAXOFFHANDDAMAGE', 0);
-        $this->set_object_field('UnitField.BYTES_1', 0);
-        $this->set_object_field('UnitField.MOD_CAST_SPEED', 0);
-        $this->set_object_field('UnitField.STAT0', 8);
-        $this->set_object_field('UnitField.STAT1', 12);
-        $this->set_object_field('UnitField.STAT2', 12);
-        $this->set_object_field('UnitField.STAT3', 10);
-        $this->set_object_field('UnitField.STAT4', 8);
-        $this->set_object_field('UnitField.RESISTANCE_FIRE', 0);
-        $this->set_object_field('UnitField.RESISTANCE_NATURE', 0);
-        $this->set_object_field('UnitField.RESISTANCE_FROST', 0);
-        $this->set_object_field('UnitField.RESISTANCE_SHADOW', 0);
-        $this->set_object_field('UnitField.RESISTANCE_ARCANE', 0);
-        $this->set_object_field('UnitField.RESISTANCE_NORMAL', 0);
-        $this->set_object_field('UnitField.ATTACK_POWER', 0);
-        $this->set_object_field('UnitField.BASE_MANA', 0);
-        $this->set_object_field('UnitField.BASE_HEALTH', 12);
-        $this->set_object_field('UnitField.ATTACK_POWER_MODS', 0);
-        $this->set_object_field('UnitField.BYTES_2', 0);
-        $this->set_object_field('UnitField.RANGED_ATTACK_POWER', 0);
-        $this->set_object_field('UnitField.RANGED_ATTACK_POWER_MODS', 0);
-        $this->set_object_field('UnitField.MINRANGEDDAMAGE', 0);
-        $this->set_object_field('UnitField.MAXRANGEDDAMAGE', 0);
-
         //加载玩家属性
-        $this->set_object_field('PlayerField.FLAGS', 0);
+        $this->set_object_field('PlayerField.FLAGS', $characters['playerFlags']);
         $this->set_object_field('PlayerField.BYTES_1', $bytes_1);
         $this->set_object_field('PlayerField.BYTES_2', $bytes_2);
-        $this->set_object_field('PlayerField.BYTES_3', $bytes_3);
-        $this->set_object_field('PlayerField.XP', 0);
+        // $this->set_object_field('PlayerField.BYTES_3', $bytes_3);
+
+        $this->set_object_field('PlayerField.XP', $characters['xp']);
         $this->set_object_field('PlayerField.NEXT_LEVEL_XP', 0);
         $this->set_object_field('PlayerField.CHARACTER_POINTS1', 0);
         $this->set_object_field('PlayerField.CHARACTER_POINTS2', 0);
-        $this->set_object_field('PlayerField.BLOCK_PERCENTAGE', 5.0);
-        $this->set_object_field('PlayerField.DODGE_PERCENTAGE', 0);
-        $this->set_object_field('PlayerField.PARRY_PERCENTAGE', 5.0);
-        $this->set_object_field('PlayerField.CRIT_PERCENTAGE', 0);
-        $this->set_object_field('PlayerField.RANGED_CRIT_PERCENTAGE', 0);
-        $this->set_object_field('PlayerField.REST_STATE_EXPERIENCE', 0);
-        $this->set_object_field('PlayerField.COINAGE', 10000);
-        $this->set_object_field('PlayerField.WATCHED_FACTION_INDEX', -1);
-        $this->set_object_field('PlayerField.BYTES', 0);
-        $this->set_object_field('PlayerField.MAX_LEVEL', 70);
-        $this->set_object_field('PlayerField.VISIBLE_ITEM_4_0', 53);
-        $this->set_object_field('PlayerField.INV_SLOT_BODY', 4611686019316581317);
+        $this->set_object_field('PlayerField.SHIELD_BLOCK', 0);
+        $this->set_object_field('PlayerField.EXPLORED_ZONES_1', 0);
         $this->set_object_field('PlayerField.MOD_DAMAGE_NORMAL_DONE_PCT', 1);
-        $this->set_object_field('PlayerField.VISIBLE_ITEM_5_0', 20891);
-        $this->set_object_field('PlayerField.INV_SLOT_CHEST', 4611686368920208324);
-        $this->set_object_field('PlayerField.VISIBLE_ITEM_7_0', 52);
-        $this->set_object_field('PlayerField.INV_SLOT_LEGS', 4611686019299804102);
-        $this->set_object_field('PlayerField.VISIBLE_ITEM_8_0', 51);
-        $this->set_object_field('PlayerField.INV_SLOT_FEET', 4611686019283026887);
-        $this->set_object_field('PlayerField.VISIBLE_ITEM_16_0', 20981);
-        $this->set_object_field('PlayerField.INV_SLOT_MAINHAND', 4611686370430157768);
+        $this->set_object_field('PlayerField.BYTES', 0);
+        $this->set_object_field('PlayerField.WATCHED_FACTION_INDEX', -1);
+        $this->set_object_field('PlayerField.MAX_LEVEL', 70);
+        $this->set_object_field('PlayerField.COINAGE', $characters['money']);
+
+        //加载玩家装备
+        foreach (ObjectPublic::CharacterEquipSlot as $k => $v) {
+            $item = !empty($characters['character_inventory'][$v]) ? $characters['character_inventory'][$v] : 0;
+
+            if ($item) {
+                $visible_item_index = 'PlayerField.VISIBLE_ITEM_' . ($v + 1) . '_0';
+                $this->set_object_field($visible_item_index, $item['item_template']);
+                $this->set_object_field('PlayerField.' . $k, $item['displayid']);
+                $this->set_object_field('PlayerField.MOD_DAMAGE_NORMAL_DONE_PCT', 1);
+            }
+        }
 
         //技能
         foreach ($param['skills'] as $k => $v) {
@@ -330,7 +308,7 @@ class PlayerObject extends ObjectManager
         $index     = 0;
 
         while ($guid) {
-            if ($guid & 0xff > 0) {
+            if (($guid & 0xff) > 0) {
                 $pack_guid[0] |= (1 << $index);
                 $pack_guid[$size] = $guid & 0xff;
                 $size += 1;
