@@ -1,5 +1,7 @@
 <?php
 namespace app\World\Character;
+
+use app\World\Object\ObjectPublic;
 use core\query\DB;
 
 /**
@@ -30,19 +32,51 @@ class CharacterHandler
             'race'  => $param['race'],
             'class' => $param['class'],
         ];
-        $playercreateinfo    = DB::table('playercreateinfo', 'world')->where($where)->find();
-        $data['map']         = $playercreateinfo['map'];
-        $data['zone']        = $playercreateinfo['zone'];
-        $data['position_x']  = $playercreateinfo['position_x'];
-        $data['position_y']  = $playercreateinfo['position_y'];
-        $data['position_z']  = $playercreateinfo['position_z'];
-        $data['orientation'] = $playercreateinfo['orientation'];
+        $playercreateinfo     = DB::table('playercreateinfo', 'world')->where($where)->find();
+        $data['map']          = $playercreateinfo['map'];
+        $data['zone']         = $playercreateinfo['zone'];
+        $data['position_x']   = $playercreateinfo['position_x'];
+        $data['position_y']   = $playercreateinfo['position_y'];
+        $data['position_z']   = $playercreateinfo['position_z'];
+        $data['orientation']  = $playercreateinfo['orientation'];
+        $data['playerBytes']  = ($data['skin'] | $data['face'] << 8 | $data['hairStyle'] << 16 | $data['hairColor'] << 24);
+        $data['playerBytes2'] = ($data['facialStyle'] | 0x00 << 8 | 0x00 << 16 | 0x02 << 24);
+
+        //基础血和魔法设置
+        $where = [
+            'class' => $param['class'],
+            'level' => 1,
+        ];
+        $player_classlevelstats = DB::table('player_classlevelstats', 'world')->where($where)->find();
+        $where                  = [
+            'race'  => $param['race'],
+            'class' => $param['class'],
+            'level' => 1,
+        ];
+        $player_levelstats = DB::table('player_levelstats', 'world')->where($where)->find();
+        $data['health']    = ObjectPublic::GetPlayerHealth($player_classlevelstats['basehp'], $player_levelstats['sta']);
+
+        $mana_classes   = [3, 9, 7, 8, 5, 11, 2]; //魔法
+        $rage_classes   = [1]; //怒气
+        $energy_classes = [4]; //能量
+
+        $data['power1'] = 0;
+        $data['power2'] = 0;
+        $data['power4'] = 0;
+
+        if (in_array($param['class'], $mana_classes)) {
+            $data['power1'] = ObjectPublic::GetPlayerMana($player_classlevelstats['basemana'], $player_levelstats['spi']);
+        } elseif (in_array($param['class'], $rage_classes)) {
+            $data['power2'] = $player_classlevelstats['basemana'];
+        } elseif (in_array($param['class'], $energy_classes)) {
+            $data['power4'] = $player_classlevelstats['basemana'];
+        }
 
         DB::Transaction('characters'); //开启事务
         $DBTransaction = true;
 
         if ($guid = DB::table('characters', 'characters')->insert($data)) {
-            
+
             //人物的出生地
             $character_homebind = [
                 'guid'       => $guid,
@@ -60,6 +94,10 @@ class CharacterHandler
             }
 
             //出生时快捷键的技能图标
+            $where = [
+                'race'  => $param['race'],
+                'class' => $param['class'],
+            ];
             if ($playercreateinfo_action = DB::table('playercreateinfo_action', 'world')->where($where)->select()) {
                 $new_action = [];
                 foreach ($playercreateinfo_action as $k => $v) {
@@ -79,6 +117,10 @@ class CharacterHandler
             }
 
             //魔法技能
+            $where = [
+                'race'  => $param['race'],
+                'class' => $param['class'],
+            ];
             if ($playercreateinfo_spell = DB::table('playercreateinfo_spell', 'world')->where($where)->select()) {
                 $new_spell = [];
                 foreach ($playercreateinfo_spell as $k => $v) {
@@ -136,6 +178,47 @@ class CharacterHandler
                 }
 
                 if (DB::table('character_inventory', 'characters')->insert($new_temp) == false) {
+                    $DBTransaction = false;
+                }
+            }
+
+            //基础属性设置
+            if ($player_levelstats) {
+                $character_stats = [
+                    'guid'              => $guid,
+                    'maxhealth'         => $data['health'],
+                    'maxpower1'         => $data['power1'],
+                    'maxpower2'         => $data['power2'],
+                    'maxpower3'         => 0,
+                    'maxpower4'         => $data['power4'],
+                    'maxpower5'         => 0,
+                    'maxpower6'         => 0,
+                    'maxpower7'         => 0,
+                    'strength'          => $player_levelstats['str'],
+                    'agility'           => $player_levelstats['agi'],
+                    'stamina'           => $player_levelstats['sta'],
+                    'intellect'         => $player_levelstats['inte'],
+                    'spirit'            => $player_levelstats['spi'],
+                    'armor'             => 0,
+                    'resHoly'           => 0,
+                    'resFire'           => 0,
+                    'resNature'         => 0,
+                    'resFrost'          => 0,
+                    'resShadow'         => 0,
+                    'resArcane'         => 0,
+                    'blockPct'          => 0,
+                    'dodgePct'          => 0,
+                    'parryPct'          => 0,
+                    'critPct'           => 0,
+                    'rangedCritPct'     => 0,
+                    'spellCritPct'      => 0,
+                    'attackPower'       => 0,
+                    'rangedAttackPower' => 0,
+                    'spellPower'        => 0,
+                ];
+
+                $result = DB::table('character_stats', 'characters')->insert($character_stats);
+                if ($result != 0 && !$result) {
                     $DBTransaction = false;
                 }
             }

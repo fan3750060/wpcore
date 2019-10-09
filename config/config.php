@@ -24,6 +24,8 @@ return [
 
     'COMBATREACH' => env('COMBATREACH',1.5), //战斗范围
 
+    'MAX_LEVEL' => env('MAX_LEVEL',70), //角色最大等级
+
     //缓存配置
     'cache'       => [
         //缓存路径

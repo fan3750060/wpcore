@@ -88,7 +88,8 @@ class Connection
 
             foreach ($checkconnector as $k => $v) {
 
-                if (WorldServer::$clientparam[$v['fd']]['state'] > Clientstate::Init || !$serv->exist($v['fd'])) {
+                if (!empty(WorldServer::$clientparam[$v['fd']]) && (WorldServer::$clientparam[$v['fd']]['state'] > Clientstate::Init 
+                    || !$serv->exist($v['fd']))) {
 
                     WORLD_LOG("Remove to be connected : " . $v['fd']);
 

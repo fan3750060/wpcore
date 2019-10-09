@@ -122,7 +122,7 @@ class UpdateObjectFields
         'NEGSTAT2'                       => self::ObjectField['END'] + 0x00B1, #Size:1,Type:INT,Flags:PRIVATE,OWNER_ONLY
         'NEGSTAT3'                       => self::ObjectField['END'] + 0x00B2, #Size:1,Type:INT,Flags:PRIVATE,OWNER_ONLY
         'NEGSTAT4'                       => self::ObjectField['END'] + 0x00B3, #Size:1,Type:INT,Flags:PRIVATE,OWNER_ONLY
-        '#RESISTANCES'                   => self::ObjectField['END'] + 0x00B4, #Size:7,Type:INT,Flags:PRIVATE,OWNER_ONLY,UNK3
+        // 'RESISTANCES'                    => self::ObjectField['END'] + 0x00B4, #Size:7,Type:INT,Flags:PRIVATE,OWNER_ONLY,UNK3
         'RESISTANCE_NORMAL'              => self::ObjectField['END'] + 0x00B4 + self::Schools['SPELL_SCHOOL_NORMAL'], #armor
         'RESISTANCE_HOLY'                => self::ObjectField['END'] + 0x00B4 + self::Schools['SPELL_SCHOOL_HOLY'],
         'RESISTANCE_FIRE'                => self::ObjectField['END'] + 0x00B4 + self::Schools['SPELL_SCHOOL_FIRE'],

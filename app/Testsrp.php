@@ -63,8 +63,18 @@ class Testsrp
         return $pack_guid;
     }
 
+    public function GetPlayerHealth($health = 0,$stamina = 0)
+    {
+        $current_stamina = $stamina;
+        $current_stamina    = $current_stamina < 20 ? 20 : $current_stamina;
+        $health          = $health + $current_stamina * 10;
+
+        return $health;
+    }
+
     public function run()
     {
+        var_dump($this->GetPlayerHealth(21,40));die;
         $guid = 73;
         $pack_guid = $this->GetPackGuid($guid);
         $guid = pack('Q', $guid);

@@ -84,7 +84,8 @@ class Connection
 
             foreach ($checkconnector as $k => $v) {
 
-                if (AuthServer::$clientparam[$v['fd']]['state'] > Clientstate::Init || !$serv->exist($v['fd'])) {
+                if (!empty(AuthServer::$clientparam[$v['fd']]) && (AuthServer::$clientparam[$v['fd']]['state'] > Clientstate::Init ||
+                 !$serv->exist($v['fd']))) {
 
                     AUTH_LOG("Remove to be connected : " . $v['fd']);
 

@@ -81,7 +81,6 @@ class Message
                 $sessionkey = WorldServer::$clientparam[$fd]['sessionkey'];
 
                 for ($i = 0; $i < 40; $i++) {
-                    // $unpackdata = Worldpacket::decrypter($data, $sessionkey);
                     $unpackdata = Packetmanager::Worldpacket_decrypter($fd, [$data, $sessionkey]);
                     $opcode     = Message::getopcode($unpackdata['opcode'], $fd);
                     if ($opcode) {
@@ -100,12 +99,19 @@ class Message
         }
     }
 
-    public static function serversend($serv, $fd, $data = null)
+    public static function serversend($serv, $fd, $packdata = null, $opcode = null)
     {
-        if (env('MSG_DEBUG', false)) {
-            WORLD_LOG("Send: " . (new Srp6)->BigInteger(ToStr($data), 256)->toHex(), 'info');
+        if ($opcode) {
+            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [$opcode, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
+            $packdata     = array_merge($encodeheader, $packdata);
         }
 
-        $serv->send($fd, ToStr($data));
+        $packdata = ToStr($packdata);
+
+        if (env('MSG_DEBUG', false)) {
+            WORLD_LOG("Send: " . (new Srp6)->BigInteger($packdata, 256)->toHex(), 'info');
+        }
+
+        $serv->send($fd, $packdata);
     }
 }

@@ -8,13 +8,7 @@ use app\Common\Account;
 
 class Message
 {
-    /**
-     * 握手和消息分发
-     *
-     * @param swoole_server $serv
-     * @param int $fd
-     * @param string $data
-     */
+    //消息分发
     public function serverreceive($serv, $fd, $data)
     {
         if (!empty($data)) {
@@ -30,15 +24,7 @@ class Message
         }
     }
 
-    /**
-     * [handlePacket 根据当前ClientState处理传入的数据包]
-     * ------------------------------------------------------------------------------
-     * @author  by.fan <fan3750060@163.com>
-     * ------------------------------------------------------------------------------
-     * @version date:2019-04-19
-     * ------------------------------------------------------------------------------
-     * @return  [type]          [description]
-     */
+    //根据当前ClientState处理传入的数据包
     public function handlePacket($serv, $fd, $data, $state)
     {
         switch ($state) {
@@ -163,22 +149,13 @@ class Message
         }
     }
 
-    /**
-     * [serversend 发送]
-     * ------------------------------------------------------------------------------
-     * @author  by.fan <fan3750060@163.com>
-     * ------------------------------------------------------------------------------
-     * @version date:2019-04-27
-     * ------------------------------------------------------------------------------
-     * @return  [type]          [description]
-     */
-    public function serversend($serv, $fd, $data = null)
+    public function serversend($serv, $fd, $packdata = null)
     {
         if(env('MSG_DEBUG',false))
         {
-            AUTH_LOG("Send: " . json_encode($data), 'info');
+            AUTH_LOG("Send: " . json_encode($packdata), 'info');
         }
         
-        $serv->send($fd, ToStr($data));
+        $serv->send($fd, ToStr($packdata));
     }
 }

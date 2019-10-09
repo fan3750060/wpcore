@@ -213,4 +213,24 @@ class ObjectPublic
             'faction_template'                      => 1629,
         ],
     ];
+
+    //根据耐力计算血值
+    public function GetPlayerHealth($health = 0, $stamina = 0)
+    {
+        $current_stamina = $stamina;
+        $current_stamina = $current_stamina < 20 ? 20 : $current_stamina;
+        $health          = $health + $current_stamina * 1;
+
+        return $health;
+    }
+
+    //根据耐力计算血值
+    public function GetPlayerMana($mana = 0, $spirit = 0)
+    {
+        $current_spirit = $spirit;
+        $current_spirit = $current_spirit < 20 ? 20 : $current_spirit;
+        $mana            = $mana + $current_spirit * 4.6296296;
+
+        return $mana;
+    }
 }

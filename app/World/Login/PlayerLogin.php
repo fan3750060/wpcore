@@ -2,10 +2,9 @@
 namespace app\World\Login;
 
 use app\Common\Srp6;
-use app\World\Character\CharacterHandler;
 use app\World\Object\PlayerObject;
 use app\World\OpCode;
-use app\World\Packet\Packetmanager;
+use app\World\Player\PlayerManager;
 use app\World\WorldServer;
 use core\query\DB;
 
@@ -36,13 +35,16 @@ class PlayerLogin
         ];
 
         $characters = DB::table('characters', 'characters')->where($where)->find();
-        $packdata   = pack('Vf4', $characters['map'], $characters['position_x'], $characters['position_y'], $characters['position_z'], $characters['orientation']);
+        $packdata   = pack('Vf4',
+            $characters['map'],
+            $characters['position_x'],
+            $characters['position_y'],
+            $characters['position_z'],
+            $characters['orientation']);
 
-        $packdata     = GetBytes($packdata);
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_LOGIN_VERIFY_WORLD, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
+        $packdata = GetBytes($packdata);
 
-        return $packdata;
+        return [OpCode::SMSG_LOGIN_VERIFY_WORLD, $packdata];
     }
 
     //帐户数据时间
@@ -56,10 +58,7 @@ class PlayerLogin
         }
         $packdata = GetBytes($packdata);
 
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_ACCOUNT_DATA_TIMES, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
-
-        return $packdata;
+        return [OpCode::SMSG_ACCOUNT_DATA_TIMES, $packdata];
     }
 
     //功能系统状态
@@ -67,12 +66,10 @@ class PlayerLogin
     {
         WORLD_LOG('[SMSG_FEATURE_SYSTEM_STATUS] Client : ' . $fd, 'warning');
 
-        $packdata     = pack('c2', 2, 0);
-        $packdata     = GetBytes($packdata);
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_FEATURE_SYSTEM_STATUS, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
+        $packdata = pack('c2', 2, 0);
+        $packdata = GetBytes($packdata);
 
-        return $packdata;
+        return [OpCode::SMSG_FEATURE_SYSTEM_STATUS, $packdata];
     }
 
     //欢迎语
@@ -82,12 +79,11 @@ class PlayerLogin
 
         $motd = env('MOTD', 'Welcome to the wpcore server');
 
-        $packdata     = pack('VZ*', 1, $motd);
-        $packdata     = GetBytes($packdata);
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_MOTD, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
+        $packdata = pack('VZ*', 1, $motd);
+        $packdata = GetBytes($packdata);
 
-        return $packdata;
+        return [OpCode::SMSG_MOTD, $packdata];
+
     }
 
     //教程标志
@@ -101,10 +97,7 @@ class PlayerLogin
         }
         $packdata = GetBytes($packdata);
 
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_TUTORIAL_FLAGS, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
-
-        return $packdata;
+        return [OpCode::SMSG_TUTORIAL_FLAGS, $packdata];
     }
 
     //初始法术
@@ -135,12 +128,9 @@ class PlayerLogin
         $packdata .= pack('v2', $spall_len, 0);
         $packdata = GetBytes($packdata);
 
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_INITIAL_SPELLS, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
-
         //TODO 冷却时间
 
-        return $packdata;
+        return [OpCode::SMSG_INITIAL_SPELLS, $packdata];
     }
 
     //服务器分隔
@@ -152,10 +142,7 @@ class PlayerLogin
         $packdata   = pack('VVZ*', $data, 0, $split_date);
         $packdata   = GetBytes($packdata);
 
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_REALM_SPLIT, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
-
-        return $packdata;
+        return [OpCode::SMSG_REALM_SPLIT, $packdata];
     }
 
     //设置服务器时间流速
@@ -163,14 +150,11 @@ class PlayerLogin
     {
         WORLD_LOG('[SMSG_LOGIN_SETTIMESPEED] Client : ' . $fd, 'warning');
 
-        $timedata = ((date('Y') - 100) << 24 | date('m') << 20 | (date('d') - 1) << 14 | date("w") << 11 | date("H") << 6 | date("i"));
+        $timedata = ((date('Y') - 100) << 24 | date('m') << 20 | (date('d') - 1) << 14 | date("w") << 11 | (date("H") - 3) << 6 | date("i"));
         $packdata = pack('f2', $timedata, env('GAME_SPEED', 0.01666667));
         $packdata = GetBytes($packdata);
 
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_LOGIN_SETTIMESPEED, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
-
-        return $packdata;
+        return [OpCode::SMSG_LOGIN_SETTIMESPEED, $packdata];
     }
 
     //下一个计数器时间同步
@@ -187,13 +171,10 @@ class PlayerLogin
         $packdata = pack('V', $TimeSyncNextCounter);
         $packdata = GetBytes($packdata);
 
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_TIME_SYNC_REQ, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
-
         $TimeSyncNextCounter++;
         WorldServer::$clientparam[$fd]['player']['TimeSyncNextCounter'] = $TimeSyncNextCounter;
 
-        return $packdata;
+        return [OpCode::SMSG_TIME_SYNC_REQ, $packdata];
     }
 
     //加载玩家对象
@@ -201,28 +182,16 @@ class PlayerLogin
     {
         WORLD_LOG('[SMSG_UPDATE_OBJECT] Client : ' . $fd, 'warning');
 
-        $where = [
-            'guid' => WorldServer::$clientparam[$fd]['player']['guid'],
-        ];
-
-        $characters = DB::table('characters', 'characters')->where($where)->find();
+        $characters = PlayerManager::FindPlayer(WorldServer::$clientparam[$fd]['player']['guid']);
 
         if ($characters) {
-            //装备
-            $character_inventory = CharacterHandler::CharEnumItem([$characters['guid']]);
-            if(!empty($character_inventory[$characters['guid']]))
-            {
-                $characters['character_inventory'] = $character_inventory[$characters['guid']];
-            }
-
             $packdata = (new PlayerObject)->LoadPlayerObject($characters);
             $packdata = GetBytes($packdata);
+
         } else {
             $packdata = [0, 0, 0, 0];
         }
 
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_UPDATE_OBJECT, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
-        return $packdata;
+        return [OpCode::SMSG_UPDATE_OBJECT, $packdata];
     }
 }

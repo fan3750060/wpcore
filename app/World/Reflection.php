@@ -30,6 +30,7 @@ class Reflection
             ['app\World\Login\PlayerLogin', 'LoginObject'],
             ['app\World\Login\PlayerLogin', 'SetTimeSpeed'],
             ['app\World\Login\PlayerLogin', 'LoadTimeSyncReq'],
+            // ['app\World\Player\PlayerManager', 'LoadPlayer'],//同步玩家
         ],
         'CMSG_NAME_QUERY'               => ['app\World\Query\QueryResponse', 'QueryName'],
         'CMSG_QUERY_TIME'               => ['app\World\Query\QueryResponse', 'QueryTime'],
@@ -82,11 +83,11 @@ class Reflection
         $classObject = new \ReflectionMethod($class, $func);
         if ($classObject->isStatic()) {
             if ($packdata = $classObject->invokeArgs(null, [$serv, $fd, $data])) {
-                Message::serversend($serv, $fd, $packdata);
+                Message::serversend($serv, $fd, $packdata[1], $packdata[0]);
             }
         } else {
             if ($packdata = $classObject->invokeArgs(new $class, [$serv, $fd, $data])) {
-                Message::serversend($serv, $fd, $packdata);
+                Message::serversend($serv, $fd, $packdata[1], $packdata[0]);
             }
         }
     }

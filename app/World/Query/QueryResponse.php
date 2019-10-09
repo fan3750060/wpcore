@@ -4,7 +4,6 @@ namespace app\World\Query;
 use app\Common\Srp6;
 use app\World\Movement\MovementHandler;
 use app\World\OpCode;
-use app\World\Packet\Packetmanager;
 use app\World\WorldServer;
 use core\query\DB;
 
@@ -33,11 +32,9 @@ class QueryResponse
             $characters['class'],
             0
         );
-        $packdata     = GetBytes($packdata);
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_NAME_QUERY_RESPONSE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
+        $packdata = GetBytes($packdata);
 
-        return $packdata;
+        return [OpCode::SMSG_NAME_QUERY_RESPONSE, $packdata];
     }
 
     //查询时间响应
@@ -45,11 +42,10 @@ class QueryResponse
     {
         WORLD_LOG('[SMSG_QUERY_TIME_RESPONSE] Client : ' . $fd, 'warning');
 
-        $packdata     = pack('I2', time(), 0);
-        $packdata     = GetBytes($packdata);
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_QUERY_TIME_RESPONSE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
-        return $packdata;
+        $packdata = pack('I2', time(), 0);
+        $packdata = GetBytes($packdata);
+
+        return [OpCode::SMSG_QUERY_TIME_RESPONSE, $packdata];
     }
 
     //退出到角色
@@ -72,14 +68,15 @@ class QueryResponse
 
             WorldServer::$clientparam[$fd]['goonlogout'] = true;
 
-            //保持最后位置
-            MovementHandler::UpdateSetMove($serv, $fd, WorldServer::$clientparam[$fd]['player']['GetMovementInfo']);
+            if (!empty(WorldServer::$clientparam[$fd]['player']['GetMovementInfo'])) {
+                //保持最后位置
+                MovementHandler::UpdateSetMove($serv, $fd, WorldServer::$clientparam[$fd]['player']['GetMovementInfo']);
+            }
         }
 
-        $packdata     = GetBytes($packdata);
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_LOGOUT_RESPONSE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
-        return $packdata;
+        $packdata = GetBytes($packdata);
+
+        return [OpCode::SMSG_LOGOUT_RESPONSE, $packdata];
     }
 
     //退出计时器
@@ -95,11 +92,10 @@ class QueryResponse
     {
         if (WorldServer::$clientparam[$fd]['goonlogout']) {
             WORLD_LOG('[SMSG_LOGOUT_COMPLETE] Client : ' . $fd, 'warning');
-            $packdata     = pack('c', 0);
-            $packdata     = GetBytes($packdata);
-            $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_LOGOUT_COMPLETE, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-            $packdata     = array_merge($encodeheader, $packdata);
-            return $packdata;
+            $packdata = pack('c', 0);
+            $packdata = GetBytes($packdata);
+
+            return [OpCode::SMSG_LOGOUT_COMPLETE, $packdata];
         }
     }
 
@@ -112,9 +108,8 @@ class QueryResponse
 
         $packdata = pack('c', 0);
 
-        $packdata     = GetBytes($packdata);
-        $encodeheader = Packetmanager::Worldpacket_encrypter($fd, [OpCode::SMSG_LOGOUT_CANCEL_ACK, $packdata, WorldServer::$clientparam[$fd]['sessionkey']]);
-        $packdata     = array_merge($encodeheader, $packdata);
-        return $packdata;
+        $packdata = GetBytes($packdata);
+
+        return [OpCode::SMSG_LOGOUT_CANCEL_ACK, $packdata];
     }
 }

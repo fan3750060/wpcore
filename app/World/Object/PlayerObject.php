@@ -44,6 +44,16 @@ class PlayerObject extends ObjectManager
         'UnitField.STAT2',
         'UnitField.STAT3',
         'UnitField.STAT4',
+        'UnitField.POSSTAT0',
+        'UnitField.POSSTAT1',
+        'UnitField.POSSTAT2',
+        'UnitField.POSSTAT3',
+        'UnitField.POSSTAT4',
+        'UnitField.NEGSTAT0',
+        'UnitField.NEGSTAT1',
+        'UnitField.NEGSTAT2',
+        'UnitField.NEGSTAT3',
+        'UnitField.NEGSTAT4',
         'UnitField.RESISTANCE_NORMAL',
         'UnitField.BASE_HEALTH',
 
@@ -51,7 +61,6 @@ class PlayerObject extends ObjectManager
         'PlayerField.FLAGS',
         'PlayerField.BYTES_1',
         'PlayerField.BYTES_2',
-        // 'PlayerField.BYTES_3',
 
         'PlayerField.VISIBLE_ITEM_1_0',
         'PlayerField.VISIBLE_ITEM_2_0',
@@ -107,27 +116,26 @@ class PlayerObject extends ObjectManager
     //加载玩家对象
     public function LoadPlayerObject($characters = null)
     {
-        $guid        = $characters['guid']; #角色ID
-        $x           = $characters['position_x'];
-        $y           = $characters['position_y'];
-        $z           = $characters['position_z'];
-        $orientation = $characters['orientation'];
-        $char_class  = $characters['class']; #种族
-        $time        = time(); #时间戳
+        foreach ($characters as $k => $v) {
+            $object = $this->SetPlayerObject($v);
+        }
 
-        $speed_walk        = 2.5;
-        $speed_run         = 7.0;
-        $speed_run_back    = 4.5;
-        $speed_swim        = 4.722222;
-        $speed_swim_back   = 2.5;
-        $speed_flight      = 7.0;
-        $speed_flight_back = 4.5;
-        $speed_turn        = 3.141594;
+        $response = $object->build_update_packet()->get_update_packets();
+
+        $response = implode('', $response);
+
+        return $response;
+    }
+
+    //设置对象属性
+    public function SetPlayerObject($characters)
+    {
+        $guid       = $characters['guid']; #角色ID
+        $char_class = $characters['class']; #种族
 
         $update_flags = $this->GetUpdateFlags();
         $pack_guid    = $this->GetPackGuid($guid);
-
-        $power_type = $this->SetPlayerPower($char_class);
+        $power_type   = $this->SetPlayerPower($char_class); //力量类型
 
         $param = [
             'guid'              => $guid,
@@ -135,19 +143,19 @@ class PlayerObject extends ObjectManager
             'update_type'       => ObjectPublic::ObjectUpdateType['CREATE_OBJECT2'],
             'object_type'       => ObjectPublic::ObjectType['PLAYER'],
             'update_flags'      => $update_flags,
-            'time'              => $time,
-            'x'                 => $x,
-            'y'                 => $y,
-            'z'                 => $z,
-            'orientation'       => $orientation,
-            'speed_walk'        => $speed_walk,
-            'speed_run'         => $speed_run,
-            'speed_run_back'    => $speed_run_back,
-            'speed_swim'        => $speed_swim,
-            'speed_swim_back'   => $speed_swim_back,
-            'speed_flight'      => $speed_flight,
-            'speed_flight_back' => $speed_flight_back,
-            'speed_turn'        => $speed_turn,
+            'time'              => time(), #时间戳
+            'x'                 => $characters['position_x'],
+            'y'                 => $characters['position_y'],
+            'z'                 => $characters['position_z'],
+            'orientation'       => $characters['orientation'],
+            'speed_walk'        => 2.5, //走路速度
+            'speed_run'         => 7.0, //跑步速度
+            'speed_run_back'    => 4.5, //回退速度
+            'speed_swim'        => 4.722222, //游泳速度
+            'speed_swim_back'   => 2.5, //回退游泳速度
+            'speed_flight'      => 7.0, //飞行速度
+            'speed_flight_back' => 4.5, //倒飞速度
+            'speed_turn'        => 3.141594, //转弯速度
             'skills'            => [
                 ['entry' => 756, 'min' => 1, 'max' => 1],
                 ['entry' => 137, 'min' => 300, 'max' => 300],
@@ -155,39 +163,71 @@ class PlayerObject extends ObjectManager
             'type_mask'         => 25,
             'entry'             => null,
             'scale_x'           => 1.0,
-
         ];
 
         $bytes_0 = ($characters['race'] | $characters['class'] << 8 | $characters['gender'] << 16 | $power_type << 24);
 
-        $bytes_1 = ($characters['skin'] | $characters['face'] << 8 | $characters['hairStyle'] << 16 | $characters['hairColor'] << 24);
+        if (!empty($characters['playerBytes'])) {
+            $bytes_1 = $characters['playerBytes'];
+        } else {
+            $bytes_1 = ($characters['skin'] | $characters['face'] << 8 | $characters['hairStyle'] << 16 | $characters['hairColor'] << 24);
+        }
 
-        $bytes_2 = ($characters['facialStyle'] | 0x00 << 8 | 0x00 << 16 | 0x02 << 24);
+        if (!empty($characters['playerBytes2'])) {
+            $bytes_2 = $characters['playerBytes2'];
+        } else {
+            $bytes_2 = ($characters['facialStyle'] | 0x00 << 8 | 0x00 << 16 | 0x02 << 24);
+        }
 
-        $bytes_3 = $characters['gender'];
+        //获取血值
+        $maxhealth = ObjectPublic::GetPlayerHealth($characters['player_classlevelstats']['basehp'],$characters['character_stats']['stamina']);
+        $health = $characters['health'];
+        if($maxhealth < $health)
+        {
+            $health = $maxhealth;
+        }
+
+        $maxpower1 = ObjectPublic::GetPlayerMana($characters['player_classlevelstats']['basemana'], $characters['character_stats']['spirit']);
+        $maxpower2 = $characters['player_classlevelstats']['basemana'];
+        $maxpower3 = $characters['player_classlevelstats']['basemana'];
+        $maxpower4 = $characters['player_classlevelstats']['basemana'];
+        $maxpower5 = $characters['player_classlevelstats']['basemana'];
 
         $this->set_object_update_type(ObjectPublic::ObjectUpdateType['CREATE_OBJECT2']);
         $this->set($param)->prepare()->set_update_flags($update_flags);
 
         //加载生物属性
-        // $this->set_object_field('UnitField.HEALTH', $characters['health']); //血值
-        $this->set_object_field('UnitField.HEALTH', 10); //血值
-        $this->set_object_field('UnitField.MAXHEALTH', 120); //最大血值
-        $this->set_object_field('UnitField.LEVEL', $characters['level']);
-        $this->set_object_field('UnitField.FACTIONTEMPLATE', ObjectPublic::CHARACTER_DISPLAY_ID[$characters['race']]['faction_template']);
+        $this->set_object_field('UnitField.HEALTH', $health); //血值
+        $this->set_object_field('UnitField.MAXHEALTH', $maxhealth); //最大血值
+        $this->set_object_field('UnitField.LEVEL', $characters['level']); //当前人物等级
+        $this->set_object_field('UnitField.FACTIONTEMPLATE', ObjectPublic::CHARACTER_DISPLAY_ID[$characters['race']]['faction_template']); //派系模板
         $this->set_object_field('UnitField.BYTES_0', $bytes_0);
         $this->set_object_field('UnitField.FLAGS', 0);
         $this->set_object_field('UnitField.BOUNDINGRADIUS', config('BOUNDINGRADIUS'));
         $this->set_object_field('UnitField.COMBATREACH', config('COMBATREACH'));
-        $this->set_object_field('UnitField.DISPLAYID', ObjectPublic::CHARACTER_DISPLAY_ID[$characters['race']][$characters['gender']]);
-        $this->set_object_field('UnitField.NATIVEDISPLAYID', ObjectPublic::CHARACTER_DISPLAY_ID[$characters['race']][$characters['gender']]);
-        $this->set_object_field('UnitField.STAT0', 4);
-        $this->set_object_field('UnitField.STAT1', 13);
-        $this->set_object_field('UnitField.STAT2', 12);
-        $this->set_object_field('UnitField.STAT3', 13);
-        $this->set_object_field('UnitField.STAT4', 10);
-        $this->set_object_field('UnitField.RESISTANCE_NORMAL', 0);
-        $this->set_object_field('UnitField.BASE_HEALTH', 12);
+        $this->set_object_field('UnitField.DISPLAYID', ObjectPublic::CHARACTER_DISPLAY_ID[$characters['race']][$characters['gender']]); //显示人物模型
+        $this->set_object_field('UnitField.NATIVEDISPLAYID', ObjectPublic::CHARACTER_DISPLAY_ID[$characters['race']][$characters['gender']]); //原始显示人物模型
+        $this->set_object_field('UnitField.STAT0', $characters['character_stats']['strength']); //力量 strength
+        $this->set_object_field('UnitField.STAT1', $characters['character_stats']['agility']); //敏捷 agility
+        $this->set_object_field('UnitField.STAT2', $characters['character_stats']['stamina']); //耐力 stamina
+        $this->set_object_field('UnitField.STAT3', $characters['character_stats']['intellect']); //智力 intellect
+        $this->set_object_field('UnitField.STAT4', $characters['character_stats']['spirit']); //精神 spirit
+        // $this->set_object_field('UnitField.POSSTAT0', 99); //攻击加成绿字
+        // $this->set_object_field('UnitField.POSSTAT1', 99); //敏捷加成绿字
+        // $this->set_object_field('UnitField.POSSTAT2', 99); //耐力加成绿字
+        // $this->set_object_field('UnitField.POSSTAT3', 99); //智力加成绿字
+        // $this->set_object_field('UnitField.POSSTAT4', 99); //精神加成绿字
+        // $this->set_object_field('UnitField.NEGSTAT0', 100); //攻击原始白字
+        // $this->set_object_field('UnitField.NEGSTAT1', 100); //敏捷原始白字
+        // $this->set_object_field('UnitField.NEGSTAT2', 100); //耐力原始白字
+        // $this->set_object_field('UnitField.NEGSTAT3', 100); //智力原始白字
+        // $this->set_object_field('UnitField.NEGSTAT4', 100); //精神原始白字
+
+        //敏捷提高护甲*2 提高暴击率0.0024090909
+        //力量提高攻击 0.4116740588
+        //智力提高法力值 4.23076923 提高法术暴击 0.002153846
+        $this->set_object_field('UnitField.RESISTANCE_NORMAL', 10); //护甲
+        $this->set_object_field('UnitField.BASE_HEALTH', $characters['player_classlevelstats']['basehp']);
 
         $this->set_object_field('UnitField.POWER1', $characters['power1']); //魔法
         $this->set_object_field('UnitField.POWER2', $characters['power2']); //怒气
@@ -195,27 +235,27 @@ class PlayerObject extends ObjectManager
         $this->set_object_field('UnitField.POWER4', $characters['power4']); //能量
         $this->set_object_field('UnitField.POWER5', $characters['power5']);
 
-        $this->set_object_field('UnitField.MAXPOWER1', 119); //最大魔法值
-        $this->set_object_field('UnitField.MAXPOWER2', 0); //最大怒气
-        $this->set_object_field('UnitField.MAXPOWER3', 0);
-        $this->set_object_field('UnitField.MAXPOWER4', 0); //最大能量
-        $this->set_object_field('UnitField.MAXPOWER5', 0);
+        $this->set_object_field('UnitField.MAXPOWER1', $maxpower1); //最大魔法值
+        $this->set_object_field('UnitField.MAXPOWER2', $maxpower2); //最大怒气
+        $this->set_object_field('UnitField.MAXPOWER3', $maxpower3);
+        $this->set_object_field('UnitField.MAXPOWER4', $maxpower4); //最大能量
+        $this->set_object_field('UnitField.MAXPOWER5', $maxpower5);
 
         //加载玩家属性
         $this->set_object_field('PlayerField.FLAGS', $characters['playerFlags']);
-        $this->set_object_field('PlayerField.BYTES_1', $bytes_1);
-        $this->set_object_field('PlayerField.BYTES_2', $bytes_2);
+        $this->set_object_field('PlayerField.BYTES_1', $bytes_1); //发型及和脸型及皮肤
+        $this->set_object_field('PlayerField.BYTES_2', $bytes_2); //面部造型
 
-        $this->set_object_field('PlayerField.XP', $characters['xp']);
-        $this->set_object_field('PlayerField.NEXT_LEVEL_XP', 0);
+        $this->set_object_field('PlayerField.XP', $characters['xp']); //当前等级经验值
+        $this->set_object_field('PlayerField.NEXT_LEVEL_XP', $characters['next_level_xp']); //当前升级所需经验值
         $this->set_object_field('PlayerField.CHARACTER_POINTS1', 0);
         $this->set_object_field('PlayerField.CHARACTER_POINTS2', 0);
         $this->set_object_field('PlayerField.SHIELD_BLOCK', 0);
         $this->set_object_field('PlayerField.EXPLORED_ZONES_1', 0);
         $this->set_object_field('PlayerField.BYTES', 0);
         $this->set_object_field('PlayerField.WATCHED_FACTION_INDEX', -1);
-        $this->set_object_field('PlayerField.MAX_LEVEL', 70);
-        $this->set_object_field('PlayerField.COINAGE', $characters['money']);
+        $this->set_object_field('PlayerField.MAX_LEVEL', config('MAX_LEVEL')); //最大等级
+        $this->set_object_field('PlayerField.COINAGE', $characters['money']); //人物当前金钱
 
         //加载玩家装备
         foreach (ObjectPublic::CharacterEquipSlot as $k => $v) {
@@ -239,11 +279,7 @@ class PlayerObject extends ObjectManager
 
         $batch = $this->create_batch($this->SPAWN_FIELDS);
 
-        $response = $this->add_batch($batch)->build_update_packet()->get_update_packets();
-
-        $response = implode('', $response);
-
-        return $response;
+        return $this->add_batch($batch);
     }
 
     //更新标志
@@ -262,6 +298,7 @@ class PlayerObject extends ObjectManager
     //设置玩家能力属性
     public function SetPlayerPower($char_class = null)
     {
+        //魔法
         $mana_classes = [
             PlayerObject::CharacterClass['HUNTER'],
             PlayerObject::CharacterClass['WARLOCK'],
@@ -272,10 +309,12 @@ class PlayerObject extends ObjectManager
             PlayerObject::CharacterClass['PALADIN'],
         ];
 
+        //怒气
         $rage_classes = [
             PlayerObject::CharacterClass['WARRIOR'],
         ];
 
+        //能量
         $energy_classes = [
             PlayerObject::CharacterClass['ROGUE'],
         ];
